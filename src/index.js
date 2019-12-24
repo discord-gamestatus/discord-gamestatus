@@ -7,7 +7,7 @@ var PREFIX = '!';
 var ADMIN_FLAG = 'ADMINISTRATOR';
 
 async function loadCommands() {
-  let files = await fs.readdir('./commands');
+  let files = await fs.readdir('./src/commands');
   for (let file of files) {
     let command = require(`./commands/${file}`);
     COMMANDS.set(command.name, command.call);
