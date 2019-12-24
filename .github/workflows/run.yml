@@ -22,3 +22,5 @@ jobs:
         CI: true
     - name: node run
       run: node index.js
+      env:
+        DISCORD_API_KEY: ${{ SECRETS.DISCORD_API_KEY }}
