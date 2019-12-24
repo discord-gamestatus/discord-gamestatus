@@ -10,6 +10,7 @@ async function loadCommands() {
   let files = await fs.readdir('./src/commands');
   for (let file of files) {
     let command = require(`./commands/${file}`);
+    console.log(`Loaded command ${command.name}`);
     COMMANDS.set(command.name, command.call);
   }
 }
@@ -23,6 +24,7 @@ client.on('message', async function(message) {
   let parts = message.content.substr(PREFIX.length).split(' ');
   if (parts.length === 0) return;
   let command = parts.splice(0, 1);
+  console.log(`Running ${command}`);
 
   if (COMMANDS.has(command)) {
     try {
