@@ -11,7 +11,7 @@ async function loadCommands() {
   for (let file of files) {
     let command = require(`./commands/${file}`);
     console.log(`Loaded command ${command.name}`);
-    COMMANDS.set(command.name, command.call);
+    COMMANDS.set(command.name.toLowerCase(), command.call);
   }
 }
 
@@ -23,17 +23,20 @@ client.on('message', async function(message) {
 
   let parts = message.content.substr(PREFIX.length).split(' ');
   if (parts.length === 0) return;
-  let command = parts.splice(0, 1);
-  console.log(`Running ${command}`);
+  let command = parts.splice(0, 1)[0].trim().toLowerCase();
 
   if (COMMANDS.has(command)) {
+    console.log(`Running ${command}`);
     try {
       await COMMANDS.get(command)(message, parts);
     } catch(e) {
       console.error(`Error running command ${command}\n`, e);
       await message.channel.send('Sorry an error occured, please try again later');
+    } finally {
+      return;
     }
   }
+  console.log(`Unkown command ${command}`);
 })
 
 client.on('ready', async function() {
