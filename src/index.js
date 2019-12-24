@@ -32,9 +32,8 @@ client.on('message', async function(message) {
     } catch(e) {
       console.error(`Error running command ${command}\n`, e);
       await message.channel.send('Sorry an error occured, please try again later');
-    } finally {
-      return;
     }
+    return;
   }
   console.log(`Unkown command ${command}`);
 })
