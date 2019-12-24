@@ -14,7 +14,7 @@ async function loadCommands() {
   }
 }
 
-const client = Discord.Client();
+const client = new Discord.Client();
 
 client.on('message', async function(message) {
   if (!message.member || !message.member.hasPermission(ADMIN_FLAG)) return;
