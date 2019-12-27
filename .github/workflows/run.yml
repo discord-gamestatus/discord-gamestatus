@@ -1,6 +1,6 @@
 name: Node RUN
 
-on: [push]
+on: []
 
 jobs:
   build:
