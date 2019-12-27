@@ -1,7 +1,13 @@
 const Discord = require('discord.js');
 const fs = require('fs').promises;
+const query = require('./query.js');
+const generateEmbed = require('./embed.js');
+const { allSettled } = require('./util.js');
 
 const COMMANDS = new Map();
+const TICK_COUNT = 30;
+const UPDATES = new Array(TICK_COUNT);
+var TICK = 0, TICK_SECOND = 0;
 
 var PREFIX = '!';
 var ADMIN_FLAG = 'ADMINISTRATOR';
@@ -42,7 +48,39 @@ client.on('ready', async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite('ADMINISTRATOR');
   console.log(`Invite link ${invite}`);
+  client.setInterval(() => {
+    client.emit('cUpdate');
+  }, 1000);
+  UPDATES[15] = [{guild: '484737965386366979', channel: '484737965848002573', message: '659767488132939776', type: 'minecraft', ip: '86.144.40.174:25566'}];
 })
+
+client.on('cUpdate', async function() {
+  TICK += 1;
+  if (TICK >= Number.MAX_SAFE_INTEGER) TICK = 0;
+  let r = TICK % TICK_COUNT;
+  if (r === 0) TICK_SECOND += 1;
+  if (TICK_SECOND >= Number.MAX_SAFE_INTEGER) TICK_SECOND = 0;
+
+  let promises = [];
+  if (UPDATES[r]) {
+    for (let update of UPDATES[r]) {
+      promises.push(doUpdate(update));
+    }
+  }
+  let res = await allSettled(promises);
+  console.log(r, res);
+})
+
+async function doUpdate(update) {
+  let state = await query(update.type, update.ip),
+  embed = generateEmbed(state, TICK_SECOND);
+
+  let guild = client.guilds.get(update.guild),
+  channel = guild.channels.get(update.channel),
+  message = await channel.fetchMessage(update.message);
+
+  await message.edit(embed);
+}
 
 async function start(config) {
   PREFIX = config.prefix === undefined ? PREFIX : config.prefix;
