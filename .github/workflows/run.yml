@@ -1,6 +1,6 @@
 name: Node RUN
 
-on: []
+on: [repository_dispatch]
 
 jobs:
   build:
