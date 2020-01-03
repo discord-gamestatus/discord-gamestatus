@@ -1,12 +1,11 @@
 const Discord = require('discord.js');
 const fs = require('fs').promises;
-const query = require('./query.js');
-const generateEmbed = require('./embed.js');
-const { allSettled } = require('./util.js');
+const UpdateCache = require('./structs/UpdateCache.js');
+const { allSettled, errorWrap } = require('./util.js');
 
 const COMMANDS = new Map();
 const TICK_COUNT = 30;
-const UPDATES = new Array(TICK_COUNT);
+var TICK_GENERATOR = undefined;
 var TICK = 0, TICK_SECOND = 0;
 
 var PREFIX = '!';
@@ -22,8 +21,9 @@ async function loadCommands() {
 }
 
 const client = new Discord.Client();
+client.updateCache = new UpdateCache();
 
-client.on('message', async function(message) {
+client.on('message', errorWrap(async function(message) {
   if (!message.member || !message.member.hasPermission(ADMIN_FLAG)) return;
   if (!message.content.startsWith(PREFIX)) return;
 
@@ -42,42 +42,44 @@ client.on('message', async function(message) {
     return;
   }
   console.log(`Unkown command ${command}`);
-})
+}))
 
-client.on('ready', async function() {
+client.on('ready', errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite('ADMINISTRATOR');
   console.log(`Invite link ${invite}`);
   client.setInterval(() => {
     client.emit('cUpdate');
   }, 1000);
-})
+}))
 
-client.on('cUpdate', async function() {
-  TICK += 1;
+client.on('cUpdate', errorWrap(async function() {
+  if (TICK_GENERATOR === undefined) TICK_GENERATOR = client.updateCache.tickIterable(TICK_COUNT);
+  let tick = TICK_GENERATOR.next();
+  if (tick.done) {
+    TICK_GENERATOR = client.updateCache.tickIterable(TICK_COUNT);
+    tick = TICK_GENERATOR.next();
+  }
+
   if (TICK >= Number.MAX_SAFE_INTEGER) TICK = 0;
   let r = TICK % TICK_COUNT;
   if (r === 0) TICK_SECOND += 1;
   if (TICK_SECOND >= Number.MAX_SAFE_INTEGER) TICK_SECOND = 0;
 
+  TICK += 1;
+
   let promises = [];
-  if (UPDATES[r]) {
-    for (let update of UPDATES[r]) {
-      promises.push(doUpdate(update));
+  if (tick.value) {
+    for (let update of tick.value) {
+      promises.push(doUpdate(update, TICK_SECOND));
     }
   }
   let res = await allSettled(promises);
-})
+  console.log(r,  promises.length, res);
+}))
 
-async function doUpdate(update) {
-  let state = await query(update.type, update.ip),
-  embed = generateEmbed(state, TICK_SECOND);
-
-  let guild = client.guilds.get(update.guild),
-  channel = guild.channels.get(update.channel),
-  message = await channel.fetchMessage(update.message);
-
-  await message.edit(embed);
+async function doUpdate(update, tick) {
+  await update.send(client, tick);
 }
 
 async function start(config) {

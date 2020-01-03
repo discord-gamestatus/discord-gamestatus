@@ -18,7 +18,7 @@ const generateEmbed = function(server, tick, options) {
   let title = options.title === undefined ? OPTS.title : options.title;
   let description = options.description === undefined ? OPTS.description : options.description;
 
-  let players = server.players.filter(v => typeof v.name === 'string');
+  let players = server.realPlayers === null ? [] : server.realPlayers;
 
   let embed = new RichEmbed({
     title: title(server),

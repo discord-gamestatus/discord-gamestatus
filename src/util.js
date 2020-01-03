@@ -16,3 +16,12 @@ exports.allSettled = function(promises) {
     }
   });
 }
+
+/* Wrap async or promise functions and handle errors */
+exports.errorWrap = function(callable) {
+  return function() {
+    return callable.apply(this,arguments).then(null).catch(function(...e) {
+      console.error(`Encountered error running ${callable.name}`, ...e);
+    })
+  }
+}

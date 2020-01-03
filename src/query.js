@@ -26,7 +26,7 @@ const parseConnect = function(connect, protocol) {
   }
 }
 
-async function query(type, ip) {
+const query = async function(type, ip) {
   let ip_parts = ip.split(':'), state;
   let protocol = getResolver().lookup(type).protocol;
 
@@ -38,13 +38,15 @@ async function query(type, ip) {
     });
     state.offline = false;
     state.connect = parseConnect(state.connect, protocol);
-  } catch {
+    state.realPlayers = state.players.filter(v => typeof v.name === 'string');
+  } catch(e) {
     state = {
       name: 'OFFLINE',
       map: 'OFFLINE',
       password: false,
       maxplayers: 0,
-      players: [],
+      players: null,
+      realPlayers: null,
       offline: true,
       connect: ''
     };
@@ -58,4 +60,10 @@ async function query(type, ip) {
   return state;
 }
 
-module.exports = query;
+const gameList = async function() {
+  let resolver = getResolver();
+  return resolver.games;
+}
+
+exports.query = query;
+exports.gameList = gameList;
