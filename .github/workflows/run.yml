@@ -3,7 +3,7 @@ name: Node RUN
 on: [repository_dispatch]
 
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
 
     strategy:

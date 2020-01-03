@@ -1,2 +1,5 @@
 # NPM
 node_modules/
+
+# Project
+trigger-run.js
