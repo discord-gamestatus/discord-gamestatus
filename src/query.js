@@ -62,7 +62,7 @@ const query = async function(type, ip) {
 
 const gameList = async function() {
   let resolver = getResolver();
-  return resolver.games;
+  return resolver.gamesByKey;
 }
 
 exports.query = query;
