@@ -52,17 +52,20 @@ const query = async function(type, ip) {
     };
   }
 
-  if (state.offline) return state;
+  state.gameHost = ip_parts[0];
+
   if (type in IMAGE) {
-    state.image = IMAGE[type](state);
+    state.image = await IMAGE[type].call(this, state);
   }
+
+  if (state.offline) return state;
 
   return state;
 }
 
 const gameList = async function() {
   let resolver = getResolver();
-  return resolver.gamesByKey;
+  return resolver.games;
 }
 
 exports.query = query;
