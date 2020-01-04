@@ -33,15 +33,16 @@ const generateEmbed = function(server, tick, options) {
   if (server.image) {
     let image = undefined;
     switch (server.image.type) {
-      case 'buffer':
-      let name = `image.${server.image.dataType}`;
-      embed.attachFile(new Attachment(server.image.buffer, name));
-      image = `attachment://${name}`;
-      break;
-      case 'url':
-      image = server.image.url;
-      break;
-
+      case 'buffer': {
+        let name = `image.${server.image.dataType}`;
+        embed.attachFile(new Attachment(server.image.buffer, name));
+        image = `attachment://${name}`;
+        break;
+      }
+      case 'url': {
+        image = server.image.url;
+        break;
+      }
     }
     embed.setAuthor(embed.title, image);
     embed.setTitle('');
