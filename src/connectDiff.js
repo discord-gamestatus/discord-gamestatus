@@ -1,5 +1,4 @@
 function connectDiff(curPlayers, prevPlayers) {
-  console.log(curPlayers, prevPlayers);
   if (!(prevPlayers instanceof Array) || !(curPlayers instanceof Array)) return [];
   let result = [];
   for (let player of prevPlayers) {

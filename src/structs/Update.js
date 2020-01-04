@@ -62,8 +62,7 @@ class Update extends Serializable {
 
     let prevPlayers = this.players;
     let state = await query(this.type, this.ip);
-    this.players = state.realPlayers.map(v => v.name);
-    console.log(this.players, prevPlayers);
+    this.players = state.realPlayers ? state.realPlayers.map(v => v.name) : null;
 
     let embed = generateEmbed(state, tick);
     let diff = connectDiff(this.players, prevPlayers);
