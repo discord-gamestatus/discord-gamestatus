@@ -11,7 +11,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "discord.js": "^11.5.1",
-    "gamedig": "^2.0.20"
+    "gamedig": "github:douile/node-gamedig#proto-discord"
   },
   "devDependencies": {
     "eslint": "^6.8.0"
