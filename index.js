@@ -1,11 +1,12 @@
 const start = require('./src/index.js');
 
+let dev = process.argv.includes('--dev');
+
 let config = {
   prefix: '!',
-  key: process.env.DISCORD_API_KEY
+  key: process.env.DISCORD_API_KEY,
+  dev: dev
 };
-
-let dev = process.argv.includes('--dev');
 
 if (!dev) return start(config).then(null).catch(console.error);
 

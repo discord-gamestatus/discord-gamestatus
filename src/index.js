@@ -10,6 +10,11 @@ var TICK = 0, TICK_SECOND = 0;
 
 var PREFIX = '!';
 var ADMIN_FLAG = 'ADMINISTRATOR';
+var DEV = false;
+
+const devLog = function() {
+  if (DEV) return console.log.apply(this, arguments);
+}
 
 async function loadCommands() {
   let files = await fs.readdir('./src/commands');
@@ -32,7 +37,7 @@ client.on('message', errorWrap(async function(message) {
   let command = parts.splice(0, 1)[0].trim().toLowerCase();
 
   if (COMMANDS.has(command)) {
-    console.log(`Running ${command}`);
+    devLog(`Running ${command}`);
     try {
       await COMMANDS.get(command)(message, parts);
     } catch(e) {
@@ -41,7 +46,7 @@ client.on('message', errorWrap(async function(message) {
     }
     return;
   }
-  console.log(`Unkown command ${command}`);
+  devLog(`Unkown command ${command}`);
 }))
 
 client.on('ready', errorWrap(async function() {
@@ -75,7 +80,7 @@ client.on('cUpdate', errorWrap(async function() {
     }
   }
   let res = await allSettled(promises);
-  console.log(r,  promises.length, res);
+  devLog(r,  promises.length, res);
 }))
 
 async function doUpdate(update, tick) {
@@ -85,6 +90,7 @@ async function doUpdate(update, tick) {
 async function start(config) {
   PREFIX = config.prefix === undefined ? PREFIX : config.prefix;
   ADMIN_FLAG = config.admin_flag === undefined ? ADMIN_FLAG : config.admin_flag;
+  DEV = config.dev ? DEV : config.dev;
 
   await loadCommands();
   await client.login(config.key);
