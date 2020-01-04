@@ -2,6 +2,7 @@ const Serializable = require('./Serializable.js');
 const generateEmbed = require('../embed.js');
 const connectDiff = require('../connectDiff.js');
 const { query } = require('../query.js');
+let boundQuery;
 
 class Update extends Serializable {
   constructor(opts, objs) {
@@ -61,7 +62,8 @@ class Update extends Serializable {
     if (!tick) tick = 0;
 
     let prevPlayers = this.players;
-    let state = await query(this.type, this.ip);
+    if (!boundQuery) boundQuery = query.bind(client);
+    let state = await boundQuery(this.type, this.ip);
     this.players = state.realPlayers ? state.realPlayers.map(v => v.name) : null;
 
     let embed = generateEmbed(state, tick);

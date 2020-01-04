@@ -9,9 +9,13 @@ const getResolver = function() {
 }
 
 const IMAGE = {
-  fivem: function(state) {
+  fivem: async function(state) {
     let info = state.raw.info ? state.raw.info : {};
-    return info.icon ? { buffer: Buffer.from(info.icon, 'base64'), type: 'png' } : undefined;
+    return info.icon ? { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' } : undefined;
+  },
+  discord: async function(state) {
+    let guild = this.guilds.get(state.gameHost);
+    return guild ? { url: guild.iconURL, type: 'url' } : undefined;
   }
 }
 
