@@ -11,7 +11,7 @@ class Serializable {
   }
 
   static parse(object) {
-    let result = new this.constructor();
+    let result = new this();
     return Object.defineProperties(result, Object.getOwnPropertyDescriptors(object));
   }
 
