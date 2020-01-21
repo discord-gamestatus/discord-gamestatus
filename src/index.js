@@ -90,8 +90,9 @@ async function doUpdate(update, tick) {
 async function start(config) {
   PREFIX = config.prefix === undefined ? PREFIX : config.prefix;
   ADMIN_FLAG = config.admin_flag === undefined ? ADMIN_FLAG : config.admin_flag;
-  DEV = config.dev ? DEV : config.dev;
+  DEV = config.dev ? config.dev : DEV;
 
+  devLog('DEVELOPER LOGS ENABLED');
   await loadCommands();
   await client.login(config.key);
   return client;

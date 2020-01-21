@@ -2,6 +2,7 @@ const Serializable = require('./Serializable.js');
 const generateEmbed = require('../embed.js');
 const connectDiff = require('../connectDiff.js');
 const { query } = require('../query.js');
+const { allSettled } = require('../util.js');
 let boundQuery;
 
 class Update extends Serializable {
@@ -14,6 +15,7 @@ class Update extends Serializable {
     this.players = null;
     this.type = opts.type;
     this.ip = opts.ip;
+    this.notifications = opts.notifications ? opts.notifications : {};
 
     if (objs) {
       this._guild = objs.guild;
@@ -58,7 +60,11 @@ class Update extends Serializable {
     return this._message;
   }
 
+  // TODO: Add setMessage/Channel/Guild function that changes ID in updateCache
+
   async send(client, tick) {
+    let _start = Date.now();
+
     if (!tick) tick = 0;
 
     let prevPlayers = this.players;
@@ -66,14 +72,30 @@ class Update extends Serializable {
     let state = await boundQuery(this.type, this.ip);
     this.players = state.realPlayers ? state.realPlayers.map(v => v.name) : null;
 
-    let embed = generateEmbed(state, tick);
     let diff = connectDiff(this.players, prevPlayers);
 
-    let args = [diff.length > 0 ? diff.join('\n') : '', embed];
+    await this.sendUpdate(client, tick, state, diff);
+    await this.sendNotifications(client, state, diff);
+
+    let _end = Date.now();
+    console.log(`Update completed in ${_end-_start}ms`);
+  }
+
+  async sendUpdate(client, tick, state, diff) {
+    let embed = generateEmbed(state, tick);
+
+    let args = [diff.all.length > 0 ? diff.all.map(v => v.msg).join('\n') : '', embed];
 
     let message = await this.getMessage(client);
     if (message) {
-      return await message.edit.apply(message, args);
+      /* If players have joined send new message and delete old triggering notification
+      * TODO: Add option so user can configure when new message updates are sent
+      */
+      if (diff.connect.length > 0) {
+        await message.delete();
+      } else {
+        return await message.edit.apply(message, args);
+      }
     }
 
     let channel = await this.getChannel(client);
@@ -83,6 +105,19 @@ class Update extends Serializable {
       this.message = message.id;
       return;
     }
+  }
+
+  async sendNotifications(client, state, diff) {
+    let promises = [];
+    for (let player of diff.all) {
+      if (player.name in this.notifications) {
+        for (let user in this.notifications[player.name]) {
+          let u = client.users.get(user);
+          if (u) promises.push(u.send(`${player.msg} to ${state.name} (${state.connect})`));
+        }
+      }
+    }
+    await allSettled(promises);
   }
 }
 
