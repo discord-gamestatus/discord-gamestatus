@@ -1,13 +1,13 @@
 const call = async function(message, parts) {
   if (parts.length < 1) return await message.channel.send('INVALID'); // TODO: Message
 
-  if (!message.client.updateCache.has(message.guild.id)) return await message.channel.send(`No update message for this guild`);
+  if (!message.client.updateCache.has(message.channel.id)) return await message.channel.send(`No update message for this channel`);
 
   let name = parts.join(' '), user = message.author.id;
 
   let added = true;
 
-  let update = message.client.updateCache.get(message.guild.id);
+  let update = message.client.updateCache.get(message.channel.id);
   if (typeof update.notifications[name] === 'object') {
     if (user in update.notifications[name]) {
       delete update.notifications[name][user];
@@ -25,6 +25,7 @@ const call = async function(message, parts) {
 
   await message.delete();
   await message.author.send(`You will ${added ? 'now' : 'no longer'} recieve an update when **${name}** joins/leaves \`${update.ip}\``);
+  await message.client.updateCache.save();
 }
 
 exports.name = 'notify';

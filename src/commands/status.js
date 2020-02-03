@@ -6,11 +6,11 @@ const call = async function(message, parts) {
   let update = new Update({
     type: parts[0],
     ip: parts[1]
-  }, { channel: message.channel });
+  }, { channel: message.channel }); // TODO: Add message for invalid game
 
   await update.send(message.client, 0);
 
-  message.client.updateCache.set(update.guild, update);
+  message.client.updateCache.set(update.channel, update);
 
   // await message.delete();
 }

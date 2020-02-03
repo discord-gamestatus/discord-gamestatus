@@ -3,40 +3,47 @@ const generateEmbed = require('../embed.js');
 const connectDiff = require('../connectDiff.js');
 const { query } = require('../query.js');
 const { allSettled } = require('../util.js');
+const { debugLog } = require('../debug.js');
+
+const { Guild, TextChannel, Message } = require('discord.js');
+
 let boundQuery;
 
 class Update extends Serializable {
   constructor(opts, objs) {
     super();
 
-    this.guild = opts.guild;
-    this.channel = opts.channel;
-    this.message = opts.message;
-    this.players = null;
-    this.type = opts.type;
-    this.ip = opts.ip;
-    this.notifications = opts.notifications ? opts.notifications : {};
+    /* Serializable.parse will not provide opts */
+    if (opts) {
+      this.guild = opts.guild;
+      this.channel = opts.channel;
+      this.message = opts.message;
+      this.players = null;
+      this.type = opts.type;
+      this.ip = opts.ip;
+      this.notifications = opts.notifications ? opts.notifications : {};
 
-    if (objs) {
-      this._guild = objs.guild;
-      this._channel = objs.channel;
-      this._message = objs.message;
+      if (objs) {
+        this._guild = objs.guild;
+        this._channel = objs.channel;
+        this._message = objs.message;
 
-      if (this._message) {
-        this._channel = this._message.channel;
-        this._guild = this._message.guild;
-      } else if (this._channel) {
-        this._guild = this._channel.guild;
+        if (this._message) {
+          this._channel = this._message.channel;
+          this._guild = this._message.guild;
+        } else if (this._channel) {
+          this._guild = this._channel.guild;
+        }
+
+        if (this._guild) this.guild = this._guild.id;
+        if (this._channel) this.channel = this._channel.id;
+        if (this._message) this.message = this._message.id;
+
+      } else {
+        this._guild = undefined;
+        this._channel = undefined;
+        this._message = undefined;
       }
-
-      if (this._guild) this.guild = this._guild.id;
-      if (this._channel) this.channel = this._channel.id;
-      if (this._message) this.message = this._message.id;
-
-    } else {
-      this._guild = undefined;
-      this._channel = undefined;
-      this._message = undefined;
     }
   }
 
@@ -60,7 +67,35 @@ class Update extends Serializable {
     return this._message;
   }
 
-  // TODO: Add setMessage/Channel/Guild function that changes ID in updateCache
+  async setGuild(client, guild) {
+    if (guild instanceof Guild) {
+      this.guild = guild.id;
+      this._guild = guild;
+    } else {
+      this.guild = guild;
+    }
+    await client.updateCache.save();
+  }
+
+  async setChannel(client, channel) {
+    if (channel instanceof TextChannel) {
+      this.channel = channel.id;
+      this._channel = channel;
+    } else {
+      this.channel = channel;
+    }
+    await client.updateCache.save();
+  }
+
+  async setMessage(client, message) {
+    if (message instanceof Message) {
+      this.message = message.id;
+      this._message = message;
+    } else {
+      this.message = message;
+    }
+    await client.updateCache.save();
+  }
 
   async send(client, tick) {
     let _start = Date.now();
@@ -78,7 +113,7 @@ class Update extends Serializable {
     await this.sendNotifications(client, state, diff);
 
     let _end = Date.now();
-    console.log(`Update completed in ${_end-_start}ms`);
+    debugLog(`Update completed in ${_end-_start}ms`);
   }
 
   async sendUpdate(client, tick, state, diff) {
@@ -101,8 +136,7 @@ class Update extends Serializable {
     let channel = await this.getChannel(client);
     if (channel) {
       message = await channel.send.apply(channel, args);
-      this._message = message;
-      this.message = message.id;
+      await this.setMessage(client, message);
       return;
     }
   }
