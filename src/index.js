@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
 const { allSettled, errorWrap } = require('./util.js');
+const { setDebug, debugLog } = require('./debug.js');
 
 const COMMANDS = new Map();
 const TICK_COUNT = 30;
@@ -11,10 +12,6 @@ var TICK = 0, TICK_SECOND = 0;
 var PREFIX = '!';
 var ADMIN_FLAG = 'ADMINISTRATOR';
 var DEV = false;
-
-const devLog = function() {
-  if (DEV) return console.log.apply(this, arguments);
-}
 
 async function loadCommands() {
   let files = await fs.readdir('./src/commands');
@@ -26,7 +23,7 @@ async function loadCommands() {
 }
 
 const client = new Discord.Client();
-client.updateCache = new UpdateCache();
+client.updateCache = new UpdateCache('_save.json');
 
 client.on('message', errorWrap(async function(message) {
   if (!message.member || !message.member.hasPermission(ADMIN_FLAG)) return;
@@ -37,7 +34,7 @@ client.on('message', errorWrap(async function(message) {
   let command = parts.splice(0, 1)[0].trim().toLowerCase();
 
   if (COMMANDS.has(command)) {
-    devLog(`Running ${command}`);
+    debugLog(`${message.author.id} :: ${command} / ${parts.map(v => `"${v}"`).join(', ')}`);
     try {
       await COMMANDS.get(command)(message, parts);
     } catch(e) {
@@ -46,16 +43,18 @@ client.on('message', errorWrap(async function(message) {
     }
     return;
   }
-  devLog(`Unkown command ${command}`);
+  debugLog(`Unkown command ${command}`);
 }))
 
 client.on('ready', errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite('ADMINISTRATOR');
   console.log(`Invite link ${invite}`);
+  await client.updateCache.load();
   client.setInterval(() => {
     client.emit('cUpdate');
   }, 1000);
+  await client.user.setPresence({ status: 'online', game: { type: 'WATCHING', name: 'always 👀'}})
 }))
 
 client.on('cUpdate', errorWrap(async function() {
@@ -80,7 +79,7 @@ client.on('cUpdate', errorWrap(async function() {
     }
   }
   let res = await allSettled(promises);
-  devLog(r,  promises.length, res);
+  debugLog(r,  promises.length, res);
 }))
 
 async function doUpdate(update, tick) {
@@ -91,8 +90,9 @@ async function start(config) {
   PREFIX = config.prefix === undefined ? PREFIX : config.prefix;
   ADMIN_FLAG = config.admin_flag === undefined ? ADMIN_FLAG : config.admin_flag;
   DEV = config.dev ? config.dev : DEV;
+  setDebug(DEV);
 
-  devLog('DEVELOPER LOGS ENABLED');
+  debugLog('DEVELOPER LOGS ENABLED');
   await loadCommands();
   await client.login(config.key);
   return client;
