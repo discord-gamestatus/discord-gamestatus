@@ -147,7 +147,7 @@ class Update extends Serializable {
       if (player.name in this.notifications) {
         for (let user in this.notifications[player.name]) {
           let u = client.users.get(user);
-          if (u) promises.push(u.send(`${player.msg} to ${state.name} (${state.connect})`));
+          if (u) promises.push(u.send(`${player.msg} ${player.connect ? 'to' : 'from'} ${state.name} (${state.connect})`));
         }
       }
     }
