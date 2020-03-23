@@ -5,7 +5,7 @@ const { query } = require('../query.js');
 const { allSettled } = require('../util.js');
 const { debugLog } = require('../debug.js');
 
-const { Guild, TextChannel, Message } = require('discord.js');
+const { Guild, TextChannel, Message, RichEmbed, User } = require('discord.js');
 
 let boundQuery;
 
@@ -109,8 +109,16 @@ class Update extends Serializable {
 
     let diff = connectDiff(this.players, prevPlayers);
 
-    await this.sendUpdate(client, tick, state, diff);
-    await this.sendNotifications(client, state, diff);
+    try {
+      await this.sendUpdate(client, tick, state, diff);
+    } catch(e) {
+      console.warn('Error sending update', e);
+    }
+    try {
+      await this.sendNotifications(client, state, diff);
+    } catch(e) {
+      console.warn('Error sending update notifications', e);
+    }
 
     let _end = Date.now();
     debugLog(`Update completed in ${_end-_start}ms`);
@@ -125,7 +133,7 @@ class Update extends Serializable {
     if (message) {
       /* If players have joined send new message and delete old triggering notification
       * TODO: Add option so user can configure when new message updates are sent
-      */
+      */9
       if (diff.connect.length > 0) {
         await message.delete();
       } else {
@@ -142,16 +150,31 @@ class Update extends Serializable {
   }
 
   async sendNotifications(client, state, diff) {
-    let promises = [];
+    let fields = {};
     for (let player of diff.all) {
       if (player.name in this.notifications) {
+        let field = `${player.msg} ${player.connect ? 'to' : 'from'} ${state.name} (${state.connect})`;
         for (let user in this.notifications[player.name]) {
-          let u = client.users.get(user);
-          if (u) promises.push(u.send(`${player.msg} ${player.connect ? 'to' : 'from'} ${state.name} (${state.connect})`));
+          if (user in fields) {
+            fields[user].push(field);
+          } else {
+            fields[user] = [field];
+          }
         }
       }
     }
-    await allSettled(promises);
+    let promises = [];
+    for (let user in fields) {
+      let embed = new RichEmbed({
+        title: 'Player update notification',
+        description: fields[user].join('\n'),
+        timestamp: Date.now()
+      });
+      let u = client.users.get(user);
+      if (u instanceof User) promises.push(u.send(embed));
+      else console.log(user, 'Is not a valid user snowflake');
+    }
+    return await allSettled(promises);
   }
 }
 
