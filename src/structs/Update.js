@@ -204,7 +204,7 @@ class Update extends Serializable {
       timestamp: Date.now()
     });
     if (changes.offline) {
-      embed.setDescription(`${this.name} is now ${change.offline.new ? 'Offline' : 'Online'}`);
+      embed.setDescription(`${this.name} is now ${changes.offline.new ? 'Offline' : 'Online'}`);
     } else {
       embed.setDescription(this.name);
     }
