@@ -1,6 +1,8 @@
+const { performance } = require('perf_hooks');
+
 const Serializable = require('./Serializable.js');
 const generateEmbed = require('../embed.js');
-const connectDiff = require('../connectDiff.js');
+const stateChanges = require('../stateChanges.js');
 const { query } = require('../query.js');
 const { allSettled } = require('../util.js');
 const { debugLog } = require('../debug.js');
@@ -18,9 +20,10 @@ class Update extends Serializable {
       this.guild = opts.guild;
       this.channel = opts.channel;
       this.message = opts.message;
-      this.players = null;
+      this.state = {};
       this.type = opts.type;
       this.ip = opts.ip;
+      this.name = opts.ip;
       this.notifications = opts.notifications ? opts.notifications : {};
 
       if (objs) {
@@ -98,46 +101,63 @@ class Update extends Serializable {
   }
 
   async send(client, tick) {
-    let _start = Date.now();
+    let _start = performance.now();
 
     if (!tick) tick = 0;
 
-    let prevPlayers = this.players;
+    let prevState = this.state;
     if (!boundQuery) boundQuery = query.bind(client);
     let state = await boundQuery(this.type, this.ip);
-    this.players = state.realPlayers ? state.realPlayers.map(v => v.name) : null;
+    this.state = {
+      players: state.realPlayers ? state.realPlayers.map(v => v.name) : null,
+      offline: state.offline,
+      map: state.map
+    };
+    if (!state.offline) this.name = state.name;
 
-    let diff = connectDiff(this.players, prevPlayers);
+    let changes = stateChanges(this.state, prevState);
 
     try {
-      await this.sendUpdate(client, tick, state, diff);
+      await this.sendUpdate(client, tick, state, changes);
     } catch(e) {
       console.warn('Error sending update', e);
     }
     try {
-      await this.sendNotifications(client, state, diff);
+      await this.sendPlayerNotifications(client, state, changes.players);
     } catch(e) {
-      console.warn('Error sending update notifications', e);
+      // console.warn('Error sending player notifications', e);
+    }
+    try {
+      await this.sendServerNotifications(client, state, changes);
+    } catch(e) {
+      console.warn('Error sending server notifications', e);
     }
 
-    let _end = Date.now();
+    let _end = performance.now();
     debugLog(`Update completed in ${_end-_start}ms`);
   }
 
-  async sendUpdate(client, tick, state, diff) {
+  async sendUpdate(client, tick, state, changes) {
     let embed = generateEmbed(state, tick);
 
-    let args = [diff.all.length > 0 ? diff.all.map(v => v.msg).join('\n') : '', embed];
+    let args = [changes.players.all.length > 0 ? changes.players.all.map(v => v.msg).join('\n') : '', embed];
 
     let message = await this.getMessage(client);
     if (message) {
       /* If players have joined send new message and delete old triggering notification
       * TODO: Add option so user can configure when new message updates are sent
-      */9
-      if (diff.connect.length > 0) {
+      */
+      if (changes.players.connect.length > 0) {
         await message.delete();
       } else {
-        return await message.edit.apply(message, args);
+        let err = false;
+        try {
+          await message.edit.apply(message, args);
+        } catch(e) {
+          err = true;
+          await message.delete();
+        }
+        if (!err) return;
       }
     }
 
@@ -149,7 +169,7 @@ class Update extends Serializable {
     }
   }
 
-  async sendNotifications(client, state, diff) {
+  async sendPlayerNotifications(client, state, diff) {
     let fields = {};
     for (let player of diff.all) {
       if (player.name in this.notifications) {
@@ -172,7 +192,30 @@ class Update extends Serializable {
       });
       let u = client.users.get(user);
       if (u instanceof User) promises.push(u.send(embed));
-      else console.log(user, 'Is not a valid user snowflake');
+      else console.warn(user, 'Is not a valid user snowflake');
+    }
+    return await allSettled(promises);
+  }
+
+  async sendServerNotifications(client, state, changes) {
+    if (!changes.offline && !changes.map) return;
+    let embed = new RichEmbed({
+      title: 'Server update notification',
+      timestamp: Date.now()
+    });
+    if (changes.offline) {
+      embed.setDescription(`${this.name} is now ${change.offline.new ? 'Offline' : 'Online'}`);
+    } else {
+      embed.setDescription(this.name);
+    }
+    if (changes.map) {
+      embed.addField('Changed map', `From **${changes.map.old}** to **${changes.map.new}**`);
+    }
+    let promises = [];
+    for (let user in this.notifyServer) {
+      let u = client.users.get(user);
+      if (u instanceof User) promises.push(u.send(embed));
+      else console.warn(user, 'Is not a valid user snowflake');
     }
     return await allSettled(promises);
   }

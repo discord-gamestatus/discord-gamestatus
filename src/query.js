@@ -30,6 +30,15 @@ const parseConnect = function(connect, protocol) {
   }
 }
 
+const parseMap = function(map, protocol) {
+  switch(protocol) {
+    case 'minecraft':
+    return 'Minecraft world';
+    default:
+    return map;
+  }
+}
+
 const query = async function(type, ip) {
   let ip_parts = ip.split(':'), state;
   let protocol = getResolver().lookup(type).protocol;
@@ -43,6 +52,7 @@ const query = async function(type, ip) {
     state.offline = false;
     state.connect = parseConnect(state.connect, protocol);
     state.realPlayers = state.players.filter(v => typeof v.name === 'string');
+    state.map = parseMap(state.map, protocol);
   } catch(e) {
     state = {
       name: 'OFFLINE',

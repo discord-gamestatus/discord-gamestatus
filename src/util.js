@@ -25,3 +25,8 @@ exports.errorWrap = function(callable) {
     })
   }
 }
+
+// Check the constructor of an item
+exports.isOfBaseType = function(obj, constr) {
+  return (![null, undefined].includes(obj)) && (obj.constructor === constr);
+}
