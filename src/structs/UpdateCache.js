@@ -38,7 +38,7 @@ class UpdateCache extends Collection {
   }
 
   delete(key, dontSave) {
-    Collection.prototype.delete.calL(this, key);
+    Collection.prototype.delete.call(this, key);
     if (!dontSave) return this.save();
     console.warn(`Deleted ${key} without saving`);
   }
