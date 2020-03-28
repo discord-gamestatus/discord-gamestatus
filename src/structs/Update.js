@@ -148,14 +148,22 @@ class Update extends Serializable {
       * TODO: Add option so user can configure when new message updates are sent
       */
       if (changes.players.connect.length > 0) {
-        await message.delete();
+        try {
+          await message.delete();
+        } catch(e) {
+          // Do nothing
+        }
       } else {
         let err = false;
         try {
           await message.edit.apply(message, args);
         } catch(e) {
           err = true;
-          await message.delete();
+          try {
+            await message.delete();
+          } catch(e) {
+            // Do nothing
+          }
         }
         if (!err) return;
       }
