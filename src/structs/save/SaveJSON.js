@@ -1,7 +1,6 @@
 const fs = require('fs').promises;
 const SaveInterface = require('./SaveInterface.js');
 const Update = require('../Update.js');
-const Serializable = require('../Serializable.js');
 const { allSettled } = require('../../util.js');
 
 class SaveJSON extends SaveInterface {
