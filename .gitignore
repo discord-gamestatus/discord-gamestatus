@@ -4,3 +4,4 @@ node_modules/
 # Project
 trigger-run.js
 _save.json
+start.sh
