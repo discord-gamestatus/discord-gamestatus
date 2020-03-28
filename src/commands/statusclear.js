@@ -1,3 +1,5 @@
+const isAdmin = require('../checks.js');
+
 const call = async function(message) {
   let current = message.client.updateCache.get(message.channel.id);
 
@@ -18,3 +20,4 @@ const call = async function(message) {
 
 exports.name = 'statusclear';
 exports.call = call;
+exports.check = isAdmin;

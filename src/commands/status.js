@@ -1,4 +1,5 @@
 const Update = require('../structs/Update.js');
+const isAdmin = require('../checks.js');
 
 const call = async function(message, parts) {
   if (parts.length < 2) return await message.channel.send(`You must provide a game type (view and search the gamelist with \`!gamelist\`) and IP instead of \`${parts.join(' ')}\``);
@@ -17,3 +18,4 @@ const call = async function(message, parts) {
 
 exports.name = 'status';
 exports.call = call;
+exports.check = isAdmin;

@@ -18,7 +18,7 @@ async function loadCommands() {
   for (let file of files) {
     let command = require(`./commands/${file}`);
     console.log(`Loaded command ${command.name}`);
-    COMMANDS.set(command.name.toLowerCase(), command.call);
+    COMMANDS.set(command.name.toLowerCase(), {call: command.call, check: command.check});
   }
 }
 
@@ -26,7 +26,7 @@ const client = new Discord.Client();
 client.updateCache = new UpdateCache('_save.json');
 
 client.on('message', errorWrap(async function(message) {
-  if (!message.member || !message.member.hasPermission(ADMIN_FLAG)) return;
+  if (!message.member || message.author.bot) return;
   if (!message.content.startsWith(PREFIX)) return;
 
   let parts = message.content.substr(PREFIX.length).split(' ');
@@ -35,12 +35,20 @@ client.on('message', errorWrap(async function(message) {
 
   if (COMMANDS.has(command)) {
     debugLog(`${message.author.id} :: ${command} / ${parts.map(v => `"${v}"`).join(', ')}`);
-    try {
-      await COMMANDS.get(command)(message, parts);
-    } catch(e) {
-      console.error(`Error running command ${command}\n`, e);
-      await message.channel.send('Sorry an error occured, please try again later');
+
+    let cmd = COMMANDS.get(command);
+
+    if (!(cmd.check instanceof Function) || cmd.check(message)) {
+      try {
+        await cmd.call(message, parts);
+      } catch(e) {
+        console.error(`Error running command ${command}\n`, e);
+        await message.channel.send('Sorry an error occured, please try again later');
+      }
+    } else {
+      await message.channel.send('Sorry you don\'t have permission to use this command');
     }
+
     return;
   }
   debugLog(`Unkown command ${command}`);

@@ -1,5 +1,6 @@
 const { RichEmbed } = require('discord.js');
 const { gameList } = require('../query.js');
+const isAdmin = require('../checks.js');
 
 const call = async function(message, parts) {
   let games = await gameList(), gameIterator = games.values();
@@ -47,3 +48,4 @@ const call = async function(message, parts) {
 
 exports.name = 'gamelist';
 exports.call = call;
+exports.check = isAdmin;
