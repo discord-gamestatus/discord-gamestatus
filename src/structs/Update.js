@@ -125,7 +125,7 @@ class Update extends Serializable {
     try {
       await this.sendPlayerNotifications(client, state, changes.players);
     } catch(e) {
-      // console.warn('Error sending player notifications', e);
+      console.warn('Error sending player notifications', e);
     }
     try {
       await this.sendServerNotifications(client, state, changes);
@@ -134,7 +134,7 @@ class Update extends Serializable {
     }
 
     let _end = performance.now();
-    debugLog(`Update completed in ${_end-_start}ms`);
+    verbooseLog(`Update completed in ${_end-_start}ms`);
   }
 
   async sendUpdate(client, tick, state, changes) {
