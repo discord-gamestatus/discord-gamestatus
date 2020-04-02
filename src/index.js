@@ -3,7 +3,7 @@ const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
 const DeleteQueue = require('./structs/DeleteQueue.js');
 const { allSettled, errorWrap } = require('./util.js');
-const { setDebug, debugLog } = require('./debug.js');
+const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 
 const COMMANDS = new Map();
 const TICK_COUNT = 30;
@@ -12,7 +12,6 @@ var TICK = 0, TICK_SECOND = 0;
 
 var PREFIX = '!';
 var ADMIN_FLAG = 'ADMINISTRATOR';
-var DEV = false;
 
 async function loadCommands() {
   let files = await fs.readdir('./src/commands');
@@ -64,7 +63,7 @@ client.on('ready', errorWrap(async function() {
     client.emit('cUpdate');
   }, 1000);
   client.setInterval(() => {
-    client.deleteQueue.tryDelete().then(a => a > 0 ? console.log(`Deleted ${a} old messages`) : null).catch(console.error);
+    client.deleteQueue.tryDelete().then(a => a > 0 ? debugLog(`Deleted ${a} old messages`) : null).catch(console.error);
   }, 10000);
   await client.user.setPresence({ status: 'online', game: { type: 'WATCHING', name: 'always 👀'}})
 }))
@@ -91,7 +90,7 @@ client.on('cUpdate', errorWrap(async function() {
     }
   }
   let res = await allSettled(promises);
-  debugLog(r,  promises.length, res);
+  verbooseLog(r,  promises.length, res);
 }))
 
 async function doUpdate(update, tick) {
@@ -101,10 +100,10 @@ async function doUpdate(update, tick) {
 async function start(config) {
   PREFIX = config.prefix === undefined ? PREFIX : config.prefix;
   ADMIN_FLAG = config.admin_flag === undefined ? ADMIN_FLAG : config.admin_flag;
-  DEV = config.dev ? config.dev : DEV;
-  setDebug(DEV);
+  setDebugFlag(config.debug, config.verboose);
 
   debugLog('DEVELOPER LOGS ENABLED');
+  verbooseLog('VERBOOSE LOGS ENABLED');
   await loadCommands();
   await client.updateCache.load();
   await client.login(config.key);

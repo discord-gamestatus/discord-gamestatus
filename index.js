@@ -1,11 +1,14 @@
 const start = require('./src/index.js');
 
+let debug = process.argv.includes('--debug') || process.argv.includes('-d');
+let verboose = process.argv.includes('--verboose') || process.argv.includes('-v');
 let dev = process.argv.includes('--dev');
 
 let config = {
   prefix: '!',
   key: process.env.DISCORD_API_KEY,
-  dev: dev
+  debug: debug,
+  verboose: verboose
 };
 
 if (!dev) return start(config).then(null).catch(console.error);
