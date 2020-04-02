@@ -11,9 +11,7 @@ const call = async function(message, parts) {
 
   await update.send(message.client, 0);
 
-  message.client.updateCache.set(update.channel, update);
-
-  // await message.delete();
+  await message.client.updateCache.set(update.channel, update);
 }
 
 exports.name = 'status';
