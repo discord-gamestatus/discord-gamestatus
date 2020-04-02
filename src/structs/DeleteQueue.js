@@ -2,6 +2,7 @@ const { Message } = require('discord.js');
 
 const Serializable = require('./Serializable.js');
 const { isOfBaseType } = require('../util.js');
+const { debugLog } = require('../debug.js');
 
 // TODO: Save the queue data for when bot restarts
 class DeleteQueue extends Serializable {
@@ -30,9 +31,11 @@ class DeleteQueue extends Serializable {
         await message.delete();
       } catch(e) {
         // TODO: Add check for when bot will never be able to delete message
+        debugLog(`Unable to delete old message[${message.id}] ${message.createdAt}-${message.editedAt} ${message.editedTimestamp-message.createdTimestamp}ms`, e)
         success = false;
       }
       if (success) {
+        debugLog(`Succefully deleted old message[${message.id}] ${message.createdAt}-${message.editedAt} ${message.editedTimestamp-message.createdTimestamp}ms`);
         this.queue.pop(i);
         delete this._queue[message.id];
         deleted++;
