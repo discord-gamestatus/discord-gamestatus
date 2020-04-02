@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
+const DeleteQueue = require('./structs/DeleteQueue.js');
 const { allSettled, errorWrap } = require('./util.js');
 const { setDebug, debugLog } = require('./debug.js');
 
@@ -24,6 +25,7 @@ async function loadCommands() {
 
 const client = new Discord.Client();
 client.updateCache = new UpdateCache('_save.json');
+client.deleteQueue = new DeleteQueue();
 
 client.on('message', errorWrap(async function(message) {
   if (!message.member || message.author.bot) return;
@@ -58,10 +60,12 @@ client.on('ready', errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite('ADMINISTRATOR');
   console.log(`Invite link ${invite}`);
-  await client.updateCache.load();
   client.setInterval(() => {
     client.emit('cUpdate');
   }, 1000);
+  client.setInterval(() => {
+    client.deleteQueue.tryDelete().then(a => a > 0 ? console.log(`Deleted ${a} old messages`) : null).catch(console.error);
+  }, 10000);
   await client.user.setPresence({ status: 'online', game: { type: 'WATCHING', name: 'always 👀'}})
 }))
 
@@ -102,6 +106,7 @@ async function start(config) {
 
   debugLog('DEVELOPER LOGS ENABLED');
   await loadCommands();
+  await client.updateCache.load();
   await client.login(config.key);
   return client;
 }

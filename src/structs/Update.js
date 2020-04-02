@@ -151,7 +151,9 @@ class Update extends Serializable {
         try {
           await message.delete();
         } catch(e) {
-          // Do nothing
+          // Put message in delete queue
+          // TODO: Add check for when bot will never be able to delete message
+          client.deleteQueue.add(message);
         }
       } else {
         let err = false;
@@ -162,7 +164,9 @@ class Update extends Serializable {
           try {
             await message.delete();
           } catch(e) {
-            // Do nothing
+            // Put message in delete queue
+            // TODO: Add check for when bot will never be able to delete message
+            client.deleteQueue.add(message);
           }
         }
         if (!err) return;
