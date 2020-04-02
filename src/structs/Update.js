@@ -5,7 +5,7 @@ const generateEmbed = require('../embed.js');
 const stateChanges = require('../stateChanges.js');
 const { query } = require('../query.js');
 const { allSettled } = require('../util.js');
-const { debugLog } = require('../debug.js');
+const { verbooseLog } = require('../debug.js');
 
 const { Guild, TextChannel, Message, RichEmbed, User } = require('discord.js');
 
