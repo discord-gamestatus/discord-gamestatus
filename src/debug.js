@@ -19,15 +19,16 @@ const isDebug = isFlag(DEBUG_FLAGS.DEBUG);
 
 const isVerboose = isFlag(DEBUG_FLAGS.VERBOOSE);
 
-const logFlag = function(check) {
+const logFlag = function(check, logger) {
+  const logF = logger ? logger : console.log;
   return function() {
-    if (check()) console.log.apply(this, arguments);
+    if (check()) logF.apply(this, arguments);
   }
 }
 
 const debugLog = logFlag(isDebug);
 
-const verbooseLog = logFlag(isVerboose);
+const verbooseLog = logFlag(isVerboose, console.debug);
 
 exports.DEBUG_FLAGS = DEBUG_FLAGS;
 exports.setDebugFlag = setDebugFlag;
