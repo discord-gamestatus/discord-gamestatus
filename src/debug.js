@@ -11,7 +11,7 @@ const setDebugFlag = function(debug, verboose) {
 
 const isFlag = function(flag) {
   return function() {
-    return DEBUG_FLAG & flag > 0;
+    return (DEBUG_FLAG & flag) === flag;
   }
 }
 
