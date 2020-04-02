@@ -95,7 +95,13 @@ client.on('cUpdate', errorWrap(async function() {
 }))
 
 async function doUpdate(update, tick) {
-  await update.send(client, tick);
+  if (Array.isArray(update)) {
+    for (let u of update) {
+      await u.send(client, tick);
+    }
+  } else {
+    await update.send(client, tick);
+  }
 }
 
 async function start(config) {
