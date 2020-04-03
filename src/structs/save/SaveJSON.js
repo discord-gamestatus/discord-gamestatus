@@ -1,7 +1,8 @@
 const fs = require('fs').promises;
 const SaveInterface = require('./SaveInterface.js');
 const Update = require('../Update.js');
-const { allSettled } = require('../../util.js');
+const Serializable = require('../Serializable.js');
+const { allSettled, isOfBaseType } = require('../../util.js');
 
 class SaveJSON extends SaveInterface {
   constructor(filename) {
@@ -23,8 +24,19 @@ class SaveJSON extends SaveInterface {
   }
 
   async saveItem(obj, key, item) {
-    // if (!(item instanceof Serializable)) return false;
-    obj[key] = item.serialize();
+    if (isOfBaseType(item, Array)) {
+      obj[key] = new Array(item.length);
+      for (let i=0;i<item.length;i++) {
+        await this.saveItem(obj[key], i, item[i]);
+      }
+    } else if (isOfBaseType(item, Object)) { // NOTE: Maybe we shouldn't deal with this cases as Serializables are transformed into objects
+      obj[key] = {};
+      for (let i in item) {
+        await this.saveItem(obj[key], i, item[i]);
+      }
+    } else if (item instanceof Serializable) {
+      obj[key] = item.serialize();
+    }
     return true;
   }
 
@@ -44,7 +56,16 @@ class SaveJSON extends SaveInterface {
   }
 
   async loadItem(updateCache, key, item) {
-    updateCache.set(key, Update.parse(item), true);
+    let res; // NOTE: Type checking here is a bit flippant
+    if (isOfBaseType(item, Array)) {
+      res = new Array(item.length);
+      for (let i=0;i<item.length;i++) {
+        res[i] = Update.parse(item[i]);
+      }
+    } else {
+      res = Update.parse(item);
+    }
+    updateCache.set(key, res, true);
     return true;
   }
 }

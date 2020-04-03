@@ -1,10 +1,23 @@
 const { isOfBaseType } = require('../util.js');
 
+const { Update } = require('../structs/Update.js');
+
 const call = async function(message, parts) {
   if (!message.client.updateCache.has(message.channel.id)) return await message.channel.send(`No update message for this channel`);
 
   let added = true;
   let update = message.client.updateCache.get(message.channel.id);
+  if (isOfBaseType(update, Array)) {
+    if (update.length === 1) {
+      update = update[0];
+    } else {
+      return await message.channel.send('Sorry the notify command is disabled for multistatus channels'); // NOTE: Players cannot disable notifications after there are multiple statuses
+    }
+  } else if (!isOfBaseType(update, Update)) {
+    console.error('Bad update type', update);
+    return; // Ahhh something has gone wrong
+  }
+
   let user = message.author.id, name;
 
   if (parts.length < 1) {
