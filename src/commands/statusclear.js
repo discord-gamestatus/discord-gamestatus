@@ -1,15 +1,18 @@
 const isAdmin = require('../checks.js');
 
 const call = async function(message) {
-  let current = message.client.updateCache.get(message.channel.id);
+  let statuses = message.client.updateCache.get(message.channel.id);
 
-  if (current) {
-    let message = await current.getMessage();
-    if (message) {
-      try {
-        await message.delete();
-      } catch(e) {
-        // Do nothing
+  if (statuses) {
+    if (!Array.isArray(statuses)) statuses = [statuses];
+    for (let status of statuses) {
+      let message = await status.getMessage();
+      if (message) {
+        try {
+          await message.delete();
+        } catch(e) {
+          message.client.deleteQueue.tryDelete(message);
+        }
       }
     }
   }
