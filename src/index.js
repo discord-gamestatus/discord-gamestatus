@@ -61,7 +61,7 @@ client.on('ready', errorWrap(async function() {
   console.log(`Invite link ${invite}`);
   client.setInterval(() => {
     client.emit('cUpdate');
-  }, 1000);
+  }, 2000);
   client.setInterval(() => {
     client.deleteQueue.tryDelete().then(a => a > 0 ? debugLog(`Deleted ${a} old messages`) : null).catch(console.error);
   }, 10000);
