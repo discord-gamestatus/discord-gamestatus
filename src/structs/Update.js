@@ -147,7 +147,8 @@ class Update extends Serializable {
       /* If players have joined send new message and delete old triggering notification
       * TODO: Add option so user can configure when new message updates are sent
       */
-      if (changes.players.connect.length > 0) {
+      // Unknown message after 184 edits
+      if (message.edits.length >= 100) {
         try {
           await message.delete();
         } catch(e) {
