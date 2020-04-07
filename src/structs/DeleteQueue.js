@@ -34,9 +34,11 @@ class DeleteQueue extends Serializable {
         // TODO: Add check for when bot will never be able to delete message
         if (e.code === 10008 /* Unknown message */) {
           debugLog(`Discord returning unknown message for [${message.id}] (${message.edits.length} edits) ${message.createdAt}-${message.editedAt} ${message.editedTimestamp-message.createdTimestamp}ms`);
+          /*
           this.queue.pop(i);
           delete this._queue[message.id];
           deleted++;
+          */
         } else {
           debugLog(`Unable to delete old message [${message.id}] (${message.edits.length} edits) ${message.createdAt}-${message.editedAt} ${message.editedTimestamp-message.createdTimestamp}ms`, e);
         }
