@@ -10,7 +10,7 @@
   "author": "Douile",
   "license": "GPL-3.0",
   "dependencies": {
-    "discord.js": "^11.5.1",
+    "discord.js": "^11.6.4",
     "gamedig": "github:douile/node-gamedig#proto-discord"
   },
   "devDependencies": {
