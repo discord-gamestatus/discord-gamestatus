@@ -9,6 +9,10 @@
   },
   "author": "Douile",
   "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Douile/discord-gamestatus/issues"
+  },
+  "homepage": "https://github.com/Douile/discord-gamestatus",
   "dependencies": {
     "discord.js": "^11.6.4",
     "gamedig": "github:douile/node-gamedig#proto-discord"
