@@ -26,7 +26,16 @@ async function loadCommands() {
   }
 }
 
-const client = new Discord.Client();
+const client = new Discord.Client({
+  apiRequestMethod: 'burst', // Strictly for testing
+  messageCacheMaxSize: 50,
+  disableEveryone: true,
+  restTimeOffset: 1200,
+  disabledEvents: [ 'TYPING_START', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE', 'WEBHOOKS_UPDATE' ],
+  ws: {
+    compress: true
+  }
+});
 client.updateCache = new UpdateCache('_save.json');
 client.deleteQueue = new DeleteQueue();
 

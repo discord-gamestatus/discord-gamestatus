@@ -8,10 +8,11 @@ const call = async function(message) {
   const client = message.client;
 
   await message.channel.send(new RichEmbed({
-    title: `${Package.name} status`,
+    title: `${Package.name} info`,
     description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n\
     Average ping: ${client.ping}ms\n\
     Uptime: ${client.uptime}ms\n\
+    Working in ${client.guilds.size} guilds\n\
     **Dependencies**\n\
     [${DiscordPackage.name} v${DiscordPackage.version}](${DiscordPackage.homepage})\n\
     [${GameDigPackage.name} v${GameDigPackage.version}](${GameDigPackage.homepage})`,
