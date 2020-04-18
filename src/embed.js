@@ -6,7 +6,7 @@ const OPTS = {
     return `${server.name} server status`
   },
   description: function(server, players) {
-    return `Playing ${server.map} with ${players.length}/${server.maxplayers} players\nConnect with ${server.connect}`;
+    return `Playing ${server.map} with ${server.numplayers}/${server.maxplayers} players\nConnect with ${server.connect}`;
   },
   color: 0x2894C2,
   image: undefined,
