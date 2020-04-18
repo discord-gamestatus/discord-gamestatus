@@ -59,6 +59,7 @@ const query = async function(type, ip) {
       name: 'OFFLINE',
       map: 'OFFLINE',
       password: false,
+      numplayers: 0,
       maxplayers: 0,
       players: null,
       realPlayers: null,
