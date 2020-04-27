@@ -5,7 +5,7 @@ const OPTS = {
   title: function(server) {
     return `${server.name} server status`
   },
-  description: function(server, players) {
+  description: function(server) {
     return `Playing ${server.map} with ${server.numplayers}/${server.maxplayers} players\nConnect with ${server.connect}`;
   },
   color: 0x2894C2,
@@ -22,7 +22,7 @@ const generateEmbed = function(server, tick, options) {
 
   let embed = new RichEmbed({
     title: title(server),
-    description: description(server, players),
+    description: description(server),
     color: options.color === undefined ? OPTS.color : options.color,
     timestamp: Date.now()
   });
