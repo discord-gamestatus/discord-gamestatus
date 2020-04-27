@@ -1,15 +1,35 @@
 const start = require('./src/index.js');
 
-let debug = process.argv.includes('--debug') || process.argv.includes('-d');
-let verboose = process.argv.includes('--verboose') || process.argv.includes('-v');
-let dev = process.argv.includes('--dev');
-
+let dev = false;
 let config = {
   prefix: '!',
   key: process.env.DISCORD_API_KEY,
-  debug: debug,
-  verboose: verboose
+  debug: false,
+  verboose: false
 };
+
+for (let i=0;i<process.argv.length;i++) {
+  switch(process.argv[i]) {
+    case '-d':
+    case '--debug':
+    config.debug = true;
+    break;
+    case '-v':
+    case '--verboose':
+    config.verboose = true;
+    break;
+    case '--dev':
+    dev = true;
+    break;
+    case '-p':
+    case '--prefix':
+    config.prefix = process.argv[++i];
+    break;
+    case '--key':
+    config.key = process.argv[++i];
+    break;
+  }
+}
 
 if (!dev) return start(config).then(null).catch(console.error);
 
