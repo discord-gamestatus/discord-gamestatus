@@ -4,18 +4,33 @@
 
 [Invite link](https://discordapp.com/oauth2/authorize?client_id=659050996730822665&permissions=8&scope=bot)
 
-## Command s
+## Commands
 _At the moment there is no help command_
 
 | Command | Usage | Permissions | Comments |
 | ------- | ----- | ----------- | -------- |
 | gamelist | `!gamelist [game]` | ADMINISTRATOR | View/Search the list of games available
-| notify | `!notify [user]` | None | (Only in channel with status message) Get PM notifications when provided user connect/disconnects. Omit user to get notifications when the server changes map or goes offline/online.
+| notify | `!notify [user]` | None | (Only in channel with a single status message) Get PM notifications when provided user connect/disconnects. Omit user to get notifications when the server changes map or goes offline/online.
 | status | `!status {game} {ip}` | ADMINISTRATOR | Add a status message to current channel
 | statusclear | `!statusclear` | ADMINISTRATOR | Clear all status messages from current channel
+| botinfo | `!botinfo` | None | Print information about current versions, uptime and ping of the bot
 
 ## Configuring
 You will need to set the env option `DISCORD_API_KEY` to your discord bot token for the bot to run
+
+### ARGV options
+You can configure the bot using argv options for example to change the prefix to `$` and enable debug logging you would use:
+```bash
+node . -d --prefix "$"
+```
+
+| Arguments | Usage
+| :-------- | -----
+| `-d`, `--debug` | Enable debug logging
+| `-v`, `--verboose` | Enable verbose logging
+| `--dev` | Enable dev mode (auto restart bot when files are changed)
+| `-p [prefix]`, `--prefix [prefix]` | Change the bots prefix
+| `--key [key]` | Set the discord bot API key (overrides the environment variable)
 
 ### Running as service on debian (or other systemd linux)
 
