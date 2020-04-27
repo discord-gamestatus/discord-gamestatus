@@ -51,6 +51,7 @@ const query = async function(type, ip) {
     });
     state.offline = false;
     state.connect = parseConnect(state.connect, protocol);
+    state.numplayers = state.raw.numplayers || state.players.length;
     state.realPlayers = state.players.filter(v => typeof v.name === 'string');
     state.map = parseMap(state.map, protocol);
   } catch(e) {
@@ -58,11 +59,12 @@ const query = async function(type, ip) {
       name: 'OFFLINE',
       map: 'OFFLINE',
       password: false,
+      numplayers: 0,
       maxplayers: 0,
       players: null,
       realPlayers: null,
       offline: true,
-      connect: ''
+      connect: ip
     };
   }
 

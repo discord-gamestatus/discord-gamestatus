@@ -27,7 +27,7 @@ async function loadCommands() {
 }
 
 const client = new Discord.Client({
-  apiRequestMethod: 'burst', // Strictly for testing
+  apiRequestMethod: 'sequential',
   messageCacheMaxSize: 50,
   disableEveryone: true,
   restTimeOffset: 1200,
