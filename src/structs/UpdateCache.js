@@ -61,8 +61,26 @@ class UpdateCache extends Collection {
     }
   }
 
+  *flatValues() {
+    const values = this.values();
+    let result = values.next();
+    while (!result.done) {
+      if (Array.isArray(result.value)) {
+        for (let item of result.value) {
+          yield item;
+        }
+      } else {
+        yield result.value;
+      }
+      result = values.next();
+    }
+  }
+
   *tickIterable(tickLimit) {
-    let size = this.size, valueIterator = this.values(), tickSize = 1;
+    const values = Array.from(this.flatValues()),
+    size = values.length,
+    valueIterator = values.values(); // Maybe a better way to do this
+    let tickSize = 1;
     if (size > tickLimit) tickSize = Math.ceil(size/tickLimit);
     for (let i=0;i<tickLimit;i++) {
       let result = [];
