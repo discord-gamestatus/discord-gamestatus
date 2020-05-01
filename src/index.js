@@ -5,30 +5,20 @@ const DeleteQueue = require('./structs/DeleteQueue.js');
 const { allSettled, errorWrap } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 
-const COMMANDS = new Map();
-const TICK_COUNT = 30;
 var TICK_GENERATOR = undefined;
 var TICK = 0, TICK_SECOND = 0;
 const TICK_EVENT = 'updateTick';
-const TICK_TIME = 2000;
 
-var PREFIX = '!';
-var INVITE_FLAGS = [ 'ADMINISTRATOR' ];
+const INVITE_FLAGS = [ 'ADMINISTRATOR' ];
 
 const UPDATE_INTERVALS = {};
 
-async function loadCommands() {
-  let files = await fs.readdir('./src/commands');
-  for (let file of files) {
-    let command = require(`./commands/${file}`);
-    console.log(`Loaded command ${command.name}`);
-    COMMANDS.set(command.name.toLowerCase(), {call: command.call, check: command.check});
-  }
-}
-
+Discord.Client.prototype.sweepMessages = require('./sweep.js');
 const client = new Discord.Client({
   apiRequestMethod: 'sequential',
-  messageCacheMaxSize: 50,
+  messageCacheMaxSize: -1, /* Use custom sweep */
+  messageCacheLifetime: 90,
+  messageSweepInterval: 90,
   disableEveryone: true,
   restTimeOffset: 1200,
   disabledEvents: [ 'TYPING_START', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE', 'WEBHOOKS_UPDATE' ],
@@ -36,21 +26,43 @@ const client = new Discord.Client({
     compress: true
   }
 });
-client.updateCache = new UpdateCache('_save.json');
-client.deleteQueue = new DeleteQueue();
+
+Object.defineProperties(client, {
+  updateCache: { value: new UpdateCache('_save.json') },
+  deleteQueue: { value: new DeleteQueue() },
+  commands: { value: new Map() },
+  config: { value: {
+    prefix: '!',
+    tickCount: 30,
+    tickTime: 2000,
+    owner: '293482190031945739'
+  } }
+});
+
+async function loadCommand(file) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.name.toLowerCase(), {call: command.call, check: command.check});
+  console.log(`Loaded command ${command.name}`);
+}
+
+async function loadCommands() {
+  const files = await fs.readdir('./src/commands');
+  /* allSettled not used as we don't want to ignore errors */
+  await Promise.all(files.map(loadCommand));
+}
 
 client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(message) {
   if (!message.member || message.author.bot) return;
-  if (!message.content.startsWith(PREFIX)) return;
+  if (!message.content.startsWith(client.config.prefix)) return;
 
-  let parts = message.content.substr(PREFIX.length).split(' ');
+  let parts = message.content.substr(client.config.prefix.length).split(' ');
   if (parts.length === 0) return;
   let command = parts.splice(0, 1)[0].trim().toLowerCase();
 
-  if (COMMANDS.has(command)) {
+  if (client.commands.has(command)) {
     debugLog(`${message.author.id} :: ${command} / ${parts.map(v => `"${v}"`).join(', ')}`);
 
-    let cmd = COMMANDS.get(command);
+    let cmd = client.commands.get(command);
 
     if (!(cmd.check instanceof Function) || cmd.check(message)) {
       try {
@@ -73,7 +85,7 @@ const startIntervals = function() {
 
   UPDATE_INTERVALS.tick = client.setInterval(() => {
     client.emit(TICK_EVENT);
-  }, TICK_TIME);
+  }, client.config.tickTime);
 
   UPDATE_INTERVALS.delete = client.setInterval(() => {
     client.deleteQueue.tryDelete().then(a => a > 0 ? debugLog(`Deleted ${a} old messages`) : null).catch(console.error);
@@ -96,15 +108,15 @@ client.on(Discord.Constants.Events.READY, errorWrap(async function() {
 }))
 
 client.on(TICK_EVENT, errorWrap(async function() {
-  if (TICK_GENERATOR === undefined) TICK_GENERATOR = client.updateCache.tickIterable(TICK_COUNT);
+  if (TICK_GENERATOR === undefined) TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
   let tick = TICK_GENERATOR.next();
   if (tick.done) {
-    TICK_GENERATOR = client.updateCache.tickIterable(TICK_COUNT);
+    TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
     tick = TICK_GENERATOR.next();
   }
 
   if (TICK >= Number.MAX_SAFE_INTEGER) TICK = 0;
-  let r = TICK % TICK_COUNT;
+  let r = TICK % client.config.tickCount;
   if (r === 0) TICK_SECOND += 1;
   if (TICK_SECOND >= Number.MAX_SAFE_INTEGER) TICK_SECOND = 0;
 
@@ -133,23 +145,30 @@ client.on(Discord.Constants.Events.RECONNECTING, () => {
 });
 client.on(Discord.Constants.Events.RESUME, (replayed) => {
   startIntervals();
-  console.log(`[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`);
+  debugLog(`[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`);
 });
 
 async function doUpdate(update, tick) {
-  if (Array.isArray(update)) {
-    for (let u of update) {
+  if (!Array.isArray(update)) update = [update];
+  for (let u of update) {
+    if (await u.shouldDelete(client)) {
+      /* This could break due to asyncronous */
+      const ID = u.ID();
+      const channel = client.updateCache.get(u.channel).filter(v => v.ID() !== ID);
+      await client.updateCache.set(u.channel, channel);
+      debugLog(`Deleted obselete update ${ID}`);
+    } else {
       await u.send(client, tick);
     }
-  } else {
-    await update.send(client, tick);
   }
 }
 
 async function start(config) {
-  PREFIX = config.prefix === undefined ? PREFIX : config.prefix;
   setDebugFlag(config.debug, config.verboose);
-  Object.defineProperty(client, 'botOwnerID', { value: config.owner });
+  /* Override owner, prefix, tickCount, tickTime */
+  for (let key in client.config) {
+    if (key in config) client.config[key] = config[key];
+  }
 
   debugLog('DEVELOPER LOGS ENABLED');
   verbooseLog('VERBOOSE LOGS ENABLED');

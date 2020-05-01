@@ -40,6 +40,9 @@ class Update extends Serializable {
       }
     }
   }
+  ID() {
+    return `${this.guild}:${this.channel}:${this.guild}`;
+  }
 }
 
 const UpdateEmbed = require('./Update/UpdateEmbed.js');

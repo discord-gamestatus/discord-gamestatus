@@ -2,11 +2,9 @@ const start = require('./src/index.js');
 
 let dev = false;
 let config = {
-  prefix: '!',
   key: process.env.DISCORD_API_KEY,
   debug: false,
-  verboose: false,
-  owner: '293482190031945739'
+  verboose: false
 };
 
 for (let i=0;i<process.argv.length;i++) {
@@ -31,6 +29,12 @@ for (let i=0;i<process.argv.length;i++) {
     break;
     case '--owner':
     config.owner = process.argv[++i];
+    break;
+    case '--tick-count':
+    config.tickCount = Number(process.argv[++i]);
+    break;
+    case '--tick-time':
+    config.tickTime = Number(process.argv[++i]);
     break;
   }
 }

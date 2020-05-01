@@ -9,5 +9,5 @@ exports.isOwner = function(message) {
 }
 
 exports.isBotOwner = function(message) {
-  return message.client.botOwnerID === message.author.id;
+  return message.client.config.owner === message.author.id;
 }
