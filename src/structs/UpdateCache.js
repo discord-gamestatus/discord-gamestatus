@@ -82,11 +82,15 @@ class UpdateCache extends Collection {
     valueIterator = values.values(); // Maybe a better way to do this
     let tickSize = 1;
     if (size > tickLimit) tickSize = Math.ceil(size/tickLimit);
+    let tickStep = 1;
+    if (size < tickLimit) tickStep = Math.floor(tickLimit/size);
     for (let i=0;i<tickLimit;i++) {
       let result = [];
-      for (let j=0;j<tickSize;j++) {
-        let v = valueIterator.next();
-        if (!v.done && v.value) result.push(v.value);
+      if (i % tickStep === 0) {
+        for (let j=0;j<tickSize;j++) {
+          let v = valueIterator.next();
+          if (!v.done && v.value) result.push(v.value);
+        }
       }
       yield result;
     }
