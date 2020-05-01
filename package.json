@@ -4,14 +4,19 @@
   "description": "Monitor game servers via discord",
   "main": "index.js",
   "author": "Douile",
-  "keywords": ["discord","discord-bot","discord-gamestatus","gamestatus","monitoring","game-server-monitoring"],
+  "keywords": [
+    "discord",
+    "discord-bot",
+    "discord-gamestatus",
+    "gamestatus",
+    "monitoring",
+    "game-server-monitoring"
+  ],
   "scripts": {
     "test": "npm run lint",
     "lint": "npx eslint src *.js"
   },
-  "bin": {
-    "discord-gamestatus": "./index.js"
-  },
+  "bin": "./index.js",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/Douile/discord-gamestatus/issues"

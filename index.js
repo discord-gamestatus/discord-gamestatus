@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const start = require('./src/index.js');
 
 let dev = false;
