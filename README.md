@@ -1,7 +1,5 @@
 # discord-gamestatus
 
-**WIP** discord bot, providing game server status embeds at regular intervals
-
 [Invite link](https://discordapp.com/oauth2/authorize?client_id=659050996730822665&permissions=8&scope=bot)
 
 ## Commands
@@ -14,6 +12,7 @@ _At the moment there is no help command_
 | status | `!status {game} {ip}` | ADMINISTRATOR | Add a status message to current channel
 | statusclear | `!statusclear` | ADMINISTRATOR | Clear all status messages from current channel
 | botinfo | `!botinfo` | None | Print information about current versions, uptime and ping of the bot
+| dumpticks | `!dumpticks` | Bot owner | Dump a list of what updates occur on what ticks
 
 ## Configuring
 You will need to set the env option `DISCORD_API_KEY` to your discord bot token for the bot to run
@@ -31,6 +30,9 @@ node . -d --prefix "$"
 | `--dev` | Enable dev mode (auto restart bot when files are changed)
 | `-p [prefix]`, `--prefix [prefix]` | Change the bots prefix
 | `--key [key]` | Set the discord bot API key (overrides the environment variable)
+| `--owner [snowflake]` | Set the bot owner
+| `--tick-count [count]` | Set the number of ticks
+| `--tick-time [time]` | Set the time between ticks in ms
 
 ### Running as service on debian (or other systemd linux)
 
