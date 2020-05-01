@@ -7,3 +7,7 @@ exports.isOwner = function(message) {
   if (!message.guild) return false;
   return message.guild.ownerID === message.author.id;
 }
+
+exports.isBotOwner = function(message) {
+  return message.client.botOwnerID === message.author.id;
+}

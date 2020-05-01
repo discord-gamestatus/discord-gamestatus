@@ -33,5 +33,17 @@ exports.isOfBaseType = function(obj, constr) {
 
 const MARKDOWN_CHARS = '*_|~>`';
 exports.markdownEscape = function(text) {
-  return text.split('').map(c => MARKDOWN_CHARS.includes(c) ? `\\${c}` : c).join('');
+  return Array.from(text).map(c => MARKDOWN_CHARS.includes(c) ? `\\${c}` : c).join('');
+}
+
+exports.extendPrototype = function(classVar, methods) {
+  for (let key in methods) {
+    /* defineProperty not required here, could use regular assignment */
+    Object.defineProperty(classVar.prototype, key, {
+      configurable: true,
+      enumberable: true,
+      writable: true,
+      value: methods[key]
+    });
+  }
 }

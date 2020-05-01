@@ -1,6 +1,8 @@
 const GameDig = require('gamedig');
 const GameResolver = require('gamedig/lib/GameResolver.js');
-const markdownEscape = require('./util.js');
+
+const { verbooseLog } = require('./debug.js');
+const { markdownEscape } = require('./util.js');
 
 var resolver;
 
@@ -53,9 +55,12 @@ const query = async function(type, ip) {
     state.offline = false;
     state.connect = parseConnect(state.connect, protocol);
     state.numplayers = state.raw.numplayers || state.players.length;
-    state.realPlayers = markdownEscape(state.players.filter(v => typeof v.name === 'string'));
+    state.realPlayers = state.players.filter(v => typeof v.name === 'string');
+    state.realPlayers.forEach(v => {v.name = markdownEscape(v.name.trim())});
+    state.realPlayers = state.realPlayers.filter(v => v.name.length > 0);
     state.map = parseMap(state.map, protocol);
   } catch(e) {
+    verbooseLog(e);
     state = {
       name: 'OFFLINE',
       map: 'OFFLINE',

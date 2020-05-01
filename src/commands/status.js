@@ -12,7 +12,7 @@ const call = async function(message, parts) {
   }, { channel: message.channel });
 
   let state = await update.send(message.client, 0);
-  if (state.offline) {
+  if (state.offline === true) {
     await update._message.delete();
     await message.channel.send(`The server (\`${parts[1]}\`) was offline or unreachable`);
     return;

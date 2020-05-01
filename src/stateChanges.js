@@ -5,7 +5,7 @@ function playerChanges(curPlayers, prevPlayers) {
     if (!prevPlayers.includes(player)) result.connect.push({name: player, connect: true, msg: `**${player}** connected`});
   }
   for (let player of prevPlayers) {
-    if (!curPlayers.includes(player)) result.disconnect.push({name: player, connect: false, msg: `**${player}** disconnected`}); // TODO: Strip formatting chars from player names
+    if (!curPlayers.includes(player)) result.disconnect.push({name: player, connect: false, msg: `**${player}** disconnected`});
   }
   result.all = result.connect.concat(result.disconnect);
   return result;
