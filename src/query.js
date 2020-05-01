@@ -74,15 +74,19 @@ const query = async function(type, ip) {
     state.image = await IMAGE[type].call(this, state);
   }
 
-  if (state.offline) return state;
-
   return state;
 }
 
 const gameList = async function() {
-  let resolver = getResolver();
+  const resolver = getResolver();
   return resolver.games;
+}
+
+const isValidGame = function(game) {
+  const resolver = getResolver();
+  return resolver.gamesByKey.has(game);
 }
 
 exports.query = query;
 exports.gameList = gameList;
+exports.isValidGame = isValidGame;

@@ -135,6 +135,7 @@ class Update extends Serializable {
 
     let _end = performance.now();
     verbooseLog(`Update completed in ${_end-_start}ms`);
+    return state;
   }
 
   async sendUpdate(client, tick, state, changes) {
