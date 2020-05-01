@@ -3,8 +3,8 @@ const { isAdmin } = require('../checks.js');
 const { isValidGame } = require('../query.js');
 
 const call = async function(message, parts) {
-  if (parts.length < 2) return await message.channel.send(`You must provide a game type (view and search the gamelist with \`!gamelist\`) and IP instead of \`${parts.join(' ')}\``);
-  if (!isValidGame(parts[0])) return await message.channel.send(`\`${parts[0]}\` is not a valid game please check \`!gamelist\``);
+  if (parts.length < 2) return await message.channel.send(`You must provide a game type (view and search the gamelist with \`${message.client.config.prefix}gamelist\`) and IP instead of \`${parts.join(' ')}\``);
+  if (!isValidGame(parts[0])) return await message.channel.send(`\`${parts[0]}\` is not a valid game please check \`${message.client.config.prefix}gamelist\``);
 
   let update = new Update({
     type: parts[0],
