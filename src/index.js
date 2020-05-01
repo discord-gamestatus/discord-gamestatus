@@ -149,6 +149,7 @@ async function doUpdate(update, tick) {
 async function start(config) {
   PREFIX = config.prefix === undefined ? PREFIX : config.prefix;
   setDebugFlag(config.debug, config.verboose);
+  Object.defineProperty(client, 'botOwnerID', { value: config.owner });
 
   debugLog('DEVELOPER LOGS ENABLED');
   verbooseLog('VERBOOSE LOGS ENABLED');

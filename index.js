@@ -5,7 +5,8 @@ let config = {
   prefix: '!',
   key: process.env.DISCORD_API_KEY,
   debug: false,
-  verboose: false
+  verboose: false,
+  owner: '293482190031945739'
 };
 
 for (let i=0;i<process.argv.length;i++) {
@@ -27,6 +28,9 @@ for (let i=0;i<process.argv.length;i++) {
     break;
     case '--key':
     config.key = process.argv[++i];
+    break;
+    case '--owner':
+    config.owner = process.argv[++i];
     break;
   }
 }
