@@ -30,3 +30,8 @@ exports.errorWrap = function(callable) {
 exports.isOfBaseType = function(obj, constr) {
   return (![null, undefined].includes(obj)) && (obj.constructor === constr);
 }
+
+const MARKDOWN_CHARS = '*_|~>`';
+exports.markdownEscape = function(text) {
+  return text.split('').map(c => MARKDOWN_CHARS.includes(c) ? `\\${c}` : c).join('');
+}
