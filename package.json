@@ -4,6 +4,7 @@
   "description": "Monitor game servers via discord",
   "main": "index.js",
   "author": "Douile",
+  "tags": ["discord","discord-bot","discord-gamestatus","gamestatus","monitoring","game-server-monitoring"],
   "scripts": {
     "test": "npm run lint",
     "lint": "npx eslint src *.js"
