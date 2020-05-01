@@ -4,7 +4,7 @@ const call = async function(message) {
   let output = '```';
   let i = 0;
   for (let tick of message.client.updateCache.tickIterable(30)) {
-    output += `${i++}: ${tick.map(v => v.ip).join(', ')}\n`;
+    output += `${i++}: ${tick.map(v => `{${v.ip} [${v.guild}:${v.channel}:${v.message}]}`).join(', ')}\n`;
   }
   output += '```';
   await message.channel.send(output);
