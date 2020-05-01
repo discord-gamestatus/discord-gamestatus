@@ -56,7 +56,7 @@ module.exports = {
       * TODO: Add option so user can configure when new message updates are sent
       */
       // Unknown message after 184 edits
-      if (message.edits.length >= this.getOption('maxEdits')) {
+      if (message.edits.length >= this.getOption('maxEdits') && !message.deleted) {
         try {
           await message.delete();
         } catch(e) {
@@ -64,7 +64,7 @@ module.exports = {
           // TODO: Add check for when bot will never be able to delete message
           client.deleteQueue.add(message);
         }
-      } else {
+      } else if (!message.deleted) {
         let err = false;
         try {
           await message.edit.apply(message, args);

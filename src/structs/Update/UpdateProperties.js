@@ -49,5 +49,13 @@ module.exports = {
       this.message = message;
     }
     await client.updateCache.save();
+  },
+
+  async shouldDelete(client) {
+    const guild = await this.getGuild(client);
+    if (guild.deleted) return true;
+    const channel = await this.getChannel(client);
+    if (channel.deleted) return true;
+    return false;
   }
 };
