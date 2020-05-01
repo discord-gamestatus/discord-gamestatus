@@ -7,12 +7,12 @@ const call = async function(message) {
   if (statuses) {
     if (!Array.isArray(statuses)) statuses = [statuses];
     for (let status of statuses) {
-      let message = await status.getMessage();
-      if (message) {
+      const statusMessage = await status.getMessage(message.client);
+      if (statusMessage) {
         try {
-          await message.delete();
+          await statusMessage.delete();
         } catch(e) {
-          message.client.deleteQueue.tryDelete(message);
+          message.client.deleteQueue.tryDelete(statusMessage);
         }
       }
     }
