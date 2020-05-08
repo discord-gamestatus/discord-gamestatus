@@ -4,9 +4,11 @@ const isAdmin = require('../checks.js');
 
 const call = async function(message, parts) {
   let games = await gameList(), gameIterator = games.values();
-  let embed = new RichEmbed(), embedSize = 100, embeds = [];
+  let embed = new RichEmbed(), embedSize = 100, embeds = [], embedI = 0;
+  embed.setFooter(++embedI);
   let field = '', key = gameIterator.next(), count = 0;
   let regex = parts.length > 0 ? parts.map(s => new RegExp(s,'i')) : undefined;
+
   while (!key.done) {
     let game = key.value;
     let match = true;
@@ -27,9 +29,10 @@ const call = async function(message, parts) {
         if (embedSize + field.length + 3 > 6000) {
           embeds.push(embed);
           embed = new RichEmbed();
+          embed.setFooter(++embedI);
           embedSize = 100;
         }
-        embed.addField('_ _', field, true);
+        embed.addField('_ _', field, false);
         embedSize += field.length+3;
         field = '';
       }
