@@ -57,9 +57,13 @@ module.exports = {
 
   async shouldDelete(client) {
     const guild = await this.getGuild(client);
-    if (guild.deleted) return true;
+    if (guild === undefined || guild.deleted) return true;
     const channel = await this.getChannel(client);
-    if (channel.deleted) return true;
+    if (channel === undefined || channel.deleted) return true;
     return false;
+  },
+
+  messageLink() {
+    return `https://discordapp.com/channels/${this.guild}/${this.channel}/${this.message}`;
   }
 };

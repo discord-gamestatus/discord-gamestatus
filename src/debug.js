@@ -5,6 +5,8 @@ const DEBUG_FLAGS = {
   VERBOOSE:   1 << 1
 };
 
+// TODO: Spell verbose properly
+
 const setDebugFlag = function(debug, verboose) {
   DEBUG_FLAG = (debug ? DEBUG_FLAGS.DEBUG : 0) | (verboose ? DEBUG_FLAGS.VERBOOSE : 0);
 }

@@ -2,14 +2,10 @@ const { isOfBaseType } = require('../../util.js');
 
 const DEFAULT_OPTIONS = {
   dots: ['⚪','⚫'],
-  title: function(server) {
-    return `${server.name} server status`
-  },
-  description: function(server) {
-    return `Playing ${server.map} with ${server.numplayers}/${server.maxplayers} players\nConnect with ${server.connect}`;
-  },
+  title: '{name} server status',
+  description: 'Playing {map} with {numplayers}/{maxplayers} players\nConnect with {connect}',
   color: 0x2894C2,
-  image: undefined,
+  image: '',
   columns: 3,
   maxEdits: 100
 };
@@ -21,14 +17,27 @@ module.exports = {
       DEFAULT_OPTIONS[optionName];
   },
 
+  getOptions() {
+    const res = {};
+    for (let prop in DEFAULT_OPTIONS) {
+      res[prop] = this.getOption(prop);
+    }
+    return res;
+  },
+
   async setOption(client, optionName, value) {
+    if (!(optionName in DEFAULT_OPTIONS)) return;
     if (!isOfBaseType(this.options, Object)) this.options = {};
     /* Use DEFAULT_OPTIONS constructors to typecast new value */
-    // TODO: Add workaround for function types (maybe convert to regex function),
-    // maybe change option so that stored value is formattable string
-    this.options[optionName] = optionName in DEFAULT_OPTIONS ?
-      DEFAULT_OPTIONS[optionName].__proto__.constructor(value) :
-      value;
+    // TODO: Add better support for setting arrays
+    let newValue = DEFAULT_OPTIONS[optionName].__proto__.constructor(value);
+    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue)) newValue = null;
+    if (!isOfBaseType(newValue, DEFAULT_OPTIONS[optionName].__proto__.constructor)) newValue = null;
+    if ([DEFAULT_OPTIONS[optionName],null].includes(newValue)) {
+      delete this.options[optionName];
+    } else {
+      this.options[optionName] = newValue;
+    }
     await client.updateCache.save();
   },
 

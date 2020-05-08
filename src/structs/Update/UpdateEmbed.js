@@ -1,12 +1,20 @@
 const { RichEmbed, Attachment } = require('discord.js');
 
+const FORMAT_PROPERTIES = [ 'name', 'map', 'numplayers', 'maxplayers', 'connect' ];
+const serverFormat = function(string, server) {
+  for (let prop of FORMAT_PROPERTIES) {
+    string = string.replace(new RegExp(`\\{${prop}\\}`, 'gi'), server[prop]);
+  }
+  return string;
+}
+
 module.exports = {
   async generateEmbed(server, tick) {
     let players = server.realPlayers === null ? [] : server.realPlayers;
 
     let embed = new RichEmbed({
-      title: this.getOption('title')(server),
-      description: this.getOption('description')(server),
+      title: serverFormat(this.getOption('title'), server),
+      description: serverFormat(this.getOption('description'), server),
       color: this.getOption('color'),
       timestamp: Date.now()
     });
@@ -14,22 +22,28 @@ module.exports = {
     let dots = this.getOption('dots');
     embed.setFooter(dots[tick % dots.length]);
 
-    if (server.image) {
-      let image = undefined;
-      switch (server.image.type) {
+    let image = server.image;
+    if (this.getOption('image').length > 0) image = {type: 'url', url: this.getOption('image')};
+
+    if (image) {
+      let embedImage = undefined;
+      switch (image.type) {
         case 'buffer': {
-          let name = `image.${server.image.dataType}`;
-          embed.attachFile(new Attachment(server.image.buffer, name));
-          image = `attachment://${name}`;
+          let name = `image.${image.dataType}`;
+          embed.attachFile(new Attachment(image.buffer, name));
+          embedImage = `attachment://${name}`;
           break;
         }
         case 'url': {
-          image = server.image.url;
+          embedImage = image.url;
           break;
         }
       }
-      embed.setAuthor(embed.title, image);
+      embed.setThumbnail(embedImage);
+      /*
+      embed.setAuthor(embed.title, embedImage);
       embed.setTitle('');
+      */
     }
 
 

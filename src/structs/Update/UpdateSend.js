@@ -27,7 +27,7 @@ module.exports = {
     try {
       await this.sendUpdate(client, tick, state, changes);
     } catch(e) {
-      console.warn('Error sending update', e);
+      console.warn('Error sending update', e, e.stack);
     }
     try {
       await this.sendPlayerNotifications(client, state, changes.players);
@@ -56,7 +56,7 @@ module.exports = {
       * TODO: Add option so user can configure when new message updates are sent
       */
       // Unknown message after 184 edits
-      if (message.edits.length >= this.getOption('maxEdits') && !message.deleted) {
+      if ((message.edits.length >= this.getOption('maxEdits') || !message.editable) && !message.deleted) {
         try {
           await message.delete();
         } catch(e) {
@@ -65,11 +65,11 @@ module.exports = {
           client.deleteQueue.add(message);
         }
       } else if (!message.deleted) {
-        let err = false;
+        let success = true;
         try {
           await message.edit.apply(message, args);
         } catch(e) {
-          err = true;
+          success = false;
           try {
             await message.delete();
           } catch(e) {
@@ -78,7 +78,7 @@ module.exports = {
             client.deleteQueue.add(message);
           }
         }
-        if (!err) return;
+        if (success) return;
       }
     }
 
@@ -86,7 +86,6 @@ module.exports = {
     if (channel) {
       message = await channel.send.apply(channel, args);
       await this.setMessage(client, message);
-      return;
     }
   },
 

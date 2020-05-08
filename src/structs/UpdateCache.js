@@ -61,6 +61,8 @@ class UpdateCache extends Collection {
     }
   }
 
+  // TODO: add update function
+
   *flatValues() {
     const values = this.values();
     let result = values.next();
