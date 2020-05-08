@@ -1,6 +1,6 @@
 # discord-gamestatus
 
-[Invite link](https://discordapp.com/oauth2/authorize?client_id=659050996730822665&permissions=8&scope=bot)
+[Invite link](https://discordapp.com/oauth2/authorize?client_id=659050996730822665&permissions=126144&scope=bot)
 
 ## Commands
 _At the moment there is no help command_
