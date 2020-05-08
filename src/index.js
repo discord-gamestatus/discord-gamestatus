@@ -35,7 +35,8 @@ Object.defineProperties(client, {
     prefix: '!',
     tickCount: 30,
     tickTime: 2000,
-    owner: '293482190031945739'
+    owner: '293482190031945739',
+    adminFlag: 'ADMINISTRATOR'
   } }
 });
 
@@ -129,7 +130,7 @@ client.on(TICK_EVENT, errorWrap(async function() {
     }
   }
   let res = await allSettled(promises);
-  verbooseLog(r,  promises.length, res);
+  if (res.length > 0) verbooseLog(r,  promises.length, res);
 }));
 
 client.on(Discord.Constants.Events.RATE_LIMIT, debugLog);

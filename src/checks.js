@@ -1,6 +1,6 @@
 exports.isAdmin = function(message) {
   if (!message.member) return false;
-  return message.member.hasPermission('ADMINISTRATOR');
+  return message.member.hasPermission(message.client.config.adminFlag);
 }
 
 exports.isOwner = function(message) {

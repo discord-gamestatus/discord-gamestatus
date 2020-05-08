@@ -31,6 +31,9 @@ const setupAndStart = function(key, args) {
       case '--owner':
       config.owner = args[++i];
       break;
+      case '--admin':
+      config.adminFlag = args[++i];
+      break;
       case '--tick-count':
       config.tickCount = Number(args[++i]);
       break;
