@@ -1,7 +1,7 @@
 const { isAdmin } = require('../checks.js');
 
 const call = async function(message) {
-  const statuses = message.client.updateCache.get(message.channel.id);
+  let statuses = message.client.updateCache.get(message.channel.id);
 
   let count = 0;
   if (statuses) {

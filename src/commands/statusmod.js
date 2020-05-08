@@ -1,7 +1,6 @@
 const { RichEmbed } = require('discord.js');
 
 const { isAdmin } = require('../checks.js');
-const { isOfBaseType } = require('../util.js');
 
 const WARNING = '_Changes will not take effect until after the status has updated_';
 
