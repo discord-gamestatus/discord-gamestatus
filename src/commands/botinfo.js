@@ -14,6 +14,7 @@ const call = async function(message) {
     Uptime: ${client.uptime}ms\n\
     Working in ${client.guilds.size} guilds\n\
     **Dependencies**\n\
+    [NodeJS v ${process.version}](https://nodejs.org)\n\
     [${DiscordPackage.name} v${DiscordPackage.version}](${DiscordPackage.homepage})\n\
     [${GameDigPackage.name} v${GameDigPackage.version}](${GameDigPackage.homepage})`,
     timestamp: Date.now()
