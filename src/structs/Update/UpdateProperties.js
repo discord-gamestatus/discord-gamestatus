@@ -17,7 +17,11 @@ module.exports = {
   async getMessage(client) {
     if (this._message) return this._message;
     let channel = await this.getChannel(client);
-    this._message = (channel !== undefined && this.message !== undefined) ? await channel.fetchMessage(this.message) : undefined;
+    try {
+      this._message = (channel !== undefined && this.message !== undefined) ? await channel.fetchMessage(this.message) : undefined;
+    } catch(e) {
+      return undefined;
+    }
     return this._message;
   },
 
