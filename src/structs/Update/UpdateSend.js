@@ -48,7 +48,11 @@ module.exports = {
   async sendUpdate(client, tick, state, changes) {
     const embed = await this.generateEmbed(state, tick);
 
-    let args = [changes.players.all.length > 0 ? changes.players.all.map(v => v.msg).join('\n') : '', embed];
+    let changesToSend = [];
+    if (this.getOption('connectUpdate')) changesToSend = changesToSend.concat(changes.players.connect);
+    if (this.getOption('disconnectUpdate')) changesToSend = changesToSend.concat(changes.players.disconnect);
+
+    let args = [changesToSend.length > 0 ? changesToSend.map(v => v.msg).join('\n') : '', embed];
 
     let message = await this.getMessage(client);
     if (message) {

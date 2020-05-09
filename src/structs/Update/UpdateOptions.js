@@ -7,7 +7,9 @@ const DEFAULT_OPTIONS = {
   color: 0x2894C2,
   image: '',
   columns: 3,
-  maxEdits: 100
+  maxEdits: 100,
+  connectUpdate: true,
+  disconnectUpdate: true
 };
 
 module.exports = {
@@ -32,6 +34,8 @@ module.exports = {
     // TODO: Add better support for setting arrays
     let newValue = DEFAULT_OPTIONS[optionName].__proto__.constructor(value);
     if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue)) newValue = null;
+    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) newValue = ['1','true','t','yes','y'].includes(value.toLowerCase().trim().split(' ')[0]);
+    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Array)) newValue = value.split(' ');
     if (!isOfBaseType(newValue, DEFAULT_OPTIONS[optionName].__proto__.constructor)) newValue = null;
     if ([DEFAULT_OPTIONS[optionName],null].includes(newValue)) {
       delete this.options[optionName];
