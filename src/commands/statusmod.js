@@ -18,7 +18,7 @@ const call = async function(message) {
   }
 
   if (args.length > 0) {
-    const index = parseInt(args[0].replace(/^\#/,''));
+    const index = parseInt(args[0].replace(/^#/,''));
     if (!isNaN(index) && index < statuses.length && index >= 0) {
       let status = statuses[index];
       if (args.length === 1) {
