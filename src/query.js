@@ -58,6 +58,7 @@ const query = async function(type, ip) {
     state.realPlayers = state.players.filter(v => typeof v.name === 'string');
     state.realPlayers.forEach(v => {v.name = markdownEscape(v.name.trim())});
     state.realPlayers = state.realPlayers.filter(v => v.name.length > 0);
+    state.validPlayers = state.realPlayers.length;
     state.map = parseMap(state.map, protocol);
   } catch(e) {
     verbooseLog(e);
@@ -67,6 +68,7 @@ const query = async function(type, ip) {
       password: false,
       numplayers: 0,
       maxplayers: 0,
+      validPlayers: 0,
       players: null,
       realPlayers: null,
       offline: true,

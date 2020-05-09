@@ -1,6 +1,6 @@
 const { RichEmbed, Attachment } = require('discord.js');
 
-const FORMAT_PROPERTIES = [ 'name', 'map', 'numplayers', 'maxplayers', 'connect' ];
+const FORMAT_PROPERTIES = [ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ];
 const serverFormat = function(string, server) {
   for (let prop of FORMAT_PROPERTIES) {
     string = string.replace(new RegExp(`\\{${prop}\\}`, 'gi'), server[prop]);
