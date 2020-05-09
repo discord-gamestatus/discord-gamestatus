@@ -42,7 +42,7 @@ Object.defineProperties(client, {
 
 async function loadCommand(file) {
   const command = require(`./commands/${file}`);
-  client.commands.set(command.name.toLowerCase(), {call: command.call, check: command.check});
+  client.commands.set(command.name.toLowerCase(), {call: command.call, check: command.check, help: command.help});
   console.log(`Loaded command ${command.name}`);
 }
 
@@ -90,6 +90,7 @@ const startIntervals = function() {
 
   UPDATE_INTERVALS.delete = client.setInterval(() => {
     client.deleteQueue.tryDelete().then(a => a > 0 ? debugLog(`Deleted ${a} old messages`) : null).catch(console.error);
+    // TODO: Maybe sync deleteQueue to sweepMessages
   }, 10000);
 }
 

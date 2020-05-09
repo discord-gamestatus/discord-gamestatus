@@ -65,3 +65,4 @@ const call = async function(message, parts) {
 
 exports.name = 'notify';
 exports.call = call;
+exports.help = 'Toggle DM notifications for the specified player, or if left blank the server';

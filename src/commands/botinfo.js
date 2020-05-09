@@ -23,3 +23,4 @@ const call = async function(message) {
 
 exports.name = 'botinfo';
 exports.call = call;
+exports.help = 'Output runtime information';

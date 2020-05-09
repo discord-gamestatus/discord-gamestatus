@@ -31,3 +31,4 @@ const call = async function(message, parts) {
 exports.name = 'status';
 exports.call = call;
 exports.check = isAdmin;
+exports.help = 'Create a status message, you must provide game and IP\ne.g. `!status csgo 192.168.0.1`';

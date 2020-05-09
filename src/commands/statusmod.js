@@ -18,7 +18,7 @@ const call = async function(message) {
   }
 
   if (args.length > 0) {
-    const index = parseInt(args[0]);
+    const index = parseInt(args[0].replace(/^\#/,''));
     if (!isNaN(index) && index < statuses.length && index >= 0) {
       let status = statuses[index];
       if (args.length === 1) {
@@ -70,3 +70,8 @@ const call = async function(message) {
 exports.name = 'statusmod';
 exports.call = call;
 exports.check = isAdmin;
+exports.help = 'Modify status messages in the channel.\nUse cases:\n\
+  - List statuses in current channel `!statusmod`\n\
+  - Get status config `!statusmod ID`\n\
+  - Reset config option `!statusmod ID option`\n\
+  - Set config option `statusmod ID option value`';

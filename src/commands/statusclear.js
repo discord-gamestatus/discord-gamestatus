@@ -26,3 +26,4 @@ const call = async function(message) {
 exports.name = 'statusclear';
 exports.call = call;
 exports.check = isAdmin;
+exports.help = 'Clear all status messages from the channel';

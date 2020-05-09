@@ -52,3 +52,4 @@ const call = async function(message, parts) {
 exports.name = 'gamelist';
 exports.call = call;
 exports.check = isAdmin;
+exports.help = 'Output the list of games availabe, searchable with any text';
