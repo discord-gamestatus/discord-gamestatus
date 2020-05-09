@@ -7,10 +7,12 @@ _At the moment there is no help command_
 
 | Command | Usage | Permissions | Comments |
 | ------- | ----- | ----------- | -------- |
+| help | `!help [command]` | None | List commands / Get help with a specific command
 | gamelist | `!gamelist [game]` | ADMINISTRATOR | View/Search the list of games available
 | notify | `!notify [user]` | None | (Only in channel with a single status message) Get PM notifications when provided user connect/disconnects. Omit user to get notifications when the server changes map or goes offline/online.
 | status | `!status {game} {ip}` | ADMINISTRATOR | Add a status message to current channel
 | statusclear | `!statusclear` | ADMINISTRATOR | Clear all status messages from current channel
+| statusmod | `!statusmod [id] [property] [value]` | ADMINISTRATOR | Modify status messages in the current channel
 | botinfo | `!botinfo` | None | Print information about current versions, uptime and ping of the bot
 | dumpticks | `!dumpticks` | Bot owner | Dump a list of what updates occur on what ticks
 
@@ -33,6 +35,8 @@ node . -d --prefix "$"
 | `--owner [snowflake]` | Set the bot owner
 | `--tick-count [count]` | Set the number of ticks
 | `--tick-time [time]` | Set the time between ticks in ms
+| `--admin [flag]` | Set the permission needed to be considered an admin by the bot ([see](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS)) 
+
 
 ### Running as service on debian (or other systemd linux)
 
