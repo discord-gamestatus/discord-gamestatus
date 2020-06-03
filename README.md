@@ -32,10 +32,11 @@ node . -d --prefix "$"
 | `--dev` | Enable dev mode (auto restart bot when files are changed)
 | `-p [prefix]`, `--prefix [prefix]` | Change the bots prefix
 | `--key [key]` | Set the discord bot API key (overrides the environment variable)
+| `--dbl-key [key]` | Set the discord bot list key (https://top.gg/)
 | `--owner [snowflake]` | Set the bot owner
 | `--tick-count [count]` | Set the number of ticks
 | `--tick-time [time]` | Set the time between ticks in ms
-| `--admin [flag]` | Set the permission needed to be considered an admin by the bot ([see](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS)) 
+| `--admin [flag]` | Set the permission needed to be considered an admin by the bot ([see](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS))
 
 
 ### Running as service on debian (or other systemd linux)
