@@ -5,7 +5,8 @@ const setupAndStart = function(key, args) {
   let config = {
     key: key,
     debug: false,
-    verboose: false
+    verboose: false,
+    dblKey: ''
   };
 
   for (let i=0;i<args.length;i++) {
@@ -33,6 +34,9 @@ const setupAndStart = function(key, args) {
       break;
       case '--admin':
       config.adminFlag = args[++i];
+      break;
+      case '--dbl-key':
+      config.dblKey = args[++i];
       break;
       case '--tick-count':
       config.tickCount = Number(args[++i]);

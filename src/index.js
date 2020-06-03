@@ -176,6 +176,9 @@ async function start(config) {
   verbooseLog('VERBOOSE LOGS ENABLED');
   await loadCommands();
   await client.updateCache.load();
+  if (config.dblKey.length > 0) {
+    require('./dblapi.js')(client, config.dblKey);
+  }
   await client.login(config.key);
   return client;
 }
