@@ -98,7 +98,7 @@ const stopIntervals = function() {
   }
 }
 
-client.on(Discord.Constants.Events.READY, errorWrap(async function() {
+client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`Invite link ${invite}`);
