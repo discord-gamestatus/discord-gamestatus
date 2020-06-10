@@ -22,6 +22,30 @@ class DeleteQueue extends Serializable {
     return this.queue.length;
   }
 
+  static methods() {
+    return [
+      async function(message) {
+        return await message.delete();
+      },
+      async function(message) {
+        return await message.channel.bulkDelete([message]);
+      }
+    ];
+  }
+
+  static attemptDelete(message, i, errs) {
+    if (isNaN(i)) i = 0;
+    if (!errs) errs = [];
+    return new Promise((resolve, reject) => {
+      if (i >= DeleteQueue.methods().length) {
+        return reject(errs);
+      }
+      DeleteQueue.methods()[i](message).then(resolve).catch((err) => {
+        DeleteQueue.attemptDelete(message, i+1, errs.concat([err])).then(resolve).catch(reject);
+      })
+    })
+  }
+
   async tryDelete() {
     let deleted = 0;
     for (let i=this.queue.length-1;i>=0;i--) {
@@ -29,7 +53,7 @@ class DeleteQueue extends Serializable {
       let success = true;
       if (!message.deleted) {
         try {
-          await message.delete();
+          await DeleteQueue.attemptDelete(message);
         } catch(e) {
           success = false;
           // TODO: Add check for when bot will never be able to delete message
