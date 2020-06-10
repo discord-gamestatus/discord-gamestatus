@@ -1,4 +1,4 @@
-const { RichEmbed, Attachment } = require('discord.js');
+const { MessageEmbed, MessageAttachment } = require('discord.js');
 
 const FORMAT_PROPERTIES = [ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ];
 const serverFormat = function(string, server) {
@@ -12,7 +12,7 @@ module.exports = {
   async generateEmbed(server, tick) {
     let players = server.realPlayers === null ? [] : server.realPlayers;
 
-    let embed = new RichEmbed({
+    let embed = new MessageEmbed({
       title: serverFormat(this.getOption('title'), server),
       description: serverFormat(this.getOption('description'), server),
       color: this.getOption('color'),
@@ -29,8 +29,8 @@ module.exports = {
       let embedImage = undefined;
       switch (image.type) {
         case 'buffer': {
-          let name = `image.${image.dataType}`;
-          embed.attachFile(new Attachment(image.buffer, name));
+          const name = `image.${image.dataType}`;
+          embed.attachFiles([new MessageAttachment(image.buffer, name)]);
           embedImage = `attachment://${name}`;
           break;
         }
@@ -56,5 +56,6 @@ module.exports = {
     }
 
     return embed;
-  }
+  },
+  FORMAT_PROPERTIES
 }

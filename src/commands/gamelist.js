@@ -1,10 +1,10 @@
-const { RichEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const { gameList } = require('../query.js');
 const isAdmin = require('../checks.js');
 
 const call = async function(message, parts) {
   let games = await gameList(), gameIterator = games.values();
-  let embed = new RichEmbed(), embedSize = 100, embeds = [], embedI = 0;
+  let embed = new MessageEmbed(), embedSize = 100, embeds = [], embedI = 0;
   embed.setFooter(++embedI);
   let field = '', key = gameIterator.next(), count = 0;
   let regex = parts.length > 0 ? parts.map(s => new RegExp(s,'i')) : undefined;
@@ -28,7 +28,7 @@ const call = async function(message, parts) {
       if (field.length + value.length > 1024) {
         if (embedSize + field.length + 3 > 6000) {
           embeds.push(embed);
-          embed = new RichEmbed();
+          embed = new MessageEmbed();
           embed.setFooter(++embedI);
           embedSize = 100;
         }

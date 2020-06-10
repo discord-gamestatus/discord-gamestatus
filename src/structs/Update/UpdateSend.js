@@ -1,5 +1,5 @@
 const { performance } = require('perf_hooks');
-const { RichEmbed, User } = require('discord.js');
+const { MessageEmbed, User } = require('discord.js');
 
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
@@ -109,7 +109,7 @@ module.exports = {
     }
     let promises = [];
     for (let user in fields) {
-      let embed = new RichEmbed({
+      let embed = new MessageEmbed({
         title: 'Player update notification',
         description: fields[user].join('\n'),
         timestamp: Date.now()
@@ -123,7 +123,7 @@ module.exports = {
 
   async sendServerNotifications(client, state, changes) {
     if (!changes.offline && !changes.map) return;
-    let embed = new RichEmbed({
+    let embed = new MessageEmbed({
       title: 'Server update notification',
       timestamp: Date.now()
     });
