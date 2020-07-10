@@ -1,4 +1,4 @@
-const { RichEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 const Package = require('../../package');
 const DiscordPackage = require('discord.js/package');
@@ -7,10 +7,10 @@ const GameDigPackage = require('gamedig/package');
 const call = async function(message) {
   const client = message.client;
 
-  await message.channel.send(new RichEmbed({
+  await message.channel.send(new MessageEmbed({
     title: `${Package.name} info`,
     description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n\
-    Average ping: ${client.ping}ms\n\
+    Average ping: ${client.ws.ping}ms\n\
     Uptime: ${client.uptime}ms\n\
     Working in ${client.guilds.size} guilds\n\
     **Dependencies**\n\

@@ -1,9 +1,9 @@
 const { performance } = require('perf_hooks');
-const { RichEmbed, User } = require('discord.js');
+const { MessageEmbed, User } = require('discord.js');
 
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
-const { verbooseLog } = require('../../debug.js');
+const { debugLog, verbooseLog } = require('../../debug.js');
 const { allSettled } = require('../../util.js');
 
 module.exports = {
@@ -63,6 +63,7 @@ module.exports = {
       if ((message.edits.length >= this.getOption('maxEdits') || !message.editable) && !message.deleted) {
         try {
           await message.delete();
+          debugLog(`Successfully deleted ${message.id}`);
         } catch(e) {
           // Put message in delete queue
           // TODO: Add check for when bot will never be able to delete message
@@ -76,6 +77,7 @@ module.exports = {
           success = false;
           try {
             await message.delete();
+            debugLog(`Successfully deleted ${message.id}`);
           } catch(e) {
             // Put message in delete queue
             // TODO: Add check for when bot will never be able to delete message
@@ -85,6 +87,8 @@ module.exports = {
         if (success) return;
       }
     }
+
+    debugLog(`Sending new message, ${message.id} should be deleted`);
 
     let channel = await this.getChannel(client);
     if (channel) {
@@ -109,7 +113,7 @@ module.exports = {
     }
     let promises = [];
     for (let user in fields) {
-      let embed = new RichEmbed({
+      let embed = new MessageEmbed({
         title: 'Player update notification',
         description: fields[user].join('\n'),
         timestamp: Date.now()
@@ -123,7 +127,7 @@ module.exports = {
 
   async sendServerNotifications(client, state, changes) {
     if (!changes.offline && !changes.map) return;
-    let embed = new RichEmbed({
+    let embed = new MessageEmbed({
       title: 'Server update notification',
       timestamp: Date.now()
     });

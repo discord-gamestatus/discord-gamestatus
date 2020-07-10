@@ -3,14 +3,14 @@ const { Guild, Message, TextChannel } = require('discord.js');
 module.exports = {
   async getGuild(client) {
     if (this._guild) return this._guild;
-    this._guild = client.guilds.get(this.guild);
+    this._guild = client.guilds.resolve(this.guild);
     return this._guild;
   },
 
   async getChannel(client) {
     if (this._channel) return this._channel;
     let guild = await this.getGuild(client);
-    this._channel = guild !== undefined ? guild.channels.get(this.channel) : undefined;
+    this._channel = guild !== undefined ? guild.channels.resolve(this.channel) : undefined;
     return this._channel;
   },
 
@@ -18,7 +18,7 @@ module.exports = {
     if (this._message) return this._message;
     let channel = await this.getChannel(client);
     try {
-      this._message = (channel !== undefined && this.message !== undefined) ? await channel.fetchMessage(this.message) : undefined;
+      this._message = (channel !== undefined && this.message !== undefined) ? await channel.messages.fetch(this.message) : undefined;
     } catch(e) {
       return undefined;
     }

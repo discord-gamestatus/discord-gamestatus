@@ -16,15 +16,12 @@ const UPDATE_INTERVALS = {};
 Discord.Client.prototype.sweepMessages = require('./sweep.js');
 const client = new Discord.Client({
   apiRequestMethod: 'sequential',
-  messageCacheMaxSize: -1, /* Use custom sweep */
+  messageCacheMaxSize: -1, // Use custom sweep
   messageCacheLifetime: 90,
   messageSweepInterval: 90,
   disableEveryone: true,
   restTimeOffset: 1200,
-  disabledEvents: [ 'TYPING_START', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE', 'WEBHOOKS_UPDATE' ],
-  ws: {
-    compress: true
-  }
+  disabledEvents: [ 'TYPING_START', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE', 'WEBHOOKS_UPDATE' ]
 });
 
 Object.defineProperties(client, {
@@ -101,7 +98,7 @@ const stopIntervals = function() {
   }
 }
 
-client.on(Discord.Constants.Events.READY, errorWrap(async function() {
+client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`Invite link ${invite}`);

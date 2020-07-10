@@ -16,6 +16,7 @@ class DeleteQueue extends Serializable {
     if (!isOfBaseType(message, Message)) return;
     this.queue.push(message);
     this._queue[message.id] = 1;
+    debugLog(`Added ${message.id} to the delete queue`);
   }
 
   count() {
