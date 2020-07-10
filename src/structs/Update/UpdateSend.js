@@ -86,9 +86,8 @@ module.exports = {
         }
         if (success) return;
       }
+      debugLog(`Sending new message, ${message.id} should be deleted`);
     }
-
-    debugLog(`Sending new message, ${message.id} should be deleted`);
 
     let channel = await this.getChannel(client);
     if (channel) {
