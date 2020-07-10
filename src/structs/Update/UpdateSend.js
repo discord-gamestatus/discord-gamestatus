@@ -3,7 +3,7 @@ const { MessageEmbed, User } = require('discord.js');
 
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
-const { verbooseLog } = require('../../debug.js');
+const { debugLog, verbooseLog } = require('../../debug.js');
 const { allSettled } = require('../../util.js');
 
 module.exports = {
