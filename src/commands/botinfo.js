@@ -1,6 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 
-const Package = require('../../package');
+const Package = require('../../package.json');
 const DiscordPackage = require('discord.js/package');
 const GameDigPackage = require('gamedig/package');
 
