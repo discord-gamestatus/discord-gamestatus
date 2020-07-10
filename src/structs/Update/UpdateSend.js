@@ -63,6 +63,7 @@ module.exports = {
       if ((message.edits.length >= this.getOption('maxEdits') || !message.editable) && !message.deleted) {
         try {
           await message.delete();
+          debugLog(`Successfully deleted ${message.id}`);
         } catch(e) {
           // Put message in delete queue
           // TODO: Add check for when bot will never be able to delete message
@@ -76,6 +77,7 @@ module.exports = {
           success = false;
           try {
             await message.delete();
+            debugLog(`Successfully deleted ${message.id}`);
           } catch(e) {
             // Put message in delete queue
             // TODO: Add check for when bot will never be able to delete message
@@ -85,6 +87,8 @@ module.exports = {
         if (success) return;
       }
     }
+
+    debugLog(`Sending new message, ${message.id} should be deleted`);
 
     let channel = await this.getChannel(client);
     if (channel) {
