@@ -6,7 +6,7 @@ const URL_API = 'https://top.gg/api';
 const DBL_TIMEOUT = 1000;
 
 const sendDBLUpdateRequest = async function(client, key) {
-  const servers = client.guilds.size;
+  const servers = client.guilds.cache.size;
   const res = await fetch(`${URL_API}/bots/${client.user.id}/stats`, {
     method: 'POST',
     headers: {

@@ -10,7 +10,7 @@ const call = async function(message) {
     description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n\
     Average ping: ${client.ws.ping}ms\n\
     Uptime: ${client.uptime}ms\n\
-    Working in ${client.guilds.size} guilds\n\
+    Working in ${client.guilds.cache.size} guilds\n\
     **Dependencies**\n\
     [NodeJS v ${process.version}](https://nodejs.org)\n\
     [discord.js](https://github.com/discordjs/discord.js)\n\
