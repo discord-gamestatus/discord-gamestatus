@@ -1,8 +1,8 @@
 const { MessageEmbed } = require('discord.js');
 
 const Package = require('../../package.json');
-const DiscordPackage = require('discord.js/package');
-const GameDigPackage = require('gamedig/package');
+const DiscordPackage = require('discord.js/package.json');
+const GameDigPackage = require('gamedig/package.json');
 
 const call = async function(message) {
   const client = message.client;
