@@ -1,8 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 
 const Package = require('../../package.json');
-const DiscordPackage = require('discord.js/package.json');
-const GameDigPackage = require('gamedig/package.json');
 
 const call = async function(message) {
   const client = message.client;
@@ -15,8 +13,8 @@ const call = async function(message) {
     Working in ${client.guilds.size} guilds\n\
     **Dependencies**\n\
     [NodeJS v ${process.version}](https://nodejs.org)\n\
-    [${DiscordPackage.name} v${DiscordPackage.version}](${DiscordPackage.homepage})\n\
-    [${GameDigPackage.name} v${GameDigPackage.version}](${GameDigPackage.homepage})`,
+    [discord.js](https://github.com/discordjs/discord.js)\n\
+    [gamedig](https://github.com/gamedig/node-gamedig)`,
     timestamp: Date.now()
   }))
 }
