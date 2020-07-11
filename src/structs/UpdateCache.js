@@ -45,7 +45,7 @@ class UpdateCache extends Collection {
 
   async saveLock() {
     if (this._saveLock) {
-      let queue = this.saveLockQueue;
+      let queue = this._saveLockQueue;
       await new Promise((resolve) => {
         queue.push(resolve);
       });
