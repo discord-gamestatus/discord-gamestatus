@@ -47,40 +47,61 @@ const setupAndStart = function(key, args) {
     }
   }
 
-  if (!dev) return start(config).then(null).catch(console.error);
+  if (!dev) {
+    start(config).then((client) => {
+      let hasShutdown = false;
+      const shutdown = async function() {
+        if (hasShutdown) return;
+        hasShutdown = true;
+        console.log('Shutting down...');
+        await client.destroy();
+      }
+      process.once('SIGINT', shutdown);
+      process.once('SIGTERM', shutdown);
+      process.once('beforeExit', shutdown);
+    }).catch(console.error);
+  } else {
+    const fs = require('fs');
+    let stop, restarting = false;
 
-  const fs = require('fs');
-  let stop, restarting = false;
+    fs.watch('src', { recursive: true }, async function() {
+      if (restarting) return;
+      console.log('\nRestarting\n==========');
+      restarting = true;
+      if (stop) await stop();
+      stop = undefined;
+      await devStart();
+      restarting = false;
+    });
 
-  fs.watch('src', { recursive: true }, async function() {
-    if (restarting) return;
-    console.log('\nRestarting\n==========');
-    restarting = true;
-    if (stop) await stop();
-    stop = undefined;
-    await devStart();
-    restarting = false;
-  });
-
-  const devStart = async function() {
-    Object.keys(require.cache).forEach((key) => delete require.cache[key]);
-    let startFunc = require('./src/index.js'), client;
-    try {
-      client = await startFunc(config);
-    } catch(e) {
-      console.log(e);
-      return await devStart();
+    const devStart = async function() {
+      Object.keys(require.cache).forEach((key) => delete require.cache[key]);
+      let startFunc = require('./src/index.js'), client;
+      try {
+        client = await startFunc(config);
+      } catch(e) {
+        console.log(e);
+        return await devStart();
+      }
+      client.on('warn', console.warn);
+      client.on('error', console.error);
+      stop = client.destroy.bind(client);
     }
-    client.on('warn', console.warn);
-    client.on('error', console.error);
-    stop = client.destroy.bind(client);
+
+    let hasShutdown = false;
+    const shutdown = async function() {
+      if (hasShutdown) return;
+      hasShutdown = true;
+      console.log('Shutting down...');
+      if (stop) await stop();
+    }
+
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
+    process.once('beforeExit', shutdown);
+
+    devStart().then(null).catch(console.error);
   }
-
-  process.on('beforeExit', async function() {
-    if (stop) await stop();
-  })
-
-  devStart().then(null).catch(console.error);
 }
 
 if (require.main === module) setupAndStart(process.env.DISCORD_API_KEY, process.argv);
