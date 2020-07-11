@@ -103,7 +103,7 @@ client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`Invite link ${invite}`);
   startIntervals();
-  await client.user.setPresence({ status: 'online', game: { type: 'WATCHING', name: 'always 👀'}})
+  await client.user.setPresence({ status: 'online', activity: { type: 'WATCHING', name: 'always 👀'}})
 }))
 
 client.on(TICK_EVENT, errorWrap(async function() {
