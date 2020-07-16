@@ -2,6 +2,30 @@
 
 [Invite link](https://discordapp.com/oauth2/authorize?client_id=659050996730822665&permissions=126144&scope=bot)
 
+## Installing
+[Git](https://git-scm.org), [node](https://nodejs.org) and [npm](https://nodejs.org) are required
+
+_In future I plan to add install script and update command to make this easier_
+
+```bash
+# Navigate to the directory where you wish to install the bot
+git clone https://github.com/Douile/discord-gamestatus.git
+cd discord-gamestatus
+git checkout latest # Checkout latest stable version
+npm install --no-optional # Install dependencies
+# If you like you can install optional dependencies but they require node-gyp
+# For more info see https://discord.js.org/#/docs/main/12.2.0/general/welcome
+```
+
+### Updating
+```bash
+# Navigate to the installed directory
+cd discord-gamestatus
+git pull --ff # This will overwrite local changes, If you wish to save them use git stash
+git checkout latest # Checkout latest stable version
+npm install --no-optional # Update dependencies
+```
+
 ## Commands
 _At the moment there is no help command_
 
