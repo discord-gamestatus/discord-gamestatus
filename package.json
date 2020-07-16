@@ -30,25 +30,11 @@
     "gamedig": "github:douile/node-gamedig#unessential-requests",
     "node-fetch": "^2.6.0"
   },
-  "peerDependencies": {
+  "optionalDependencies": {
     "bufferutil": "^4.0.1",
     "erlpack": "discordapp/erlpack",
     "utf-8-validate": "^5.0.2",
     "zlib-sync": "^0.1.6"
-  },
-  "peerDependenciesMeta": {
-    "bufferutil": {
-      "optional": true
-    },
-    "erlpack": {
-      "optional": true
-    },
-    "utf-8-validate": {
-      "optional": true
-    },
-    "zlib-sync": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "eslint": "^6.8.0"
