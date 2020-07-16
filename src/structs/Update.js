@@ -1,5 +1,5 @@
 const Serializable = require('./Serializable.js');
-const { extendPrototype } = require('../util.js');
+const { extendPrototype } = require('@douile/bot-utilities');
 
 class Update extends Serializable {
   constructor(opts, objs) {

@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
 const DeleteQueue = require('./structs/DeleteQueue.js');
-const { allSettled, errorWrap } = require('./util.js');
+const { allSettled, errorWrap } = require('@douile/bot-utilities');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 
 var TICK_GENERATOR = undefined;

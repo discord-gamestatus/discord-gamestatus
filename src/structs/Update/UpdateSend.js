@@ -4,7 +4,7 @@ const { MessageEmbed, User } = require('discord.js');
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
 const { debugLog, verbooseLog } = require('../../debug.js');
-const { allSettled } = require('../../util.js');
+const { allSettled } = require('@douile/bot-utilities');
 
 module.exports = {
   async send(client, tick) {

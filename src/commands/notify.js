@@ -1,4 +1,4 @@
-const { isOfBaseType } = require('../util.js');
+const { isOfBaseType } = require('@douile/bot-utilities');
 
 const { Update } = require('../structs/Update.js');
 

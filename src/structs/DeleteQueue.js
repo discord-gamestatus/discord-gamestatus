@@ -1,7 +1,7 @@
 const { Message } = require('discord.js');
 
 const Serializable = require('./Serializable.js');
-const { isOfBaseType } = require('../util.js');
+const { isOfBaseType } = require('@douile/bot-utilities');
 const { debugLog } = require('../debug.js');
 
 // TODO: Save the queue data for when bot restarts

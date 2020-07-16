@@ -1,6 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 
-const { isOfBaseType } = require('../util.js');
+const { isOfBaseType } = require('@douile/bot-utilities');
 
 const matchAny = function(text, search) {
   for (let s of search) {

@@ -2,7 +2,7 @@ const GameDig = require('gamedig');
 const GameResolver = require('gamedig/lib/GameResolver.js');
 
 const { verbooseLog } = require('./debug.js');
-const { markdownEscape } = require('./util.js');
+const { markdownEscape } = require('@douile/bot-utilities');
 
 var resolver;
 
