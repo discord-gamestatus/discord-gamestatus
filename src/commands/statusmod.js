@@ -67,11 +67,16 @@ const call = async function(message) {
   }
 }
 
+
+const { FORMAT_PROPERTIES } = require('../constants.js');
 exports.name = 'statusmod';
 exports.call = call;
 exports.check = isAdmin;
-exports.help = 'Modify status messages in the channel.\nUse cases:\n\
-  - List statuses in current channel `!statusmod`\n\
-  - Get status config `!statusmod ID`\n\
-  - Reset config option `!statusmod ID option`\n\
-  - Set config option `statusmod ID option value`';
+exports.help = `Modify status messages in the channel.\nUse cases:\n\
+  - List statuses in current channel \`!statusmod\`\n\
+  - Get status config \`!statusmod ID\`\n\
+  - Reset config option \`!statusmod ID option\`\n\
+  - Set config option \`statusmod ID option value\`\n\
+  Options will automatically be converted to the same type as seen when getting status options, this means for numbers you can do things like \`0xffe\` or \`2e3\`\n\
+  When changing the title or description of an embed you can include formattable options that will be replaced with a value e.g. \`{validplayers}\` will be replaced with the number of players displayed in the embed\n\
+  Full list of formattables: ${FORMAT_PROPERTIES.map(p => `\`{${p}}\``).join(', ')}`;

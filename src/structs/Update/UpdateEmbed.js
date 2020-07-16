@@ -1,6 +1,6 @@
 const { MessageEmbed, MessageAttachment } = require('discord.js');
+const { FORMAT_PROPERTIES } = require('../../constants.js');
 
-const FORMAT_PROPERTIES = [ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ];
 const serverFormat = function(string, server) {
   for (let prop of FORMAT_PROPERTIES) {
     string = string.replace(new RegExp(`\\{${prop}\\}`, 'gi'), server[prop]);
