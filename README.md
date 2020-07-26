@@ -21,6 +21,9 @@ npm install --no-optional # Install dependencies
 ```bash
 # Navigate to the installed directory
 cd discord-gamestatus
+git reset --hard latest
+git checkout master
+git tag -d latest
 git pull --ff # This will overwrite local changes, If you wish to save them use git stash
 git checkout latest # Checkout latest stable version
 npm install --no-optional # Update dependencies
