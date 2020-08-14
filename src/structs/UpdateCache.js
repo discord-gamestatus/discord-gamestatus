@@ -1,6 +1,7 @@
 const { Collection } = require('discord.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
+const { verbooseLog } = require('../debug.js');
 
 class UpdateCache extends Collection {
   constructor(filename) {
@@ -34,7 +35,7 @@ class UpdateCache extends Collection {
   set(key, value, dontSave) {
     Collection.prototype.set.call(this, key, value);
     if (dontSave !== true) return this.save();
-    console.warn(`Set ${key} without saving`);
+    verbooseLog(`Set ${key} without saving`);
   }
 
   delete(key, dontSave) {
