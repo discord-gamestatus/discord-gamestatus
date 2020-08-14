@@ -140,7 +140,7 @@ module.exports = {
     }
     let promises = [];
     for (let user in this.notifyServer) {
-      let u = client.users.get(user);
+      const u = client.users.fetch(user);
       if (u instanceof User) promises.push(u.send(embed));
       else console.warn(user, 'Is not a valid user snowflake');
     }
