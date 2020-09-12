@@ -1,7 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
-const DeleteQueue = require('./structs/DeleteQueue.js');
 const { allSettled, errorWrap } = require('@douile/bot-utilities');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 
@@ -26,7 +25,6 @@ const client = new Discord.Client({
 
 Object.defineProperties(client, {
   updateCache: { value: new UpdateCache('_save.json') },
-  deleteQueue: { value: new DeleteQueue() },
   commands: { value: new Map() },
   config: { value: {
     prefix: '!',
@@ -84,11 +82,6 @@ const startIntervals = function() {
   UPDATE_INTERVALS.tick = client.setInterval(() => {
     client.emit(TICK_EVENT);
   }, client.config.tickTime);
-
-  UPDATE_INTERVALS.delete = client.setInterval(() => {
-    client.deleteQueue.tryDelete().then(a => a > 0 ? debugLog(`Deleted ${a} old messages`) : null).catch(console.error);
-    // TODO: Maybe sync deleteQueue to sweepMessages
-  }, 10000);
 }
 
 const stopIntervals = function() {

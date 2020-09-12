@@ -12,7 +12,7 @@ const call = async function(message) {
         try {
           await statusMessage.delete();
         } catch(e) {
-          message.client.deleteQueue.tryDelete(statusMessage);
+          // Do nothing
         }
       }
     }

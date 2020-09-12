@@ -66,8 +66,7 @@ module.exports = {
           debugLog(`Successfully deleted ${message.id}`);
         } catch(e) {
           // Put message in delete queue
-          // TODO: Add check for when bot will never be able to delete message
-          client.deleteQueue.add(message);
+          debugLog(`Unable to delete ${message.id}`);
         }
       } else if (!message.deleted) {
         let success = true;
@@ -80,8 +79,7 @@ module.exports = {
             debugLog(`Successfully deleted ${message.id}`);
           } catch(e) {
             // Put message in delete queue
-            // TODO: Add check for when bot will never be able to delete message
-            client.deleteQueue.add(message);
+            debugLog(`Unable to delete ${message.id}`);
           }
         }
         if (success) return;
