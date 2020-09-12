@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@douile/bot-utilities": "^1.0.0",
-    "discord.js": "^12.2.0",
+    "discord.js": "^12.3.1",
     "gamedig": "github:douile/node-gamedig#unessential-requests",
     "node-fetch": "^2.6.1"
   },
