@@ -111,7 +111,7 @@ module.exports = {
       } catch(e) {
         debugLog('Unable to send new update', e);
       }
-      await this.setMessage(client, message);
+      await this.setMessage(client, newMessage);
     }
   },
 
