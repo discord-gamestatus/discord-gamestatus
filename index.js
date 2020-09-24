@@ -6,7 +6,7 @@ const setupAndStart = function(env, args) {
     key: env.DISCORD_API_KEY,
     debug: false,
     verboose: false,
-    dblKey: env.TOPGG_KEY,
+    dblKey: env.TOPGG_API_KEY,
   };
 
   for (let i=0;i<args.length;i++) {
