@@ -15,4 +15,5 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-exports.FORMAT_PROPERTIES = [ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ];
+exports.FORMAT_PROPERTIES = Object.freeze([ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ]);
+exports.STATUS_PERMISSIONS = Object.freeze(['SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'READ_MESSAGE_HISTORY']);

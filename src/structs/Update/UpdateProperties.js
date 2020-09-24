@@ -14,6 +14,7 @@ GNU General Public License for more details.
 */
 
 const { Guild, Message, TextChannel } = require('discord.js');
+const { STATUS_PERMISSIONS } = require('../../constants.js');
 
 module.exports = {
   async getGuild(client) {
@@ -78,7 +79,9 @@ module.exports = {
     if (guild === undefined || guild.deleted) return true;
     const channel = await this.getChannel(client);
     if (channel === undefined || channel.deleted) return true;
-    return false;
+    const permissions = channel.permissionsFor(client.user);
+    if (permissions === null) return false;
+    return permissions.has(STATUS_PERMISSIONS, true);
   },
 
   messageLink() {
