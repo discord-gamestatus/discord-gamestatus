@@ -80,8 +80,8 @@ module.exports = {
     const channel = await this.getChannel(client);
     if (channel === undefined || channel.deleted) return true;
     const permissions = channel.permissionsFor(client.user);
-    if (permissions === null) return false;
-    return permissions.has(STATUS_PERMISSIONS, true);
+    if (permissions === null) return true;
+    return !permissions.has(STATUS_PERMISSIONS, true);
   },
 
   messageLink() {

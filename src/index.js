@@ -160,6 +160,7 @@ async function doUpdate(update, tick) {
       const ID = u.ID();
       const channel = client.updateCache.get(u.channel).filter(v => v.ID() !== ID);
       await client.updateCache.set(u.channel, channel);
+      await u.deleteMessage(client);
       debugLog(`Deleted obselete update ${ID}`);
     } else {
       await u.send(client, tick);

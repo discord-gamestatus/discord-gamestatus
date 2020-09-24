@@ -71,31 +71,16 @@ module.exports = {
 
     let message = await this.getMessage(client);
     if (message) {
-      /* If players have joined send new message and delete old triggering notification
-      * TODO: Add option so user can configure when new message updates are sent
-      */
       // Unknown message after 184 edits
       if ((message.edits.length >= this.getOption('maxEdits') || !message.editable) && !message.deleted) { // If mesasge isn't deleted and has expired try to delete it
-        try {
-          await message.delete();
-          debugLog(`Successfully deleted ${message.id}`);
-        } catch(e) {
-          // Put message in delete queue
-          debugLog(`Unable to delete ${message.id}`);
-        }
-      } else if (!message.deleted) { // If message isn't delete it try to edit it
+        await this.deleteMessage(client, message);
+      } else if (!message.deleted) { // If message isn't deleted it try to edit it
         let success = true;
         try {
           await message.edit.apply(message, args);
         } catch(e) {
           success = false;
-          try { // Upon failing to edit it try to delete it
-            await message.delete();
-            debugLog(`Successfully deleted ${message.id}`);
-          } catch(e) {
-            // Put message in delete queue
-            debugLog(`Unable to delete ${message.id}`);
-          }
+          await this.deleteMessage(client, message);
         }
         if (success) return; // If sucessfully edited exit function
       }
@@ -164,5 +149,15 @@ module.exports = {
       else console.warn(user, 'Is not a valid user snowflake');
     }
     return await allSettled(promises);
+  },
+
+  async deleteMessage(client, message) {
+    if (!message) message = await this.getMessage(client);
+    try {
+      await message.delete();
+    } catch(e) {
+      debugLog(`Unable to delete message ${message.id}, e`);
+    }
+    return message;
   }
 };
