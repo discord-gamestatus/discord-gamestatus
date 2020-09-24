@@ -16,6 +16,7 @@ const setupAndStart = function(env, args) {
       config.debug = true;
       break;
       case '-v':
+      case '--verbose':
       case '--verboose':
       config.verboose = true;
       break;

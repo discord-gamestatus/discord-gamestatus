@@ -63,7 +63,7 @@ node . -d --prefix "$"
 | Arguments | Usage
 | :-------- | -----
 | `-d`, `--debug` | Enable debug logging
-| `-v`, `--verboose` | Enable verbose logging
+| `-v`, `--verbose` | Enable verbose logging
 | `--dev` | Enable dev mode (auto restart bot when files are changed)
 | `-p [prefix]`, `--prefix [prefix]` | Change the bots prefix
 | `--key [key]` | Set the discord bot API key (overrides the environment variable)
