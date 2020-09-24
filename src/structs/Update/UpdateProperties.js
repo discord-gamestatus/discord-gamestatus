@@ -46,6 +46,7 @@ module.exports = {
       this._guild = guild;
     } else {
       this.guild = guild;
+      this._guild = undefined;
     }
     await client.updateCache.save();
   },
@@ -56,6 +57,7 @@ module.exports = {
       this._channel = channel;
     } else {
       this.channel = channel;
+      this._channel = undefined;
     }
     await client.updateCache.save();
   },
@@ -66,6 +68,7 @@ module.exports = {
       this._message = message;
     } else {
       this.message = message;
+      this._message = undefined;
     }
     await client.updateCache.save();
   },
