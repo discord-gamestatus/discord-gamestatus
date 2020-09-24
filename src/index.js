@@ -121,20 +121,20 @@ client.on(TICK_EVENT, errorWrap(async function() {
   if (res.length > 0) verbooseLog(r,  promises.length, res);
 }));
 
-client.on(Discord.Constants.Events.RATE_LIMIT, debugLog);
+client.on(Discord.Constants.Events.RATE_LIMIT, verbooseLog);
 client.on(Discord.Constants.Events.DEBUG, verbooseLog);
 client.on(Discord.Constants.Events.WARN, verbooseLog);
 client.on(Discord.Constants.Events.ERROR, debugLog);
 client.on(Discord.Constants.Events.DISCONNECT, (closeEvent) => {
   stopIntervals();
-  console.warn('[NETWORK] Disconnected from discord API', closeEvent);
+  verbooseLog('[NETWORK] Disconnected from discord API', closeEvent);
 });
 client.on(Discord.Constants.Events.RECONNECTING, () => {
-  console.log('[NETWORK] Attempting to reconnect to discord API');
+  verbooseLog('[NETWORK] Attempting to reconnect to discord API');
 });
 client.on(Discord.Constants.Events.RESUME, (replayed) => {
   startIntervals();
-  debugLog(`[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`);
+  verbooseLog(`[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`);
 });
 
 async function doUpdate(update, tick) {
