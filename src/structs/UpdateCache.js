@@ -16,7 +16,7 @@ GNU General Public License for more details.
 const { Collection } = require('discord.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
-const { verbooseLog } = require('../debug.js');
+const { debugLog, verbooseLog } = require('../debug.js');
 const Update = require('./Update.js');
 
 class UpdateCache extends Collection {
@@ -64,7 +64,7 @@ class UpdateCache extends Collection {
   delete(key, dontSave) {
     Collection.prototype.delete.call(this, key);
     if (!dontSave) return this.save();
-    console.warn(`Deleted ${key} without saving`);
+    debugLog(`Deleted ${key} without saving`);
   }
 
   async saveLock() {
@@ -83,6 +83,26 @@ class UpdateCache extends Collection {
     } else {
       this._saveLock = false;
     }
+  }
+
+  async deleteEmpty() {
+    await this.saveLock();
+    let changed = false;
+    for (let entry of this.entries()) {
+      if (Array.isArray(entry[1]) && entry[1].length === 0) {
+        this.delete(entry[0], true);
+        changed = true;
+        debugLog(`Encountered empty channel ${entry[0]}`);
+      }
+    }
+    if (changed) {
+      try {
+        await this.saveInterface.save(this);
+      } catch(e) {
+        console.error(e);
+      }
+    }
+    await this.saveUnlock();
   }
 
   /*****************************************************************************
