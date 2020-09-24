@@ -21,7 +21,6 @@ const { humanDuration } = require('@douile/bot-utilities');
 const call = async function(message) {
   const client = message.client;
 
-  const cpuUsage = process.cpuUsage();
   const memoryUsage = process.memoryUsage();
 
   await message.channel.send(new MessageEmbed({
@@ -31,7 +30,6 @@ const call = async function(message) {
     Uptime: ${humanDuration(client.uptime, 1000)}\n\
     Working in ${client.guilds.cache.size} guilds\n\
     Memory usage: ${Math.round(memoryUsage.heapUsed/1024)}kb/${Math.round(memoryUsage.heapTotal/1024)}kb\n\
-    CPU time: ${cpuUsage.user + cpuUsage.system}ms\n\
     **Dependencies**\n\
     [NodeJS ${process.version}](https://nodejs.org)\n\
     [discord.js](https://github.com/discordjs/discord.js)\n\
