@@ -63,6 +63,23 @@ const setupAndStart = function(env, args) {
       case '--tick-time':
       config.tickTime = Number(args[++i]);
       break;
+      case '-h':
+      case '--help':
+      console.log('discord-gamestatus: A discord bot that monitors game servers\nhttps://github.com/Douile/discord-gamestatus\n\
+      Usage:\n\
+      \t-d, --debug\t\t\tEnable debug logging\n\
+      \t-v, --verbose\t\t\tEnable verbose logging\n\
+      \t--dev\t\t\t\tEnable dev mode (monitor files for changes and auto-restart)\n\
+      \t-p [prefix], --prefix [prefix]\tChange the command prefix can be any length (--prefix "_")\n\
+      \t--key [key]\t\t\tSet the discord API key (Use of env var recommended)\n\
+      \t--owner [owner]\t\t\tSet the bot owner user ID\n\
+      \t--admin [permissions]\t\tSet the guild permissions required to be bot admin\n\
+      \t--topgg-key [key]\t\tSet top.gg API key (Use of env var recommended)\n\
+      \t--tick-count [count]\t\tSet the number of ticks (Each update is assigned a tick so no. ticks is maximum time between a single update)\n\
+      \t--tick-time [time]\t\tSet the time between each tick (in ms)\n\
+      \t-h, --help\t\t\tShow this help message');
+      process.exit();
+      break;
     }
   }
 
@@ -126,7 +143,10 @@ const setupAndStart = function(env, args) {
   }
 }
 
-if (require.main === module) setupAndStart(process.env, process.argv);
+if (require.main === module) {
+  console.log('This program is licensed under GPL-3.0 a license should be included in LICENSE or can be found at https://github.com/Douile/discord-gamestatus/blob/master/LICENSE');
+  setupAndStart(process.env, process.argv);
+}
 
 module.exports = {
   setupAndStart,
