@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
-const { allSettled, errorWrap } = require('@douile/bot-utilities');
+const { allSettled, errorWrap, isOfBaseType } = require('@douile/bot-utilities');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 
 var TICK_GENERATOR = undefined;
@@ -163,7 +163,7 @@ async function start(config) {
   verbooseLog('VERBOOSE LOGS ENABLED');
   await loadCommands();
   await client.updateCache.load();
-  if (config.dblKey.length > 0) {
+  if (isOfBaseType(config.dblKey, String) && config.dblKey.length > 0) {
     require('./dblapi.js')(client, config.dblKey);
   }
   await client.login(config.key);
