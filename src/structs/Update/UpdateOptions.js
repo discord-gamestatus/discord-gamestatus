@@ -22,7 +22,7 @@ const DEFAULT_OPTIONS = {
   color: 0x2894C2,
   image: '',
   columns: 3,
-  maxEdits: 100,
+  maxEdits: 900000,
   connectUpdate: true,
   disconnectUpdate: true
 };
