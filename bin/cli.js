@@ -2,4 +2,4 @@
 
 const { setupAndStart } = require('discord-gamestatus');
 
-setupAndStart(process.env.DISCORD_API_KEY, process.argv);
+setupAndStart(process.env, process.argv);
