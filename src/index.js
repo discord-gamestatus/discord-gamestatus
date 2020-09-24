@@ -157,7 +157,7 @@ async function doUpdate(update, tick) {
     if (await u.shouldDelete(client)) {
       await client.updateCache.updateRemove(u);
       await u.deleteMessage(client);
-      debugLog(`Deleted obselete update ${ID}`);
+      debugLog(`Deleted obselete update ${u.ID()}`);
     } else {
       await u.send(client, tick);
     }

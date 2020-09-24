@@ -115,7 +115,7 @@ class UpdateCache extends Collection {
   }
 
   async updateAdd(update) {
-    if (!status instanceof Update) throw new Error('status must be an instance of status', update);
+    if (!(update instanceof Update)) throw new Error('status must be an instance of status', update);
 
     await this._lock(update.channel);
 
@@ -132,7 +132,7 @@ class UpdateCache extends Collection {
   }
 
   async updateRemove(update) {
-    if (!update instanceof Update) throw new Error('status must be an instance of status', update);
+    if (!(update instanceof Update)) throw new Error('status must be an instance of status', update);
 
     await this._lock(update.channel);
 
@@ -140,7 +140,7 @@ class UpdateCache extends Collection {
       let updates = this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
       const id = update.ID();
-      updates = updates.filter(v => v.ID() !== ID);
+      updates = updates.filter(v => v.ID() !== id);
       if (updates.length > 0) {
         await this.set(update.channel, updates);
       } else {

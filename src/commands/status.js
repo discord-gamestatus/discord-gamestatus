@@ -44,7 +44,7 @@ const call = async function(message, parts) {
     return;
   }
 
-  await client.updateCache.updateAdd(update);
+  await message.client.updateCache.updateAdd(update);
 }
 
 exports.name = 'status';
