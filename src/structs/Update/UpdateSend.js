@@ -105,7 +105,12 @@ module.exports = {
     // Send a new message
     let channel = await this.getChannel(client);
     if (channel) {
-      message = await channel.send.apply(channel, args);
+      let newMessage;
+      try {
+        newMessage = await channel.send.apply(channel, args);
+      } catch(e) {
+        debugLog('Unable to send new update', e);
+      }
       await this.setMessage(client, message);
     }
   },
