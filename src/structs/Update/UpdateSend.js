@@ -75,7 +75,7 @@ module.exports = {
       * TODO: Add option so user can configure when new message updates are sent
       */
       // Unknown message after 184 edits
-      if ((message.edits.length >= this.getOption('maxEdits') || !message.editable) && !message.deleted) {
+      if ((message.edits.length >= this.getOption('maxEdits') || !message.editable) && !message.deleted) { // If mesasge isn't deleted and has expired try to delete it
         try {
           await message.delete();
           debugLog(`Successfully deleted ${message.id}`);
@@ -83,13 +83,13 @@ module.exports = {
           // Put message in delete queue
           debugLog(`Unable to delete ${message.id}`);
         }
-      } else if (!message.deleted) {
+      } else if (!message.deleted) { // If message isn't delete it try to edit it
         let success = true;
         try {
           await message.edit.apply(message, args);
         } catch(e) {
           success = false;
-          try {
+          try { // Upon failing to edit it try to delete it
             await message.delete();
             debugLog(`Successfully deleted ${message.id}`);
           } catch(e) {
@@ -97,11 +97,12 @@ module.exports = {
             debugLog(`Unable to delete ${message.id}`);
           }
         }
-        if (success) return;
+        if (success) return; // If sucessfully edited exit function
       }
       debugLog(`Sending new message, ${message.id} should be deleted`);
     }
 
+    // Send a new message
     let channel = await this.getChannel(client);
     if (channel) {
       message = await channel.send.apply(channel, args);
