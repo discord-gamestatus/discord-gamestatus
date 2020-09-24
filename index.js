@@ -1,3 +1,20 @@
+'use strict';
+
+/*
+discord-gamestatus: Game server monitoring via discord API
+Copyright (C) 2019-2020 Douile
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+*/
+
 const start = require('./src/index.js');
 
 const setupAndStart = function(env, args) {
@@ -61,7 +78,10 @@ const setupAndStart = function(env, args) {
       process.once('SIGINT', shutdown);
       process.once('SIGTERM', shutdown);
       process.once('beforeExit', shutdown);
-    }).catch(console.error);
+    }).catch(function() {
+      console.error.apply(this, arguments);
+      process.exit(1);
+    });
   } else {
     const fs = require('fs');
     let stop, restarting = false;
