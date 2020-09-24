@@ -29,7 +29,7 @@ const UPDATE_INTERVALS = {};
 
 const client = new Discord.Client({
   apiRequestMethod: 'sequential',
-  messageCacheMaxSize: 3,
+  messageCacheMaxSize: 0,
   disableEveryone: true,
   restTimeOffset: 1200,
   disabledEvents: [ 'TYPING_START', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE', 'WEBHOOKS_UPDATE' ]
