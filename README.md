@@ -21,12 +21,14 @@ npm install --no-optional # Install dependencies
 ```bash
 # Navigate to the installed directory
 cd discord-gamestatus
-git reset --hard latest
+# Reset may be needed if you made changes
+# git reset --hard latest
 git checkout master
 git tag -d latest
 git pull --ff # This will overwrite local changes, If you wish to save them use git stash
 git checkout latest # Checkout latest stable version
-npm install --no-optional # Update dependencies
+git log --name-status HEAD^..HEAD # Check latest commit
+npm install --no-optional # Update dependencies (remove --no-optional for optional dependencies, they are faster but need to be compiled)
 ```
 
 ## Commands
@@ -44,7 +46,13 @@ _At the moment there is no help command_
 | dumpticks | `!dumpticks` | Bot owner | Dump a list of what updates occur on what ticks
 
 ## Configuring
-You will need to set the env option `DISCORD_API_KEY` to your discord bot token for the bot to run
+You can use an environment file set environment variables, this is the recommended way to set API keys
+Example env file `/etc/discord-gamestatus/env` (remember to set the file permissions of this file so other users cannot read it: `chmod 600 /etc/discord-gamestatus/env`, can be owned by root as long as systemd runs as root `chown root:root /etc/discord-gamestuats/env`)
+```bash
+DISCORD_API_KEY=NjU5.Examplekey
+TOPGG_API_KEY=ApiKeyHere
+```
+
 
 ### ARGV options
 You can configure the bot using argv options for example to change the prefix to `$` and enable debug logging you would use:
@@ -59,7 +67,7 @@ node . -d --prefix "$"
 | `--dev` | Enable dev mode (auto restart bot when files are changed)
 | `-p [prefix]`, `--prefix [prefix]` | Change the bots prefix
 | `--key [key]` | Set the discord bot API key (overrides the environment variable)
-| `--dbl-key [key]` | Set the discord bot list key (https://top.gg/)
+| `--topgg-key [key]` | Set the discord bot list key (https://top.gg/)
 | `--owner [snowflake]` | Set the bot owner
 | `--tick-count [count]` | Set the number of ticks
 | `--tick-time [time]` | Set the time between ticks in ms
@@ -70,28 +78,31 @@ node . -d --prefix "$"
 
 In order to run on debian I find it easy to run as a service. Steps to setup are as follows.
 
-1. Create a start script that contains this (Make sure to put your discord API key in)
+1. Create a start script to configure the bot
 ```bash
 #!/bin/sh
-export DISCORD_API_KEY=""
-node ./index.js
+node --max-old-space-size=300 --title "discord-gamestatus" ./index.js --prefix "_" --owner "293482190031945739"
 ```
 2. Allow yourself to run the script `chmod +x start.sh` (or other script filename)
-3. (you will need root for this) Create a service in `/etc/systemd/service/discord-gamestatus.service` (Make sure to replace SCRIPT_LOCATION, USER and CODE_LOCATION with the actual locations)
+3. Create an environment file for API keys [See here](#Configuring)
+4. (you will need root for this) Create a service in `/etc/systemd/service/discord-gamestatus.service` (Make sure to replace SCRIPT_LOCATION, USER and CODE_LOCATION with the actual locations)
 ```
 [Unit]
-Description=Discord GameStatus Bot
+Description=Discord gamestatus bot
 After=network.target
 StartLimitBurst=5
 StartLimitIntervalSec=5
+
 [Service]
 Type=simple
 Restart=always
-RestartSec=2
+RestartSec=5
 User=USER
 WorkingDirectory=CODE_LOCATION
-ExecStart=SCRIPT_LOCATION
+EnvironmentFile=/etc/discord-gamestatus/env
+ExecStart=/bin/sh SCRIPT_LOCATION
+
 [Install]
 WantedBy=multi-user.target
 ```
-4. You can now start the bot with `sudo systemctl start discord-gamestatus`, to enable the bot on restart use `sudo systemctl enable discord-gamestatus`. To check the status use `systemctl status discord-gamestatus` or for a live log use `journalctl -f -u discord-gamestatus`.
+5. You can now start the bot with `sudo systemctl start discord-gamestatus`, to enable the bot on restart use `sudo systemctl enable discord-gamestatus`. To check the status use `systemctl status discord-gamestatus` or for a live log use `journalctl -f -u discord-gamestatus`.
