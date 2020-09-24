@@ -155,7 +155,6 @@ async function doUpdate(update, tick) {
   if (!Array.isArray(update)) update = [update];
   for (let u of update) {
     if (await u.shouldDelete(client)) {
-      /* This could break due to asyncronous */
       await client.updateCache.updateRemove(u);
       await u.deleteMessage(client);
       debugLog(`Deleted obselete update ${ID}`);
