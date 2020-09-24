@@ -35,7 +35,7 @@ Object.defineProperties(client, {
 async function loadCommand(file) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name.toLowerCase(), {call: command.call, check: command.check, help: command.help});
-  console.log(`Loaded command ${command.name}`);
+  debugLog(`Loaded command ${command.name}`);
 }
 
 async function loadCommands() {
