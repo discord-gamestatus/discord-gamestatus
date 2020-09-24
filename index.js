@@ -1,12 +1,12 @@
 const start = require('./src/index.js');
 
-const setupAndStart = function(key, args) {
+const setupAndStart = function(env, args) {
   let dev = false;
   let config = {
-    key: key,
+    key: env.DISCORD_API_KEY,
     debug: false,
     verboose: false,
-    dblKey: ''
+    dblKey: env.TOPGG_KEY,
   };
 
   for (let i=0;i<args.length;i++) {
@@ -35,6 +35,7 @@ const setupAndStart = function(key, args) {
       case '--admin':
       config.adminFlag = args[++i];
       break;
+      case '--topgg-key':
       case '--dbl-key':
       config.dblKey = args[++i];
       break;
@@ -104,7 +105,7 @@ const setupAndStart = function(key, args) {
   }
 }
 
-if (require.main === module) setupAndStart(process.env.DISCORD_API_KEY, process.argv);
+if (require.main === module) setupAndStart(process.env, process.argv);
 
 module.exports = {
   setupAndStart,
