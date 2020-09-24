@@ -22,14 +22,7 @@ const call = async function(message) {
   if (statuses) {
     if (!Array.isArray(statuses)) statuses = [statuses];
     for (let status of statuses) {
-      const statusMessage = await status.getMessage(message.client);
-      if (statusMessage) {
-        try {
-          await statusMessage.delete();
-        } catch(e) {
-          // Do nothing
-        }
-      }
+      await status.deleteMessage(message.client);
     }
     count = statuses.length;
   }
