@@ -17,17 +17,24 @@ const { Collection } = require('discord.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
 const { verbooseLog } = require('../debug.js');
+const Update = require('./Update.js');
 
 class UpdateCache extends Collection {
   constructor(filename) {
     super();
     this._saveLock = false;
     this._saveLockQueue = new Array();
+    this._locks = new Map();
     this.saveInterface = new SaveInterface();
     if (filename) {
       this.saveInterface = new SaveJSON(filename);
     }
   }
+
+  /*****************************************************************************
+  *** Raw R/W functions
+  *****************************************************************************/
+
   async load() {
     await this.saveLock();
     try {
@@ -37,6 +44,7 @@ class UpdateCache extends Collection {
     }
     await this.saveUnlock();
   }
+
   async save() {
     await this.saveLock();
     try {
@@ -77,7 +85,75 @@ class UpdateCache extends Collection {
     }
   }
 
-  // TODO: add update function
+  /*****************************************************************************
+  *** Abstracted update functions
+  *****************************************************************************/
+
+  async _lock(key) {
+    if (this._locks.has(key)) {
+      const queue = this._locks.get(key);
+      const locks = this._locks;
+      await new Promise((resolve) => {
+        locks.set(key, queue.concat([resolve]));
+      });
+    } else {
+      this._locks.set(key, []);
+    }
+  }
+
+  _unlock(key) {
+    if (this._locks.has(key)) {
+      const queue = this._locks.get(key);
+      if (queue.length > 0) {
+        const promise = queue.splice(0, 1);
+        this._locks.set(key, queue);
+        promise();
+      } else {
+        this._locks.delete(key);
+      }
+    }
+  }
+
+  async updateAdd(update) {
+    if (!status instanceof Update) throw new Error('status must be an instance of status', update);
+
+    await this._lock(update.channel);
+
+    if (this.has(update.channel)) {
+      let updates = this.get(update.channel);
+      if (!Array.isArray(updates)) updates = [updates];
+      updates.push(update);
+      await this.set(update.channel, updates);
+    } else {
+      await this.set(update.channel, [update]);
+    }
+
+    this._unlock(update.channel);
+  }
+
+  async updateRemove(update) {
+    if (!update instanceof Update) throw new Error('status must be an instance of status', update);
+
+    await this._lock(update.channel);
+
+    if (this.has(update.channel)) {
+      let updates = this.get(update.channel);
+      if (!Array.isArray(updates)) updates = [updates];
+      const id = update.ID();
+      updates = updates.filter(v => v.ID() !== ID);
+      if (updates.length > 0) {
+        await this.set(update.channel, updates);
+      } else {
+        await this.delete(update.channel);
+      }
+    }
+
+    this._unlock(update.channel);
+  }
+
+  /*****************************************************************************
+  *** Read functions
+  *****************************************************************************/
 
   *flatValues() {
     const values = this.values();

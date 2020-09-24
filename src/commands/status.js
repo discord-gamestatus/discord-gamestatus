@@ -44,14 +44,7 @@ const call = async function(message, parts) {
     return;
   }
 
-  if (message.client.updateCache.has(update.channel)) {
-    let old = message.client.updateCache.get(update.channel);
-    if (!Array.isArray(old)) old = [old];
-    old.push(update);
-    await message.client.updateCache.set(update.channel, old);
-  } else {
-    await message.client.updateCache.set(update.channel, [update]);
-  }
+  await client.updateCache.updateAdd(update);
 }
 
 exports.name = 'status';
