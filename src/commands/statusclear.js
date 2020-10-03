@@ -14,21 +14,25 @@ GNU General Public License for more details.
 */
 
 const { isAdmin } = require('../checks.js');
+const { allSettled } = require('@douile/bot-utilities');
 
 const call = async function(message) {
+  let response = await message.channel.send('Clearing status updates...');
   let statuses = message.client.updateCache.get(message.channel.id);
 
   let count = 0;
   if (statuses) {
     if (!Array.isArray(statuses)) statuses = [statuses];
-    for (let status of statuses) {
-      await status.deleteMessage(message.client);
-    }
+    let promises = statuses.map((status) => {
+      status._deleted = true;
+      return status.deleteMessage(message.client);
+    });
+    await allSettled(promises);
     count = statuses.length;
   }
 
-  message.client.updateCache.delete(message.channel.id);
-  await message.channel.send(`${count} Status updates have been cleared`);
+  await message.client.updateCache.delete(message.channel.id);
+  await response.edit(`${count} Status updates have been cleared`);
 }
 
 exports.name = 'statusclear';

@@ -170,6 +170,10 @@ client.on(Discord.Constants.Events.RESUME, (replayed) => {
 async function doUpdate(update, tick) {
   if (!Array.isArray(update)) update = [update];
   for (let u of update) {
+    if (u._deleted) {
+      verbooseLog(`Skipping updating [${u.ID()}]: already deleted`);
+      continue; // Don't update already deleted updates
+    }
     if (await u.shouldDelete(client)) {
       await client.updateCache.updateRemove(u);
       await u.deleteMessage(client);

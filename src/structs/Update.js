@@ -20,6 +20,8 @@ class Update extends Serializable {
   constructor(opts, objs) {
     super();
 
+    this._deleted = false;
+
     /* Serializable.parse will not provide opts */
     if (opts) {
       this.guild = opts.guild;
