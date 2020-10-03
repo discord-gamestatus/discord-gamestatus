@@ -49,7 +49,8 @@ Object.defineProperties(client, {
     tickCount: 30,
     tickTime: 2000,
     owner: undefined,
-    adminFlag: 'ADMINISTRATOR'
+    adminFlag: 'ADMINISTRATOR',
+    statusLimit: undefined,
   } }
 });
 
@@ -185,6 +186,8 @@ async function start(config) {
   for (let key in client.config) {
     if (key in config) client.config[key] = config[key];
   }
+
+  verbooseLog('CONFIG', client.config);
 
   debugLog('DEVELOPER LOGS ENABLED');
   verbooseLog('VERBOOSE LOGS ENABLED');

@@ -134,7 +134,7 @@ class UpdateCache extends Collection {
     }
   }
 
-  async updateAdd(update) {
+  async updateAdd(update, updateLimit) {
     if (!(update instanceof Update)) throw new Error('status must be an instance of status', update);
 
     await this._lock(update.channel);
@@ -142,13 +142,21 @@ class UpdateCache extends Collection {
     if (this.has(update.channel)) {
       let updates = this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
-      updates.push(update);
-      await this.set(update.channel, updates);
+
+      // Check server is allowed to add another updater
+      if (isNaN(updateLimit) || updateLimit === 0 || updates.length < updateLimit) {
+        updates.push(update);
+        await this.set(update.channel, updates);
+      } else {
+        await this._unlock(update.channel);
+        return false;
+      }
     } else {
       await this.set(update.channel, [update]);
     }
 
     this._unlock(update.channel);
+    return true;
   }
 
   async updateRemove(update) {

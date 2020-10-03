@@ -63,6 +63,10 @@ const setupAndStart = function(env, args) {
       case '--tick-time':
       config.tickTime = Number(args[++i]);
       break;
+      case '-l':
+      case '--status-limit':
+      config.statusLimit = Number(args[++i]);
+      break;
       case '-h':
       case '--help':
       console.log('discord-gamestatus: A discord bot that monitors game servers\nhttps://github.com/Douile/discord-gamestatus\n\

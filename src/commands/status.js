@@ -17,6 +17,7 @@ const Update = require('../structs/Update.js');
 const { isAdmin } = require('../checks.js');
 const { isValidGame } = require('../query.js');
 const { STATUS_PERMISSIONS } = require('../constants.js');
+const { debugLog } = require('../debug.js');
 const STATUS_PERMISSIONS_READABLE = STATUS_PERMISSIONS.map(p => `\`${p}\``).join(', ');
 
 
@@ -44,7 +45,22 @@ const call = async function(message, parts) {
     return;
   }
 
-  await message.client.updateCache.updateAdd(update);
+  const statusLimit = message.client.config.statusLimit;
+
+  let success = false;
+  try {
+    success = await message.client.updateCache.updateAdd(update, statusLimit);
+  } catch(e) {
+    await update._message.delete();
+    await message.channel.send('Sorry an error was encountered saving this update, please try again later');
+    debugLog(e);
+    return;
+  }
+
+  if (!success) {
+    await update._message.delete();
+    await message.channel.send(`Sorry this channel has reached it's limit of ${statusLimit} active server statuses`);
+  }
 }
 
 exports.name = 'status';
