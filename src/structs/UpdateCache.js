@@ -134,29 +134,30 @@ class UpdateCache extends Collection {
     }
   }
 
-  async updateAdd(update, updateLimit) {
+  async updateAdd(update, options) {
     if (!(update instanceof Update)) throw new Error('status must be an instance of status', update);
 
     await this._lock(update.channel);
+
+    // TODO: Check guild limit and duplicates
 
     if (this.has(update.channel)) {
       let updates = this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
 
       // Check server is allowed to add another updater
-      if (isNaN(updateLimit) || updateLimit === 0 || updates.length < updateLimit) {
+      if (isNaN(options.channelLimit) || options.channelLimit === 0 || updates.length < options.channelLimit) {
         updates.push(update);
         await this.set(update.channel, updates);
       } else {
         await this._unlock(update.channel);
-        return false;
+        return `Sorry this channel has reached it's limit of ${options.channelLimit} active server statuses`;
       }
     } else {
       await this.set(update.channel, [update]);
     }
 
     this._unlock(update.channel);
-    return true;
   }
 
   async updateRemove(update) {

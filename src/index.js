@@ -50,7 +50,9 @@ Object.defineProperties(client, {
     tickTime: 2000,
     owner: undefined,
     adminFlag: 'ADMINISTRATOR',
-    statusLimit: undefined,
+    channelLimit: undefined,
+    guildLimit: undefined,
+    allowDuplicates: false,
   } }
 });
 

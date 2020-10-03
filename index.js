@@ -63,9 +63,8 @@ const setupAndStart = function(env, args) {
       case '--tick-time':
       config.tickTime = Number(args[++i]);
       break;
-      case '-l':
-      case '--status-limit':
-      config.statusLimit = Number(args[++i]);
+      case '--channel-limit':
+      config.channelLimit = Number(args[++i]);
       break;
       case '-h':
       case '--help':

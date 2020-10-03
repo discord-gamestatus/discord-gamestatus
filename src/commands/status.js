@@ -45,11 +45,9 @@ const call = async function(message, parts) {
     return;
   }
 
-  const statusLimit = message.client.config.statusLimit;
-
-  let success = false;
+  let error;
   try {
-    success = await message.client.updateCache.updateAdd(update, statusLimit);
+    error = await message.client.updateCache.updateAdd(update, message.client.config);
   } catch(e) {
     await update._message.delete();
     await message.channel.send('Sorry an error was encountered saving this update, please try again later');
@@ -57,9 +55,9 @@ const call = async function(message, parts) {
     return;
   }
 
-  if (!success) {
+  if (error !== undefined) {
     await update._message.delete();
-    await message.channel.send(`Sorry this channel has reached it's limit of ${statusLimit} active server statuses`);
+    await message.channel.send(error);
   }
 }
 
