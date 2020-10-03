@@ -156,7 +156,9 @@ module.exports = {
     try {
       await message.delete();
     } catch(e) {
-      debugLog(`Unable to delete message ${message.id}`, e);
+      let code = e;
+      if ('code' in e) code = e.code;
+      debugLog(`Unable to delete message ${message.id}`, code);
     }
     return message;
   }
