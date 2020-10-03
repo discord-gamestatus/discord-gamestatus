@@ -48,7 +48,7 @@ Object.defineProperties(client, {
     prefix: '!',
     tickCount: 30,
     tickTime: 2000,
-    owner: '293482190031945739',
+    owner: undefined,
     adminFlag: 'ADMINISTRATOR'
   } }
 });
@@ -114,6 +114,15 @@ client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`Invite link ${invite}`);
   startIntervals();
+  if (client.config.owner === undefined) {
+    const application = await client.fetchApplication();
+    if (application.owner instanceof Discord.User) {
+      client.config.owner = application.owner.id;
+    } else if (application.owner instanceof Discord.Team) {
+      client.config.owner = application.owner.ownerID;
+    }
+    console.log('No owner override set, bot owner is', client.config.owner);
+  }
 }))
 
 client.on(TICK_EVENT, errorWrap(async function() {
