@@ -89,9 +89,9 @@ exports.call = call;
 exports.check = isAdmin;
 exports.help = `Modify status messages in the channel.\nUse cases:\n\
   - List statuses in current channel \`!statusmod\`\n\
-  - Get status config \`!statusmod ID\`\n\
-  - Reset config option \`!statusmod ID option\`\n\
-  - Set config option \`statusmod ID option value\`\n\
+  - Get status config \`!statusmod ID\` (e.g. \`!statusmod 0\`)\n\
+  - Reset config option \`!statusmod ID option\` (e.g. \`!statusmod 0 title)\`\n\
+  - Set config option \`statusmod ID option value\` (e.g. \`!statusmod 0 title Playing {map}\`)\n\
   Options will automatically be converted to the same type as seen when getting status options, this means for numbers you can do things like \`0xffe\` or \`2e3\`\n\
   When changing the title or description of an embed you can include formattable options that will be replaced with a value e.g. \`{validplayers}\` will be replaced with the number of players displayed in the embed\n\
   Full list of formattables: ${FORMAT_PROPERTIES.map(p => `\`{${p}}\``).join(', ')}`;
