@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 const { MessageEmbed } = require('discord.js');
 const { gameList } = require('../query.js');
-const isAdmin = require('../checks.js');
+const { isAdmin, isDMChannel, combineAny }  = require('../checks.js');
 
 const call = async function(message, parts) {
   let games = await gameList(), gameIterator = games.values();
@@ -66,5 +66,5 @@ const call = async function(message, parts) {
 
 exports.name = 'gamelist';
 exports.call = call;
-exports.check = isAdmin;
+exports.check = combineAny(isAdmin, isDMChannel);
 exports.help = 'Output the list of games availabe, searchable with any text';

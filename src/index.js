@@ -70,7 +70,7 @@ async function loadCommands() {
 }
 
 client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(message) {
-  if (!message.member || message.author.bot) return;
+  if (message.author.bot) return;
   if (!message.content.startsWith(client.config.prefix)) return;
 
   let parts = message.content.substr(client.config.prefix.length).split(' ');
