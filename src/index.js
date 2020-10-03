@@ -127,6 +127,7 @@ client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
     }
     console.log('No owner override set, bot owner is', client.config.owner);
   }
+  await client.user.setPresence({ status: 'online', activity: { type: 'WATCHING', name: `always 👀 | ${client.config.prefix}help` } });
 }))
 
 client.on(TICK_EVENT, errorWrap(async function() {
