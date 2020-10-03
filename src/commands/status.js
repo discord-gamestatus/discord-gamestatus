@@ -29,7 +29,14 @@ const call = async function(message, parts) {
   const permissions = message.channel.permissionsFor(message.client.user);
   if (permissions !== null) {
     if (!permissions.has(STATUS_PERMISSIONS, true)) {
-      return await message.channel.send(`It doesn't look like I have enough permissions to create a status message in this channel. Please check <@!${message.client.user.id}> has ${STATUS_PERMISSIONS_READABLE} in this channel (<#${message.channel.id}>)`);
+      const errorMessage = `It doesn't look like I have enough permissions to create a status message in this channel. Please check <@!${message.client.user.id}> has ${STATUS_PERMISSIONS_READABLE} in this channel (<#${message.channel.id}>)`;
+      try {
+        await message.channel.send(errorMessage);
+      } catch(e) {
+        // DM user
+        await message.author.send(errorMessage);
+      }
+      return;
     }
   }
 
