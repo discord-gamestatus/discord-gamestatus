@@ -83,9 +83,12 @@ const setupAndStart = function(env, args) {
       \t--key [key]\t\t\tSet the discord API key (Use of env var recommended)\n\
       \t--owner [owner]\t\t\tSet the bot owner user ID\n\
       \t--admin [permissions]\t\tSet the guild permissions required to be bot admin\n\
-      \t--topgg-key [key]\t\tSet top.gg API key (Use of env var recommended)\n\
+      \t--dbl-key [key]\t\t\tSet top.gg API key (Use of env var recommended)\n\
       \t--tick-count [count]\t\tSet the number of ticks (Each update is assigned a tick so no. ticks is maximum time between a single update)\n\
       \t--tick-time [time]\t\tSet the time between each tick (in ms)\n\
+      \t--channel-limit [limit]\t\tThe max amount of statuses per channel (0 / not set = infinite)\n\
+      \t--guild-limit [limit]\t\tThe max amount of statuses per guild (0 / not set = infinite)\n\
+      \t--allow-duplicate-updates\tAllow guilds to have multiple statuses for the same IP\n\
       \t-h, --help\t\t\tShow this help message');
       process.exit();
       break;
