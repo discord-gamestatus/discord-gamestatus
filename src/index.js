@@ -22,6 +22,7 @@ const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 var TICK_GENERATOR = undefined;
 var TICK = 0, TICK_SECOND = 0;
 const TICK_EVENT = 'updateTick';
+const MAX_TICK = Math.min(4294967296, Number.MAX_SAFE_INTEGER);
 
 const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'ADD_REACTIONS' ];
 
@@ -136,10 +137,10 @@ client.on(TICK_EVENT, errorWrap(async function() {
     tick = TICK_GENERATOR.next();
   }
 
-  if (TICK >= Number.MAX_SAFE_INTEGER) TICK = 0;
+  if (TICK >= MAX_TICK) TICK = 0;
   let r = TICK % client.config.tickCount;
   if (r === 0) TICK_SECOND += 1;
-  if (TICK_SECOND >= Number.MAX_SAFE_INTEGER) TICK_SECOND = 0;
+  if (TICK_SECOND >= MAX_TICK) TICK_SECOND = 0;
 
   TICK += 1;
 
