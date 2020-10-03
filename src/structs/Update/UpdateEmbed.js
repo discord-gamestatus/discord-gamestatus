@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { FORMAT_PROPERTIES } = require('../../constants.js');
+const { FORMAT_PROPERTIES, MAX_EMBED_FIELD_SIZE } = require('../../constants.js');
 
 const serverFormat = function(string, server) {
   for (let prop of FORMAT_PROPERTIES) {
@@ -67,7 +67,13 @@ module.exports = {
 
     for (let i=0;i<columns;i++) {
       let column = players.splice(0, rows);
-      if (column.length > 0) embed.addField('_ _', column.map(v => v.name).join('\n'), true);
+      if (column.length > 0) {
+        let columnText = column.map(v => v.name).join('\n');
+        if (columnText.length > MAX_EMBED_FIELD_SIZE) {
+          columnText = columnText.substring(0, MAX_EMBED_FIELD_SIZE-4) + '\n...';
+        }
+        embed.addField('_ _', columnText, true);
+      }
     }
 
     return embed;

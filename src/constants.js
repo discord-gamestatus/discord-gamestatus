@@ -17,3 +17,4 @@ GNU General Public License for more details.
 
 exports.FORMAT_PROPERTIES = Object.freeze([ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ]);
 exports.STATUS_PERMISSIONS = Object.freeze(['SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'READ_MESSAGE_HISTORY']);
+exports.MAX_EMBED_FIELD_SIZE = 2000;
