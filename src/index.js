@@ -32,6 +32,13 @@ const client = new Discord.Client({
   messageCacheMaxSize: 0,
   disableMentions: 'everyone',
   restTimeOffset: 1000,
+  presence: {
+    status: 'online',
+    activity: {
+      type: 'WATCHING',
+      name: 'always 👀'
+    }
+  }
 });
 
 Object.defineProperties(client, {
@@ -107,7 +114,6 @@ client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`Invite link ${invite}`);
   startIntervals();
-  await client.user.setPresence({ status: 'online', activity: { type: 'WATCHING', name: 'always 👀'}})
 }))
 
 client.on(TICK_EVENT, errorWrap(async function() {
