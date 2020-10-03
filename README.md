@@ -43,7 +43,6 @@ _At the moment there is no help command_
 | statusclear | `!statusclear` | ADMINISTRATOR | Clear all status messages from current channel
 | statusmod | `!statusmod [id] [property] [value]` | ADMINISTRATOR | Modify status messages in the current channel
 | botinfo | `!botinfo` | None | Print information about current versions, uptime and ping of the bot
-| dumpticks | `!dumpticks` | Bot owner | Dump a list of what updates occur on what ticks
 
 ## Configuring
 You can use an environment file set environment variables, this is the recommended way to set API keys
@@ -67,10 +66,13 @@ node . -d --prefix "$"
 | `--dev` | Enable dev mode (auto restart bot when files are changed)
 | `-p [prefix]`, `--prefix [prefix]` | Change the bots prefix
 | `--key [key]` | Set the discord bot API key (overrides the environment variable)
-| `--topgg-key [key]` | Set the discord bot list key (https://top.gg/)
+| `--dbl-key [key]` | Set the discord bot list key (https://top.gg/)
 | `--owner [snowflake]` | Set the bot owner
 | `--tick-count [count]` | Set the number of ticks
 | `--tick-time [time]` | Set the time between ticks in ms
+| `--channel-limit [limit]` | The max amount of statuses per channel (0 / not set = infinite)
+| `--guild-limit [limit]` | The max amount of statuses per guild (0 / not set = infinite)
+| `--allow-duplicate-updates` | Allow guilds to have multiple statuses for the same IP
 | `--admin [flag]` | Set the permission needed to be considered an admin by the bot ([see](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS))
 
 
@@ -98,6 +100,7 @@ Type=simple
 Restart=always
 RestartSec=5
 User=USER
+Group=GROUP
 WorkingDirectory=CODE_LOCATION
 EnvironmentFile=/etc/discord-gamestatus/env
 ExecStart=/bin/sh SCRIPT_LOCATION
