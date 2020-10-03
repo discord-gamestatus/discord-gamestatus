@@ -66,6 +66,12 @@ const setupAndStart = function(env, args) {
       case '--channel-limit':
       config.channelLimit = Number(args[++i]);
       break;
+      case '--guild-limit':
+      config.guildLimit = Number(args[++i]);
+      break;
+      case '--allow-duplicate-updates':
+      config.allowDuplicates = true;
+      break;
       case '-h':
       case '--help':
       console.log('discord-gamestatus: A discord bot that monitors game servers\nhttps://github.com/Douile/discord-gamestatus\n\

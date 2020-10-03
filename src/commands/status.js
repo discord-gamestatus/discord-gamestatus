@@ -45,9 +45,14 @@ const call = async function(message, parts) {
     return;
   }
 
+  /*
+  Here we do most of the validation checks for adding a new update in UpdateCache.updateAdd
+  This is because this function can be used elsewhere, and also due to the fact
+  this function already locks the key and retrieves necessary data to do the checks
+  */
   let error;
   try {
-    error = await message.client.updateCache.updateAdd(update, message.client.config);
+    error = await message.client.updateCache.updateAdd(update, message.client);
   } catch(e) {
     await update._message.delete();
     await message.channel.send('Sorry an error was encountered saving this update, please try again later');

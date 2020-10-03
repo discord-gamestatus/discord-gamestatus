@@ -134,8 +134,29 @@ class UpdateCache extends Collection {
     }
   }
 
-  async updateAdd(update, options) {
+  async updateAdd(update, client) {
     if (!(update instanceof Update)) throw new Error('status must be an instance of status', update);
+
+    // Perform checks
+    const guild = await update.getGuild(client);
+    let guildUpdates = 0;
+    for (let channel of guild.channels.cache.keys()) {
+      if (this.has(channel)) {
+        let channelUpdates = this.get(channel);
+        if (!Array.isArray(channelUpdates)) channelUpdates = [channelUpdates];
+        guildUpdates += channelUpdates.length;
+        for (let channelUpdate of channelUpdates) {
+          if (channelUpdate.ip === update.ip && !client.config.allowDuplicates) {
+            return `Sorry this server already has an update using the IP \`${channelUpdate.ip}\``;
+          }
+        }
+      }
+    }
+
+    // TODO: Make logic check less complex
+    if ( !(isNaN(client.config.guildLimit) || client.config.guildLimit === 0 || guildUpdates < client.config.guildLimit) ) {
+      return `Sorry this server has reached its limit of ${client.config.guildLimit} active server statuses`;
+    }
 
     await this._lock(update.channel);
 
@@ -146,12 +167,12 @@ class UpdateCache extends Collection {
       if (!Array.isArray(updates)) updates = [updates];
 
       // Check server is allowed to add another updater
-      if (isNaN(options.channelLimit) || options.channelLimit === 0 || updates.length < options.channelLimit) {
+      if (isNaN(client.config.channelLimit) || client.config.channelLimit === 0 || updates.length < client.config.channelLimit) {
         updates.push(update);
         await this.set(update.channel, updates);
       } else {
         await this._unlock(update.channel);
-        return `Sorry this channel has reached it's limit of ${options.channelLimit} active server statuses`;
+        return `Sorry this channel has reached its limit of ${client.config.channelLimit} active server statuses`;
       }
     } else {
       await this.set(update.channel, [update]);
