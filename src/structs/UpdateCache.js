@@ -186,6 +186,8 @@ class UpdateCache extends Collection {
 
     await this._lock(update.channel);
 
+    update._deleted = true;
+
     if (this.has(update.channel)) {
       let updates = this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
