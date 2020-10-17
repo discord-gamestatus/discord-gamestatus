@@ -54,6 +54,7 @@ Object.defineProperties(client, {
     channelLimit: undefined,
     guildLimit: undefined,
     allowDuplicates: false,
+    supportServer: undefined,
   } }
 });
 

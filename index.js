@@ -91,6 +91,9 @@ const setupAndStart = function(env, args) {
       case '--allow-duplicate-updates':
       config.allowDuplicates = true;
       break;
+      case '--support':
+      config.supportServer = args[++i];
+      break;
       case '-h':
       case '--help':
       USAGE();

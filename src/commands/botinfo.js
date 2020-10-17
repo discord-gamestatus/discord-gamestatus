@@ -22,10 +22,14 @@ const call = async function(message) {
   const client = message.client;
 
   const memoryUsage = process.memoryUsage();
+  let supportLink = '';
+  if (client.config.supportLink !== undefined) {
+    supportLink = `[Join the support server](${client.config.supportLink})\n`;
+  }
 
   await message.channel.send(new MessageEmbed({
     title: `${Package.name} info`,
-    description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n\
+    description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n${supportLink}\
     Average ping: ${Math.round(client.ws.ping,2)}ms\n\
     Uptime: ${humanDuration(client.uptime, 1000)}\n\
     Working in ${client.guilds.cache.size} guilds\n\
