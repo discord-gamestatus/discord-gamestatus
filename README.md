@@ -74,6 +74,7 @@ node . -d --prefix "$"
 | `--guild-limit [limit]` | The max amount of statuses per guild (0 / not set = infinite)
 | `--allow-duplicate-updates` | Allow guilds to have multiple statuses for the same IP
 | `--admin [flag]` | Set the permission needed to be considered an admin by the bot ([see](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS))
+| `--support [link]` | Set the link to bot support server (shown in botinfo)
 
 
 ### Running as service on debian (or other systemd linux)
