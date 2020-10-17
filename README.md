@@ -46,7 +46,7 @@ _At the moment there is no help command_
 
 ## Configuring
 You can use an environment file set environment variables, this is the recommended way to set API keys
-Example env file `/etc/discord-gamestatus/env` (remember to set the file permissions of this file so other users cannot read it: `chmod 600 /etc/discord-gamestatus/env`, can be owned by root as long as systemd runs as root `chown root:root /etc/discord-gamestuats/env`)
+Example env file `/etc/discord-gamestatus/env` (remember to set the file permissions of this file so other users cannot read it: `chmod 600 /etc/discord-gamestatus/env`, can be owned by root as long as systemd runs as root `chown root:root /etc/discord-gamestatus/env`)
 ```bash
 DISCORD_API_KEY=NjU5.Examplekey
 TOPGG_API_KEY=ApiKeyHere
