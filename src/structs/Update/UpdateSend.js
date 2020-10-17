@@ -67,7 +67,7 @@ module.exports = {
     if (this.getOption('connectUpdate')) changesToSend = changesToSend.concat(changes.players.connect);
     if (this.getOption('disconnectUpdate')) changesToSend = changesToSend.concat(changes.players.disconnect);
 
-    let args = [changesToSend.length > 0 ? changesToSend.map(v => v.msg).join('\n') : '', embed];
+    let args = [changesToSend.length > 0 ? changesToSend.map(v => v.msg).join('\n').substring(0,500) : '', embed];
 
     let message = await this.getMessage(client);
     if (message) {
