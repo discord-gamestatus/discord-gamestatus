@@ -23,8 +23,8 @@ const call = async function(message) {
 
   const memoryUsage = process.memoryUsage();
   let supportLink = '';
-  if (client.config.supportLink !== undefined) {
-    supportLink = `[Join the support server](${client.config.supportLink})\n`;
+  if (client.config.supportServer !== undefined) {
+    supportLink = `[Join the support server](${client.config.supportServer})\n`;
   }
 
   await message.channel.send(new MessageEmbed({
