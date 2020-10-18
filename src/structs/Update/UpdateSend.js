@@ -84,7 +84,7 @@ module.exports = {
         }
         if (success) return; // If sucessfully edited exit function
       }
-      debugLog(`Sending new message, ${message.id} should be deleted`);
+      verbooseLog(`Sending new message, ${message.id} should be deleted`);
     }
 
     // Send a new message
@@ -158,7 +158,7 @@ module.exports = {
     } catch(e) {
       let code = e;
       if ('code' in e) code = e.code;
-      debugLog(`Unable to delete message ${message.id}`, code);
+      verbooseLog(`Unable to delete message ${message.id}`, code);
     }
     return message;
   }
