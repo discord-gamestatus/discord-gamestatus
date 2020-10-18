@@ -16,7 +16,6 @@
     "test": "npm run lint",
     "lint": "npx eslint src *.js"
   },
-  "bin": "./bin/cli.js",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/Douile/discord-gamestatus/issues"
