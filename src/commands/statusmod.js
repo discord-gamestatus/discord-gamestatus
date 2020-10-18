@@ -39,7 +39,8 @@ const call = async function(message) {
       if (args.length === 1) {
         await message.channel.send(new MessageEmbed({
           title: `#${index}`,
-          description: `${statusIdentity(status)}\n\`\`\`json\n${JSON.stringify(status.getOptions(), ' ', 2)}\n\`\`\``,
+          description: statusIdentity(status),
+          fields: Object.entries(status.getOptions()).map(s => {return {name: s[0], value: `\`\`\`json\n${JSON.stringify(s[1])}\n\`\`\``, inline: true }}),
           timestamp: Date.now()
         }));
       } else if (args.length === 2) {
