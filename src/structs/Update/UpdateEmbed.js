@@ -23,14 +23,21 @@ const serverFormat = function(string, server) {
   return string;
 }
 
+const OPT_TITLE = Object.freeze(['title', 'offlineTitle']);
+const OPT_DESCRIPTION = Object.freeze(['description', 'offlineDescription']);
+const OPT_COLOR = Object.freeze(['color', 'offlineColor']);
+const OPT_IMAGE = Object.freeze(['image', 'offlineImage']);
+
 module.exports = {
   async generateEmbed(server, tick) {
     let players = server.realPlayers === null ? [] : server.realPlayers;
 
+    const isOffline = server.offline & 1;
+
     let embed = new MessageEmbed({
-      title: serverFormat(this.getOption('title'), server),
-      description: serverFormat(this.getOption('description'), server),
-      color: this.getOption('color'),
+      title: serverFormat(this.getOption(OPT_TITLE[isOffline]), server),
+      description: serverFormat(this.getOption(OPT_DESCRIPTION[isOffline]), server),
+      color: this.getOption(OPT_COLOR[isOffline]),
       timestamp: Date.now()
     });
 
@@ -38,7 +45,7 @@ module.exports = {
     embed.setFooter(dots[tick % dots.length]);
 
     let image = server.image;
-    if (this.getOption('image').length > 0) image = {type: 'url', url: this.getOption('image')};
+    if (this.getOption(OPT_IMAGE[isOffline]).length > 0) image = {type: 'url', url: this.getOption('image')};
 
     if (image) {
       let embedImage = undefined;

@@ -18,13 +18,17 @@ const { isOfBaseType } = require('@douile/bot-utilities');
 const DEFAULT_OPTIONS = {
   dots: ['⚪','⚫'],
   title: '{name} server status',
+  offlineTitle: `server **{name}**`,
   description: 'Playing {map} with {numplayers}/{maxplayers} players\nConnect with {connect}',
+  offlineDescription: 'Server is offline',
   color: 0x2894C2,
+  offlineColor: 0xff0000,
   image: '',
+  offlineImage: '',
   columns: 3,
   maxEdits: 900000,
-  connectUpdate: true,
-  disconnectUpdate: true
+  connectUpdate: false,
+  disconnectUpdate: false
 };
 
 module.exports = {
