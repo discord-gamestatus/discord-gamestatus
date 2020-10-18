@@ -18,6 +18,14 @@ const { MessageEmbed } = require('discord.js');
 const { isAdmin } = require('../checks.js');
 
 const WARNING = '_Changes will not take effect until after the status has updated_';
+const OPTION_LAYOUT = Object.freeze([
+  'title','offlineTitle','spacer',
+  'description','offlineDescription','spacer',
+  'color','offlineColor','spacer',
+  'image','offlineImage','spacer',
+  'connectUpdate','disconnectUpdate','spacer',
+  'columns','maxEdits','dots'
+]);
 
 const statusIdentity = function(status) {
   return `${status.name} [\`${status.ip}\`] <${status.messageLink()}>`;
@@ -37,10 +45,20 @@ const call = async function(message) {
     if (!isNaN(index) && index < statuses.length && index >= 0) {
       let status = statuses[index];
       if (args.length === 1) {
+        const opts = status.getOptions();
+        let options = [];
+        for (let fieldName of OPTION_LAYOUT) {
+          if (fieldName === 'spacer') {
+            options.push({name:'_ _',value:'_ _',inline:false});
+          } else {
+            options.push({name:fieldName,value:`\`\`\`json\n${JSON.stringify(opts[fieldName])}\n\`\`\``,inline:true});
+          }
+        }
+
         await message.channel.send(new MessageEmbed({
           title: `#${index}`,
           description: statusIdentity(status),
-          fields: Object.entries(status.getOptions()).map(s => {return {name: s[0], value: `\`\`\`json\n${JSON.stringify(s[1])}\n\`\`\``, inline: true }}),
+          fields: options,
           timestamp: Date.now()
         }));
       } else if (args.length === 2) {
