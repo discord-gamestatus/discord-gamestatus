@@ -16,7 +16,8 @@ GNU General Public License for more details.
 */
 
 const USAGE = function() {
-  console.log('discord-gamestatus: A discord bot that monitors game servers\nhttps://github.com/Douile/discord-gamestatus\n\
+  console.log('\
+discord-gamestatus: A discord bot that monitors game servers\nhttps://github.com/Douile/discord-gamestatus\n\
 Usage:\n\
 \t-d, --debug\t\t\tEnable debug logging\n\
 \t-v, --verbose\t\t\tEnable verbose logging\n\
