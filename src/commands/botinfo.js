@@ -38,7 +38,8 @@ const call = async function(message) {
     [NodeJS ${process.version}](https://nodejs.org)\n\
     [discord.js](https://github.com/discordjs/discord.js)\n\
     [gamedig](https://github.com/gamedig/node-gamedig)`,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    color: 0x5555ff
   }))
 }
 

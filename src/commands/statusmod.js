@@ -59,14 +59,16 @@ const call = async function(message) {
           title: `#${index}`,
           description: statusIdentity(status),
           fields: options,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          color: 0x5555ff
         }));
       } else if (args.length === 2) {
         await status.deleteOption(message.client, args[1]);
         await message.channel.send(new MessageEmbed({
           title: `#${index}`,
           description: `${statusIdentity(status)}\nReset: \`${args[1]}\`\n${WARNING}`,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          color: 0x5555ff
         }));
       } else {
         const value = args.splice(2).join(' ');
@@ -74,7 +76,8 @@ const call = async function(message) {
         await message.channel.send(new MessageEmbed({
           title: `#${index}`,
           description: `${statusIdentity(status)}\nSet: \`${args[1]}=${status.getOption(args[1])}\`\n${WARNING}`,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          color: 0x5555ff
         }));
       }
     } else {
@@ -96,7 +99,8 @@ const call = async function(message) {
     await message.channel.send(new MessageEmbed({
       title: `${fields.length} Active statuses`,
       fields: fields,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      color: 0x5555ff
     }));
   }
 }

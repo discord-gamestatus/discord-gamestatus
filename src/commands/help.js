@@ -29,6 +29,7 @@ const call = async function(message, parts) {
   if (search.length === 0) {
     await message.channel.send(new MessageEmbed({
       title: 'Help',
+      color: 0x5555ff,
       description: Array.from(message.client.commands.entries())
         .filter(cmd => cmd[0] !== 'help' && (isOfBaseType(cmd[1].check, Function) ? cmd[1].check(message) : true))
         .map(cmd => `\`${message.client.config.prefix}${cmd[0]}\``)
@@ -38,6 +39,7 @@ const call = async function(message, parts) {
   } else {
     await message.channel.send(new MessageEmbed({
       title: 'Help',
+      color: 0x5555ff,
       fields: Array.from(message.client.commands.entries())
         .filter(cmd => matchAny(`${message.client.config.prefix}${cmd[0]}`, search) && (isOfBaseType(cmd[1].check, Function) ? cmd[1].check(message) : true))
         .map(cmd => {
