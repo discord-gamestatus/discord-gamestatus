@@ -14,10 +14,12 @@ GNU General Public License for more details.
 */
 
 const { Collection } = require('discord.js');
+
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
 const { debugLog, verbooseLog } = require('../debug.js');
 const Update = require('./Update.js');
+const { getLimits } = require('../limits.js');
 
 class UpdateCache extends Collection {
   constructor(filename) {

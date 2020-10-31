@@ -77,9 +77,11 @@ function readJSONOrEmpty(fileName) {
       let data = {};
       try {
         data = JSON.parse(content);
-      } catch(e) {}
+      } catch(e) {
+        verbooseLog('Error parsing JSON', e);
+      }
       resolve(data);
-    }).catch((error) => {
+    }).catch(() => {
       resolve({});
     })
   })

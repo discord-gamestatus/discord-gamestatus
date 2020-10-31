@@ -16,7 +16,7 @@ GNU General Public License for more details.
 const Update = require('../structs/Update.js');
 const { isAdmin } = require('../checks.js');
 const { isValidGame } = require('../query.js');
-const { STATUS_PERMISSIONS, EMBED_COLOR } = require('../constants.js');
+const { STATUS_PERMISSIONS } = require('../constants.js');
 const { debugLog } = require('../debug.js');
 const STATUS_PERMISSIONS_READABLE = STATUS_PERMISSIONS.map(p => `\`${p}\``).join(', ');
 

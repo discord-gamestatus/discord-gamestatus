@@ -33,7 +33,7 @@ const max = function() {
   return v;
 }
 
-const getLimits = module.exports.getLimits = async function(client, user) {
+module.exports.getLimits = async function(client, user) {
   let limits = { channelLimit: client.config.channelLimit, guildLimit: client.config.guildLimit };
   for (let guildID in client.config.limitRules) {
     const guild = await nullError(client.guilds.fetch(guildID));
@@ -45,7 +45,7 @@ const getLimits = module.exports.getLimits = async function(client, user) {
       const role = await nullError(guild.roles.fetch(roleID));
       if (role === null) continue;
       if (member.roles.cache.has(roleID)) {
-        for (key in limits) {
+        for (let key in limits) {
           limits[key] = max(limits[key], guildRules[roleID][key]);
         }
       }
