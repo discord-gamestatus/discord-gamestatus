@@ -43,7 +43,7 @@ const client = new Discord.Client({
 });
 
 Object.defineProperties(client, {
-  updateCache: { value: new UpdateCache(`${__dirname}/_save.json`) },
+  updateCache: { value: new UpdateCache(`${__dirname}/../_save.json`) },
   commands: { value: new Map() },
   config: { value: {
     prefix: '!',
