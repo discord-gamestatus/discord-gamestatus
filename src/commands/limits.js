@@ -36,9 +36,6 @@ const call = async function(message) {
   }));
 }
 
-
-// TODO: Add command showing guild/channel status limit
-
 exports.name = 'limits';
 exports.call = call;
 exports.help = 'View your guild/channel limits';
