@@ -18,6 +18,8 @@ const { MessageEmbed } = require('discord.js');
 const Package = require('../../package.json');
 const { humanDuration } = require('@douile/bot-utilities');
 
+const { EMBED_COLOR } = require('../constants.js');
+
 const call = async function(message) {
   const client = message.client;
 
@@ -39,7 +41,7 @@ const call = async function(message) {
     [discord.js](https://github.com/discordjs/discord.js)\n\
     [gamedig](https://github.com/gamedig/node-gamedig)`,
     timestamp: Date.now(),
-    color: 0x5555ff
+    color: EMBED_COLOR
   }))
 }
 

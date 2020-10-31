@@ -6,6 +6,7 @@ trigger-run.js
 _save.json
 start.sh
 update-discord-gamestatus.sh
+limit-rules.json
 
 # Vim
 *~

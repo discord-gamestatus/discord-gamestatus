@@ -153,8 +153,10 @@ class UpdateCache extends Collection {
       }
     }
 
+    const limits = await getLimits(client, guild.ownerID);
+
     // TODO: Make logic check less complex
-    if ( !(isNaN(client.config.guildLimit) || client.config.guildLimit === 0 || guildUpdates < client.config.guildLimit) ) {
+    if ( !(isNaN(client.config.guildLimit) || client.config.guildLimit === 0 || guildUpdates < limits.guildLimit) ) {
       return `Sorry this server has reached its limit of ${client.config.guildLimit} active server statuses`;
     }
 
@@ -167,7 +169,7 @@ class UpdateCache extends Collection {
       if (!Array.isArray(updates)) updates = [updates];
 
       // Check server is allowed to add another updater
-      if (isNaN(client.config.channelLimit) || client.config.channelLimit === 0 || updates.length < client.config.channelLimit) {
+      if (isNaN(client.config.channelLimit) || client.config.channelLimit === 0 || updates.length < limits.channelLimit) {
         updates.push(update);
         await this.set(update.channel, updates);
       } else {

@@ -16,6 +16,7 @@ GNU General Public License for more details.
 const { MessageEmbed } = require('discord.js');
 
 const { isAdmin } = require('../checks.js');
+const { EMBED_COLOR } = require('../constants.js');
 
 const WARNING = '_Changes will not take effect until after the status has updated_';
 const OPTION_LAYOUT = Object.freeze([
@@ -60,7 +61,7 @@ const call = async function(message) {
           description: statusIdentity(status),
           fields: options,
           timestamp: Date.now(),
-          color: 0x5555ff
+          color: EMBED_COLOR
         }));
       } else if (args.length === 2) {
         await status.deleteOption(message.client, args[1]);
@@ -68,7 +69,7 @@ const call = async function(message) {
           title: `#${index}`,
           description: `${statusIdentity(status)}\nReset: \`${args[1]}\`\n${WARNING}`,
           timestamp: Date.now(),
-          color: 0x5555ff
+          color: EMBED_COLOR
         }));
       } else {
         const value = args.splice(2).join(' ');
@@ -77,7 +78,7 @@ const call = async function(message) {
           title: `#${index}`,
           description: `${statusIdentity(status)}\nSet: \`${args[1]}=${status.getOption(args[1])}\`\n${WARNING}`,
           timestamp: Date.now(),
-          color: 0x5555ff
+          color: EMBED_COLOR
         }));
       }
     } else {
@@ -100,7 +101,7 @@ const call = async function(message) {
       title: `${fields.length} Active statuses`,
       fields: fields,
       timestamp: Date.now(),
-      color: 0x5555ff
+      color: EMBED_COLOR
     }));
   }
 }

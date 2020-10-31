@@ -43,7 +43,7 @@ const client = new Discord.Client({
 });
 
 Object.defineProperties(client, {
-  updateCache: { value: new UpdateCache('_save.json') },
+  updateCache: { value: new UpdateCache(`${__dirname}/_save.json`) },
   commands: { value: new Map() },
   config: { value: {
     prefix: '!',
@@ -55,6 +55,7 @@ Object.defineProperties(client, {
     guildLimit: undefined,
     allowDuplicates: false,
     supportServer: undefined,
+    limitRules: {}
   } }
 });
 
@@ -65,9 +66,28 @@ async function loadCommand(file) {
 }
 
 async function loadCommands() {
-  const files = await fs.readdir('./src/commands');
+  const files = await fs.readdir(`${__dirname}/commands`);
   /* allSettled not used as we don't want to ignore errors */
   await Promise.all(files.map(loadCommand));
+}
+
+function readJSONOrEmpty(fileName) {
+  return new Promise((resolve) => {
+    fs.readFile(fileName, {encoding: 'utf-8'}).then((content) => {
+      let data = {};
+      try {
+        data = JSON.parse(content);
+      } catch(e) {}
+      resolve(data);
+    }).catch((error) => {
+      resolve({});
+    })
+  })
+}
+
+async function loadAdditionalConfigs() {
+  client.config.limitRules = await readJSONOrEmpty(`${__dirname}/../limit-rules.json`);
+  verbooseLog('Limit rules', client.config.limitRules);
 }
 
 client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(message) {
@@ -201,6 +221,7 @@ async function start(config) {
   debugLog('DEVELOPER LOGS ENABLED');
   verbooseLog('VERBOOSE LOGS ENABLED');
   await loadCommands();
+  await loadAdditionalConfigs();
   await client.updateCache.load();
   await client.updateCache.deleteEmpty();
   if (isOfBaseType(config.dblKey, String) && config.dblKey.length > 0) {
