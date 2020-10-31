@@ -1,6 +1,6 @@
 {
   "name": "discord-gamestatus",
-  "version": "1.11.4",
+  "version": "1.11.5",
   "description": "Monitor game servers via discord",
   "main": "index.js",
   "author": "Douile",
