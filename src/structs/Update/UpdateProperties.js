@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 const { Guild, Message, TextChannel } = require('discord.js-light');
-const { STATUS_PERMISSIONS } = require('../../constants.js');
+// const { STATUS_PERMISSIONS } = require('../../constants.js');
 const { verbooseLog } = require('../../debug.js');
 
 module.exports = {
