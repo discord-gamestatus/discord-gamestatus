@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const Discord = require('discord.js');
+const Discord = require('discord.js-light');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
 const { allSettled, errorWrap, isOfBaseType } = require('@douile/bot-utilities');
@@ -29,6 +29,12 @@ const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAG
 const UPDATE_INTERVALS = {};
 
 const client = new Discord.Client({
+  cacheGuilds: true,
+  cacheChannels: false,
+  cacheOverwrites: false,
+  cacheRoles: true,
+  cacheEmojis: false,
+  cachePresences: false,
   apiRequestMethod: 'sequential',
   messageCacheMaxSize: 0,
   disableMentions: 'everyone',
@@ -138,7 +144,7 @@ const stopIntervals = function() {
 
 client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
-  let invite = await client.generateInvite(INVITE_FLAGS);
+  let invite = await client.generateInvite({permissions:INVITE_FLAGS});
   console.log(`Invite link ${invite}`);
   startIntervals();
   if (client.config.owner === undefined) {

@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js-light');
 
 const { getLimits } = require('../limits.js');
 const { EMBED_COLOR } = require('../constants.js');
@@ -23,7 +23,8 @@ const call = async function(message) {
   if (message.channel.type === 'dm') {
     user = message.author;
   } else {
-    user = await message.client.users.fetch(message.guild.ownerID);
+    const guild = await message.client.guilds.fetch(message.guild);
+    user = await message.client.users.fetch(guild.ownerID);
   }
   const limits = await getLimits(message.client, user.id);
   await message.channel.send(new MessageEmbed({

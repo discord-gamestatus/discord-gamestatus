@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 const { performance } = require('perf_hooks');
-const { MessageEmbed, User } = require('discord.js');
+const { MessageEmbed, User } = require('discord.js-light');
 
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
@@ -94,7 +94,11 @@ module.exports = {
       try {
         newMessage = await channel.send.apply(channel, args);
       } catch(e) {
-        debugLog('Unable to send new update', e);
+        if (e.code === 50013) {
+          this._shouldDelete = true;
+        } else {
+          debugLog('Unable to send new update', e);
+        }
       }
       await this.setMessage(client, newMessage);
     }
@@ -153,6 +157,7 @@ module.exports = {
 
   async deleteMessage(client, message) {
     if (!message) message = await this.getMessage(client);
+    if (!message) return;
     try {
       await message.delete();
     } catch(e) {

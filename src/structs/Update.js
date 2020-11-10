@@ -21,6 +21,7 @@ class Update extends Serializable {
     super();
 
     this._deleted = false;
+    this._shouldDelete = false;
 
     /* Serializable.parse will not provide opts */
     if (opts) {

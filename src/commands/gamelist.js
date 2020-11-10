@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js-light');
 
 const { gameList } = require('../query.js');
 const { isAdmin, isDMChannel, combineAny }  = require('../checks.js');

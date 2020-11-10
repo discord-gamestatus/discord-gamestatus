@@ -13,20 +13,21 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { Guild, Message, TextChannel } = require('discord.js');
+const { Guild, Message, TextChannel } = require('discord.js-light');
 const { STATUS_PERMISSIONS } = require('../../constants.js');
+const { verbooseLog } = require('../../debug.js');
 
 module.exports = {
   async getGuild(client) {
     if (this._guild) return this._guild;
-    this._guild = client.guilds.resolve(this.guild);
+    this._guild = await client.guilds.fetch(this.guild);
     return this._guild;
   },
 
   async getChannel(client) {
     if (this._channel) return this._channel;
     let guild = await this.getGuild(client);
-    this._channel = guild !== undefined ? guild.channels.resolve(this.channel) : undefined;
+    this._channel = guild !== undefined ? await client.channels.fetch(this.channel) : undefined;
     return this._channel;
   },
 
@@ -36,6 +37,7 @@ module.exports = {
     try {
       this._message = (channel !== undefined && this.message !== undefined) ? await channel.messages.fetch(this.message) : undefined;
     } catch(e) {
+      verbooseLog(e);
       return undefined;
     }
     return this._message;
@@ -75,13 +77,17 @@ module.exports = {
   },
 
   async shouldDelete(client) {
+    if (this._shouldDelete === true) return true;
     const guild = await this.getGuild(client);
     if (guild === undefined || guild.deleted) return true;
     const channel = await this.getChannel(client);
     if (channel === undefined || channel.deleted) return true;
+    return false;
+    /*
     const permissions = channel.permissionsFor(client.user);
     if (permissions === null) return true;
     return !permissions.has(STATUS_PERMISSIONS, true);
+    */
   },
 
   messageLink() {

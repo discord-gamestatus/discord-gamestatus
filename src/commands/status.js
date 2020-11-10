@@ -26,7 +26,9 @@ const call = async function(message, parts) {
   if (!isValidGame(parts[0])) return await message.channel.send(`\`${parts[0]}\` is not a valid game please check \`${message.client.config.prefix}gamelist\``);
 
   // Check channel permissions
-  const permissions = message.channel.permissionsFor(message.client.user);
+  const channel = await message.client.channels.fetch(message.channel);
+  /*
+  const permissions = channel.permissionsFor(message.client.user);
   if (permissions !== null) {
     if (!permissions.has(STATUS_PERMISSIONS, true)) {
       const errorMessage = `It doesn't look like I have enough permissions to create a status message in this channel. Please check <@!${message.client.user.id}> has ${STATUS_PERMISSIONS_READABLE} in this channel (<#${message.channel.id}>)`;
@@ -39,11 +41,12 @@ const call = async function(message, parts) {
       return;
     }
   }
+  */
 
   let update = new Update({
     type: parts[0],
     ip: parts[1]
-  }, { channel: message.channel });
+  }, { channel: channel });
 
   let state = await update.send(message.client, 0);
   if (state.offline === true) {
@@ -62,14 +65,14 @@ const call = async function(message, parts) {
     error = await message.client.updateCache.updateAdd(update, message.client);
   } catch(e) {
     await update._message.delete();
-    await message.channel.send('Sorry an error was encountered saving this update, please try again later');
+    await channel.send('Sorry an error was encountered saving this update, please try again later');
     debugLog(e);
     return;
   }
 
   if (error !== undefined) {
     await update._message.delete();
-    await message.channel.send(error);
+    await channel.send(error);
   }
 }
 

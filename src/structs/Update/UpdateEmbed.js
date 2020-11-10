@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { MessageEmbed, MessageAttachment } = require('discord.js');
+const { MessageEmbed, MessageAttachment } = require('discord.js-light');
 const { FORMAT_PROPERTIES, MAX_EMBED_FIELD_SIZE } = require('../../constants.js');
 
 const serverFormat = function(string, server) {
