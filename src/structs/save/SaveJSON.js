@@ -59,8 +59,9 @@ class SaveJSON extends SaveInterface {
     if (!this.isUpdateCache(updateCache)) throw new Error('Must provide an UpdateCache object');
 
     let content = await fs.readFile(this.filename);
+    let obj;
     try {
-      let obj = JSON.parse(content);
+      obj = JSON.parse(content);
     } catch(e) {
       await fs.copyFile(this.filename, `${this.filename}.damaged`);
       throw e;
