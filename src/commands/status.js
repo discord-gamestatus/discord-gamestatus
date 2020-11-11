@@ -50,7 +50,8 @@ const call = async function(message, parts) {
 
   let state = await update.send(message.client, 0);
   if (state.offline === true) {
-    await update._message.delete();
+    const message = await update.getMessage(client);
+    if (message) await message.delete();
     await message.channel.send(`The server (\`${parts[1]}\`) was offline or unreachable`);
     return;
   }
@@ -64,14 +65,16 @@ const call = async function(message, parts) {
   try {
     error = await message.client.updateCache.updateAdd(update, message.client);
   } catch(e) {
-    await update._message.delete();
+    const message = await update.getMessage(client);
+    if (message) await message.delete();
     await channel.send('Sorry an error was encountered saving this update, please try again later');
     debugLog(e);
     return;
   }
 
   if (error !== undefined) {
-    await update._message.delete();
+    const message = await update.getMessage(client);
+    if (message) await message.delete();
     await channel.send(error);
   }
 }
