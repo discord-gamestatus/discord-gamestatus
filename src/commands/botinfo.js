@@ -38,6 +38,7 @@ const call = async function(message) {
     Memory usage: ${Math.round(memoryUsage.heapUsed/1024)}kb/${Math.round(memoryUsage.heapTotal/1024)}kb\n\
     **Dependencies**\n\
     [NodeJS ${process.version}](https://nodejs.org)\n\
+    [discord.js-light](https://github.com/timotejroiko/discord.js-light)\n\
     [discord.js](https://github.com/discordjs/discord.js)\n\
     [gamedig](https://github.com/gamedig/node-gamedig)`,
     timestamp: Date.now(),
