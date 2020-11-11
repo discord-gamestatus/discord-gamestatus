@@ -44,6 +44,7 @@ module.exports = {
     } catch(e) {
       console.warn('Error sending update', e, e.stack);
     }
+    /*
     try {
       await this.sendPlayerNotifications(client, state, changes.players);
     } catch(e) {
@@ -54,6 +55,7 @@ module.exports = {
     } catch(e) {
       console.warn('Error sending server notifications', e);
     }
+    */
 
     let _end = performance.now();
     verbooseLog(`Update completed in ${_end-_start}ms`);
