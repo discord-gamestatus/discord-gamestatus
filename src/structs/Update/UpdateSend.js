@@ -106,6 +106,7 @@ module.exports = {
     }
   },
 
+  // TODO: If keeping notifications, these functions don't work with d.js-light
   async sendPlayerNotifications(client, state, diff) {
     let fields = {};
     for (let player of diff.all) {
