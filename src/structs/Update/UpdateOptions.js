@@ -13,18 +13,24 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { isOfBaseType } = require('@douile/bot-utilities');
+const { isOfBaseType, constants: { EMBED_LIMITS } } = require('@douile/bot-utilities');
+
+const LimitedString = require('../LimitedString.js');
+
+const TitleLimit = LimitedString(EMBED_LIMITS.title,'...');
+const DescriptionLimit = LimitedString(EMBED_LIMITS.description, '...');
+const ImageLimit = LimitedString(300);
 
 const DEFAULT_OPTIONS = {
   dots: ['⚪','⚫'],
-  title: '{name} server status',
-  offlineTitle: `server **{name}**`,
-  description: 'Playing {map} with {numplayers}/{maxplayers} players\nConnect with {connect}',
-  offlineDescription: 'Server is offline',
+  title: new TitleLimit('{name} server status'),
+  offlineTitle: new TitleLimit(`server **{name}**`),
+  description: new DescriptionLimit('Playing {map} with {numplayers}/{maxplayers} players\nConnect with {connect}'),
+  offlineDescription: new DescriptionLimit('Server is offline'),
   color: 0x2894C2,
   offlineColor: 0xff0000,
-  image: '',
-  offlineImage: '',
+  image: new ImageLimit(''),
+  offlineImage: new ImageLimit(''),
   columns: 3,
   maxEdits: 900000,
   connectUpdate: false,
@@ -51,7 +57,7 @@ module.exports = {
     if (!isOfBaseType(this.options, Object)) this.options = {};
     /* Use DEFAULT_OPTIONS constructors to typecast new value */
     // TODO: Add better support for setting arrays
-    let newValue = DEFAULT_OPTIONS[optionName].__proto__.constructor(value);
+    let newValue = new DEFAULT_OPTIONS[optionName].__proto__.constructor(value);
     if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue)) newValue = null;
     if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) newValue = ['1','true','t','yes','y'].includes(value.toLowerCase().trim().split(' ')[0]);
     if (isOfBaseType(DEFAULT_OPTIONS[optionName], Array)) newValue = value.split(' ');
