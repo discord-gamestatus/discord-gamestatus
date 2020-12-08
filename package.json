@@ -29,7 +29,7 @@
     "node": ">=12.0.0"
   },
   "dependencies": {
-    "@douile/bot-utilities": "^1.2.1",
+    "@douile/bot-utilities": "^1.2.2",
     "discord.js-light": "^3.4.2",
     "gamedig": "github:douile/node-gamedig#unessential-requests",
     "node-fetch": "^2.6.1"
