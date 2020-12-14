@@ -28,8 +28,8 @@ const getResolver = function() {
 
 const IMAGE = {
   fivem: async function(state) {
-    let info = state.raw.info ? state.raw.info : {};
-    return info.icon ? { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' } : undefined;
+    let info = state?.raw?.info;
+    return info?.icon ? { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' } : undefined;
   },
   discord: async function(state) {
     let guild = this.guilds.get(state.gameHost);
