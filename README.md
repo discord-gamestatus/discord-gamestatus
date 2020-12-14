@@ -38,7 +38,6 @@ _At the moment there is no help command_
 | ------- | ----- | ----------- | -------- |
 | help | `!help [command]` | None | List commands / Get help with a specific command
 | gamelist | `!gamelist [game]` | ADMINISTRATOR | View/Search the list of games available
-| notify | `!notify [user]` | None | (Only in channel with a single status message) Get PM notifications when provided user connect/disconnects. Omit user to get notifications when the server changes map or goes offline/online.
 | status | `!status {game} {ip}` | ADMINISTRATOR | Add a status message to current channel
 | statusclear | `!statusclear` | ADMINISTRATOR | Clear all status messages from current channel
 | statusmod | `!statusmod [id] [property] [value]` | ADMINISTRATOR | Modify status messages in the current channel

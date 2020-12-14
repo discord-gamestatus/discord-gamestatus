@@ -32,7 +32,6 @@ class Update extends Serializable {
       this.type = opts.type;
       this.ip = opts.ip;
       this.name = opts.ip;
-      this.notifications = opts.notifications ? opts.notifications : {};
       this.options = opts.options;
 
       if (objs) {
