@@ -62,5 +62,5 @@ exports.isVerbose = isVerbose;
 exports.errorLog = logFlag(isError, console.error);
 exports.warnLog = logFlag(isWarn, console.warn);
 exports.infoLog = logFlag(isInfo);
-exports.debugLog = logFlag(isDebug);;
+exports.debugLog = logFlag(isDebug);
 exports.verboseLog = logFlag(isVerbose);
