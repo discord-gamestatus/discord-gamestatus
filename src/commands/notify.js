@@ -16,6 +16,7 @@ GNU General Public License for more details.
 const { isOfBaseType } = require('@douile/bot-utilities');
 
 const { Update } = require('../structs/Update.js');
+const { errorLog } = require('../debug.js');
 
 const call = async function(message, parts) {
   if (!message.client.updateCache.has(message.channel.id)) return await message.channel.send(`No update message for this channel`);
@@ -29,7 +30,7 @@ const call = async function(message, parts) {
       return await message.channel.send('Sorry the notify command is disabled for multistatus channels'); // NOTE: Players cannot disable notifications after there are multiple statuses
     }
   } else if (!isOfBaseType(update, Update)) {
-    console.error('Bad update type', update);
+    errorLog('Bad update type', update);
     return; // Ahhh something has gone wrong
   }
 

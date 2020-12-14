@@ -17,7 +17,7 @@ const { Collection } = require('discord.js-light');
 
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
-const { debugLog, verbooseLog } = require('../debug.js');
+const { errorLog, debugLog, verboseLog } = require('../debug.js');
 const Update = require('./Update.js');
 const { getLimits } = require('../limits.js');
 
@@ -42,7 +42,7 @@ class UpdateCache extends Collection {
     try {
       await this.saveInterface.load(this);
     } catch(e) {
-      console.error(e);
+      errorLog(e);
     }
     await this.saveUnlock();
   }
@@ -52,7 +52,7 @@ class UpdateCache extends Collection {
     try {
       await this.saveInterface.save(this);
     } catch(e) {
-      console.error(e);
+      errorLog(e);
     }
     await this.saveUnlock();
   }
@@ -60,7 +60,7 @@ class UpdateCache extends Collection {
   set(key, value, dontSave) {
     Collection.prototype.set.call(this, key, value);
     if (dontSave !== true) return this.save();
-    verbooseLog(`Set ${key} without saving`);
+    verboseLog(`Set ${key} without saving`);
   }
 
   delete(key, dontSave) {
@@ -101,7 +101,7 @@ class UpdateCache extends Collection {
       try {
         await this.saveInterface.save(this);
       } catch(e) {
-        console.error(e);
+        errorLog(e);
       }
     }
     await this.saveUnlock();

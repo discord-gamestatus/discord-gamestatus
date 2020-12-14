@@ -14,10 +14,14 @@ GNU General Public License for more details.
 */
 
 const fs = require('fs').promises;
+
+const { allSettled, isOfBaseType } = require('@douile/bot-utilities');
+
 const SaveInterface = require('./SaveInterface.js');
 const Update = require('../Update.js');
 const Serializable = require('../Serializable.js');
-const { allSettled, isOfBaseType } = require('@douile/bot-utilities');
+const { infoLog, errorLog } = require('../../debug.js');
+
 
 class SaveJSON extends SaveInterface {
   constructor(filename) {
@@ -72,8 +76,8 @@ class SaveJSON extends SaveInterface {
       promises.push(this.loadItem(updateCache, key, item));
     }
     let res = await allSettled(promises), errs = res.filter(v => v !== true);
-    console.log(`Loaded ${promises.length} configs...`);
-    if (errs.length > 0) console.error(errs);
+    infoLog(`Loaded ${promises.length} configs...`);
+    if (errs.length > 0) errorLog(errs);
   }
 
   async loadItem(updateCache, key, item) {

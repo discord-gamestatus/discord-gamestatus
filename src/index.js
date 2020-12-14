@@ -17,7 +17,7 @@ const Discord = require('discord.js-light');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
 const { allSettled, errorWrap, isOfBaseType } = require('@douile/bot-utilities');
-const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
+const { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } = require('./debug.js');
 
 var TICK_GENERATOR = undefined;
 var TICK = 0, TICK_SECOND = 0;
@@ -84,7 +84,7 @@ function readJSONOrEmpty(fileName) {
       try {
         data = JSON.parse(content);
       } catch(e) {
-        verbooseLog('Error parsing JSON', e);
+        verboseLog('Error parsing JSON', e);
       }
       resolve(data);
     }).catch(() => {
@@ -95,7 +95,7 @@ function readJSONOrEmpty(fileName) {
 
 async function loadAdditionalConfigs() {
   client.config.limitRules = await readJSONOrEmpty(`${__dirname}/../limit-rules.json`);
-  verbooseLog('Limit rules', client.config.limitRules);
+  verboseLog('Limit rules', client.config.limitRules);
 }
 
 client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(message) {
@@ -115,7 +115,7 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
       try {
         await cmd.call(message, parts);
       } catch(e) {
-        console.error(`Error running command ${command}\n`, e);
+        errorLog(`Error running command ${command}\n`, e);
         await message.channel.send('Sorry an error occured, please try again later');
       }
     } else {
@@ -124,7 +124,7 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
 
     return;
   }
-  verbooseLog(`Unkown command ${command}`);
+  verboseLog(`Unkown command ${command}`);
 }))
 
 const startIntervals = function() {
@@ -143,9 +143,9 @@ const stopIntervals = function() {
 }
 
 client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
-  console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
+  infoLog(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite({permissions:INVITE_FLAGS});
-  console.log(`Invite link ${invite}`);
+  infoLog(`Invite link ${invite}`);
   startIntervals();
   if (client.config.owner === undefined) {
     const application = await client.fetchApplication();
@@ -154,7 +154,7 @@ client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
     } else if (application.owner instanceof Discord.Team) {
       client.config.owner = application.owner.ownerID;
     }
-    console.log('No owner override set, bot owner is', client.config.owner);
+    infoLog('No owner override set, bot owner is', client.config.owner);
   }
   await client.user.setPresence({ status: 'online', activity: { type: 'WATCHING', name: `always 👀 | ${client.config.prefix}help` } });
 }))
@@ -181,30 +181,30 @@ client.on(TICK_EVENT, errorWrap(async function() {
     }
   }
   let res = await allSettled(promises);
-  if (res.length > 0) verbooseLog(r,  promises.length, res);
+  if (res.length > 0) verboseLog(r,  promises.length, res);
 }));
 
-client.on(Discord.Constants.Events.RATE_LIMIT, verbooseLog);
-client.on(Discord.Constants.Events.DEBUG, verbooseLog);
-client.on(Discord.Constants.Events.WARN, verbooseLog);
+client.on(Discord.Constants.Events.RATE_LIMIT, verboseLog);
+client.on(Discord.Constants.Events.DEBUG, verboseLog);
+client.on(Discord.Constants.Events.WARN, verboseLog);
 client.on(Discord.Constants.Events.ERROR, debugLog);
 client.on(Discord.Constants.Events.DISCONNECT, (closeEvent) => {
   stopIntervals();
-  verbooseLog('[NETWORK] Disconnected from discord API', closeEvent);
+  verboseLog('[NETWORK] Disconnected from discord API', closeEvent);
 });
 client.on(Discord.Constants.Events.RECONNECTING, () => {
-  verbooseLog('[NETWORK] Attempting to reconnect to discord API');
+  verboseLog('[NETWORK] Attempting to reconnect to discord API');
 });
 client.on(Discord.Constants.Events.RESUME, (replayed) => {
   startIntervals();
-  verbooseLog(`[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`);
+  verboseLog(`[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`);
 });
 
 async function doUpdate(update, tick) {
   if (!Array.isArray(update)) update = [update];
   for (let u of update) {
     if (u._deleted) {
-      verbooseLog(`Skipping updating [${u.ID()}]: already deleted`);
+      verboseLog(`Skipping updating [${u.ID()}]: already deleted`);
       continue; // Don't update already deleted updates
     }
     if (await u.shouldDelete(client)) {
@@ -218,16 +218,16 @@ async function doUpdate(update, tick) {
 }
 
 async function start(config) {
-  setDebugFlag(config.debug, config.verboose);
+  setDebugFlag(config.error, config.warn, config.info, config.debug, config.verbose);
   /* Override owner, prefix, tickCount, tickTime */
   for (let key in client.config) {
     if (key in config) client.config[key] = config[key];
   }
 
-  verbooseLog('CONFIG', client.config);
+  verboseLog('CONFIG', client.config);
 
-  debugLog('DEVELOPER LOGS ENABLED');
-  verbooseLog('VERBOOSE LOGS ENABLED');
+  debugLog('DEBUG LOGS ENABLED');
+  verboseLog('VERBOOSE LOGS ENABLED');
   await loadCommands();
   await loadAdditionalConfigs();
   await client.updateCache.load();

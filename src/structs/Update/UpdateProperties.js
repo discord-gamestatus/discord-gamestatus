@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 const { Guild, Message, TextChannel } = require('discord.js-light');
 // const { STATUS_PERMISSIONS } = require('../../constants.js');
-const { verbooseLog } = require('../../debug.js');
+const { verboseLog } = require('../../debug.js');
 
 module.exports = {
   async getGuild(client) {
@@ -37,7 +37,7 @@ module.exports = {
     try {
       this._message = (channel !== undefined && this.message !== undefined) ? await channel.messages.fetch(this.message) : undefined;
     } catch(e) {
-      verbooseLog(e);
+      verboseLog(e);
       return undefined;
     }
     return this._message;

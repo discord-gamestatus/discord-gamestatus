@@ -16,7 +16,7 @@ GNU General Public License for more details.
 const GameDig = require('gamedig');
 const GameResolver = require('gamedig/lib/GameResolver.js');
 
-const { verbooseLog } = require('./debug.js');
+const { verboseLog } = require('./debug.js');
 const { markdownEscape } = require('@douile/bot-utilities');
 
 var resolver;
@@ -76,7 +76,7 @@ const query = async function(type, ip) {
     state.validPlayers = state.realPlayers.length;
     state.map = parseMap(state.map, protocol);
   } catch(e) {
-    verbooseLog(e);
+    verboseLog(e);
     state = {
       name: 'OFFLINE',
       map: 'OFFLINE',

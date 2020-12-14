@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 const fetch = require('node-fetch');
 
-const { debugLog, verbooseLog } = require('./debug.js');
+const { debugLog, verboseLog } = require('./debug.js');
 
 const URL_API = 'https://top.gg/api';
 const DBL_TIMEOUT = 1000;
@@ -42,7 +42,7 @@ const sendDBLUpdateRequest = async function(client, key) {
   } else if (!res.ok) {
     throw new Error(`DBL api returned error code ${res.status} ${res.statusText}`);
   }
-  verbooseLog(`Successfully update DBL (server count: ${servers})`);
+  verboseLog(`Successfully update DBL (server count: ${servers})`);
 }
 
 const sendDBLUpdate = function(client, key) {

@@ -18,7 +18,7 @@ const { MessageEmbed, User } = require('discord.js-light');
 
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
-const { debugLog, verbooseLog } = require('../../debug.js');
+const { debugLog, warnLog, verboseLog } = require('../../debug.js');
 const { allSettled } = require('@douile/bot-utilities');
 
 module.exports = {
@@ -42,7 +42,7 @@ module.exports = {
     try {
       await this.sendUpdate(client, tick, state, changes);
     } catch(e) {
-      console.warn('Error sending update', e, e.stack);
+      warnLog('Error sending update', e, e.stack);
     }
     /*
     try {
@@ -58,7 +58,7 @@ module.exports = {
     */
 
     let _end = performance.now();
-    verbooseLog(`Update completed in ${_end-_start}ms`);
+    verboseLog(`Update completed in ${_end-_start}ms`);
     return state;
   },
 
@@ -86,7 +86,7 @@ module.exports = {
         }
         if (success) return; // If sucessfully edited exit function
       }
-      verbooseLog(`Sending new message, ${message.id} should be deleted`);
+      verboseLog(`Sending new message, ${message.id} should be deleted`);
     }
 
     // Send a new message
@@ -130,7 +130,7 @@ module.exports = {
       });
       let u = client.users.get(user);
       if (u instanceof User) promises.push(u.send(embed));
-      else console.warn(user, 'Is not a valid user snowflake');
+      else warnLog(user, 'Is not a valid user snowflake');
     }
     return await allSettled(promises);
   },
@@ -153,7 +153,7 @@ module.exports = {
     for (let user in this.notifyServer) {
       const u = client.users.fetch(user);
       if (u instanceof User) promises.push(u.send(embed));
-      else console.warn(user, 'Is not a valid user snowflake');
+      else warnLog(user, 'Is not a valid user snowflake');
     }
     return await allSettled(promises);
   },
@@ -166,7 +166,7 @@ module.exports = {
     } catch(e) {
       let code = e;
       if ('code' in e) code = e.code;
-      verbooseLog(`Unable to delete message ${message.id}`, code);
+      verboseLog(`Unable to delete message ${message.id}`, code);
     }
     return message;
   }

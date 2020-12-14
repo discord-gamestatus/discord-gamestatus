@@ -21,6 +21,9 @@ discord-gamestatus: A discord bot that monitors game servers\nhttps://github.com
 Usage:\n\
 \t-d, --debug\t\t\tEnable debug logging\n\
 \t-v, --verbose\t\t\tEnable verbose logging\n\
+\t--no-info\t\t\tDisable info logging\n\
+\t--no-warn\t\t\tDisable warning logging\n\
+\t--no-error\t\t\tDisable error logging\n\
 \t--dev\t\t\t\tEnable dev mode (monitor files for changes and auto-restart)\n\
 \t-p [prefix], --prefix [prefix]\tChange the command prefix can be any length (--prefix "_")\n\
 \t--key [key]\t\t\tSet the discord API key (Use of env var recommended)\n\
@@ -42,22 +45,35 @@ const setupAndStart = function(env, args) {
   let dev = false;
   let config = {
     key: env.DISCORD_API_KEY,
+    error: true,
+    warn: true,
+    info: true,
     debug: false,
-    verboose: false,
+    verbose: false,
     dblKey: env.TOPGG_API_KEY,
   };
 
   for (let i=0;i<args.length;i++) {
     switch(args[i]) {
+      case '-v':
+      case '--verbose':
+      case '--verboose':
+      config.verbose = true;
       case '-d':
       case '--debug':
       config.debug = true;
       break;
-      case '-v':
-      case '--verbose':
-      case '--verboose':
-      config.verboose = true;
+
+      case '--no-info':
+      config.info = false;
       break;
+
+      case '--no-error':
+      config.error = false;
+      case '--no-warn':
+      config.warn = false;
+      break;
+
       case '--dev':
       dev = true;
       break;
