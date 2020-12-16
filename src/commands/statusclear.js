@@ -13,12 +13,21 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { isAdmin } = require('../checks.js');
 const { allSettled } = require('@douile/bot-utilities');
+
+const { isAdmin } = require('../checks.js');
+const { channelFirstArg } = require('../utils.js');
 
 const call = async function(message) {
   let response = await message.channel.send('Clearing status updates...');
-  let statuses = message.client.updateCache.get(message.channel.id);
+  let channel;
+  try {
+    channel = await channelFirstArg(message, args);
+  } catch {
+    return;
+  }
+
+  let statuses = message.client.updateCache.get(channel.id);
 
   let count = 0;
   if (statuses) {
@@ -31,7 +40,7 @@ const call = async function(message) {
     count = statuses.length;
   }
 
-  await message.client.updateCache.delete(message.channel.id);
+  await message.client.updateCache.delete(channel.id);
   await response.edit(`${count} Status updates have been cleared`);
 }
 

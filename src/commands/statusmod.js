@@ -17,6 +17,7 @@ const { MessageEmbed } = require('discord.js-light');
 
 const { isAdmin } = require('../checks.js');
 const { EMBED_COLOR } = require('../constants.js');
+const { channelFirstArg } = require('../utils.js');
 
 const WARNING = '_Changes will not take effect until after the status has updated_';
 const OPTION_LAYOUT = Object.freeze([
@@ -34,7 +35,15 @@ const statusIdentity = function(status) {
 
 const call = async function(message) {
   const args = message.content.split(' ').splice(1);
-  let statuses = message.client.updateCache.get(message.channel.id);
+
+  let channel;
+  try {
+    channel = await channelFirstArg(message, args);
+  } catch {
+    return;
+  }
+
+  let statuses = message.client.updateCache.get(channel.id);
   if (statuses === undefined) {
     statuses = [];
   } else if (!Array.isArray(statuses)) {
@@ -99,6 +108,7 @@ const call = async function(message) {
     });
     await message.channel.send(new MessageEmbed({
       title: `${fields.length} Active statuses`,
+      description: `in <#${channel.id}>`,
       fields: fields,
       timestamp: Date.now(),
       color: EMBED_COLOR
