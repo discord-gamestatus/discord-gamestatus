@@ -18,7 +18,7 @@ const { allSettled } = require('@douile/bot-utilities');
 const { isAdmin } = require('../checks.js');
 const { channelFirstArg } = require('../utils.js');
 
-const call = async function(message) {
+const call = async function(message, args) {
   let response = await message.channel.send('Clearing status updates...');
   let channel;
   try {
