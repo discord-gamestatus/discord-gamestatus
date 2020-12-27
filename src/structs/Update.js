@@ -70,5 +70,6 @@ extendPrototype(Update, UpdateEmbed);
 extendPrototype(Update, UpdateOptions);
 extendPrototype(Update, UpdateProperties);
 extendPrototype(Update, UpdateSend);
+Update.parse = UpdateOptions.parse; // Custom static
 
 module.exports = Update;

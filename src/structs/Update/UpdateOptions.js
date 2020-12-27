@@ -16,10 +16,14 @@ GNU General Public License for more details.
 const { isOfBaseType, constants: { EMBED_LIMITS } } = require('@douile/bot-utilities');
 
 const LimitedString = require('../LimitedString.js');
+const LimitedNumber = require('../LimitedNumber.js');
 
 const TitleLimit = LimitedString(EMBED_LIMITS.title,'...');
 const DescriptionLimit = LimitedString(EMBED_LIMITS.description, '...');
 const ImageLimit = LimitedString(300);
+const ColorLimit = LimitedNumber(0, 0xFFFFFF);
+const ColumnLimit = LimitedNumber(0, 6);
+const EditLimit = LimitedNumber(1, 9e9);
 
 const DEFAULT_OPTIONS = {
   dots: ['⚪','⚫'],
@@ -27,12 +31,12 @@ const DEFAULT_OPTIONS = {
   offlineTitle: new TitleLimit(`server **{name}**`),
   description: new DescriptionLimit('Playing {map} with {numplayers}/{maxplayers} players\nConnect with {connect}'),
   offlineDescription: new DescriptionLimit('Server is offline'),
-  color: 0x2894C2,
-  offlineColor: 0xff0000,
+  color: new ColorLimit(0x2894C2),
+  offlineColor: new ColorLimit(0xFF0000),
   image: new ImageLimit(''),
   offlineImage: new ImageLimit(''),
-  columns: 3,
-  maxEdits: 900000,
+  columns: new ColumnLimit(3),
+  maxEdits: new EditLimit(900000),
   connectUpdate: false,
   disconnectUpdate: false
 };
@@ -52,7 +56,7 @@ module.exports = {
     return res;
   },
 
-  async setOption(client, optionName, value) {
+  setOption(client, optionName, value, dontSave) {
     if (!(optionName in DEFAULT_OPTIONS)) return;
     if (!isOfBaseType(this.options, Object)) this.options = {};
     /* Use DEFAULT_OPTIONS constructors to typecast new value */
@@ -67,12 +71,26 @@ module.exports = {
     } else {
       this.options[optionName] = newValue;
     }
-    await client.updateCache.save();
+    if (!dontSave) return client.updateCache.save();
   },
 
   async deleteOption(client, optionName) {
     if (!isOfBaseType(this.options, Object)) this.options = {};
     delete this.options[optionName];
     await client.updateCache.save();
+  },
+
+  parse(object) {
+    let result = new this();
+
+    const options = object?.options || {};
+    delete object['options'];
+    for (let key in options) {
+      if (key in DEFAULT_OPTIONS) {
+        result.setOption(undefined, key, options[key], true);
+      }
+    }
+
+    return Object.defineProperties(result, Object.getOwnPropertyDescriptors(object));
   }
 };

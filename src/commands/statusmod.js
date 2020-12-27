@@ -43,6 +43,8 @@ const call = async function(message) {
     return;
   }
 
+  if (!channel) return;
+
   let statuses = message.client.updateCache.get(channel.id);
   if (statuses === undefined) {
     statuses = [];
@@ -82,7 +84,14 @@ const call = async function(message) {
         }));
       } else {
         const value = args.splice(2).join(' ');
-        await status.setOption(message.client, args[1], value);
+        let error;
+        try {
+          await status.setOption(message.client, args[1], value);
+        } catch(e) {
+          error = e;
+          console.error('Error setting option', error);
+        }
+
         await message.channel.send(new MessageEmbed({
           title: `#${index}`,
           description: `${statusIdentity(status)}\nSet: \`${args[1]}=${status.getOption(args[1])}\`\n${WARNING}`,
