@@ -26,7 +26,7 @@ const call = async function(message) {
   }).join('\n');
   await message.channel.send({ embed: {
     title: `Ticks: ${message.client.config.tickCount}`,
-    description: `Average count: ${Math.round(total/i * 1e3) / 1e3}\n\`\`\`\n${tickList}\`\`\``,
+    description: `Total updates: ${total}\nAverage updates per tick: ${Math.round(total/i * 1e3) / 1e3}\n\`\`\`\n${tickList}\`\`\``,
     color: EMBED_COLOR,
   }});
 }
