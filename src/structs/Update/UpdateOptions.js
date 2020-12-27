@@ -63,8 +63,18 @@ module.exports = {
     // TODO: Add better support for setting arrays
     let newValue = new DEFAULT_OPTIONS[optionName].__proto__.constructor(value);
     if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue)) newValue = null;
-    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) newValue = ['1','true','t','yes','y'].includes(value.toLowerCase().trim().split(' ')[0]);
-    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Array)) newValue = value.split(' ');
+    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) {
+      if (isOfBaseType(value, String)) {
+        newValue = ['1','true','t','yes','y'].includes(value.toLowerCase().trim().split(' ')[0]);
+      }
+    }
+    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Array)) {
+      if (isOfBaseType(value, String)) {
+        newValue = value.split(' ');
+      } else if (isOfBaseType(value, Array)) {
+        newValue = value;
+      }
+    }
     if (!isOfBaseType(newValue, DEFAULT_OPTIONS[optionName].__proto__.constructor)) newValue = null;
     if ([DEFAULT_OPTIONS[optionName],null].includes(newValue)) {
       delete this.options[optionName];
