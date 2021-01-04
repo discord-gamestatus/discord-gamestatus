@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,9 +17,11 @@ const Discord = require('discord.js-light');
 const fs = require('fs').promises;
 const UpdateCache = require('./structs/UpdateCache.js');
 const { allSettled, errorWrap, isOfBaseType } = require('@douile/bot-utilities');
-const { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } = require('./debug.js');
 
-var TICK_GENERATOR = undefined;
+const { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } = require('./debug.js');
+const { getLimits } = require('./limits.js');
+
+var TICK_GENERATOR = undefined, TICK_LIMITS = undefined;
 var TICK = 0, TICK_SECOND = 0;
 const TICK_EVENT = 'updateTick';
 const MAX_TICK = Math.min(4294967296, Number.MAX_SAFE_INTEGER);
@@ -161,10 +163,12 @@ client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
 
 client.on(TICK_EVENT, errorWrap(async function() {
   if (TICK_GENERATOR === undefined) TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
+  if (TICK_LIMITS === undefined) TICK_LIMITS = new Map();
   let tick = TICK_GENERATOR.next();
   if (tick.done) {
     TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
     tick = TICK_GENERATOR.next();
+    TICK_LIMITS.clear();
   }
 
   if (TICK >= MAX_TICK) TICK = 0;
@@ -177,7 +181,7 @@ client.on(TICK_EVENT, errorWrap(async function() {
   let promises = [];
   if (tick.value) {
     for (let update of tick.value) {
-      promises.push(doUpdate(update, TICK_SECOND));
+      promises.push(doUpdate(update, TICK_SECOND, TICK_LIMITS));
     }
   }
   let res = await allSettled(promises);
@@ -200,7 +204,7 @@ client.on(Discord.Constants.Events.RESUME, (replayed) => {
   verboseLog(`[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`);
 });
 
-async function doUpdate(update, tick) {
+async function doUpdate(update, tick, counters) {
   if (!Array.isArray(update)) update = [update];
   for (let u of update) {
     if (u._deleted) {
@@ -212,9 +216,34 @@ async function doUpdate(update, tick) {
       await u.deleteMessage(client);
       debugLog(`Deleted obselete update ${u.ID()}`);
     } else {
-      await u.send(client, tick);
+      if (await checkTickLimits(u, counters)) {
+        await u.send(client, tick);
+      } else {
+        await client.updateCache.updateRemove(u);
+        await u.deleteMessage(client);
+        debugLog(`Deleted update for exceeding limits ${u.ID()}`);
+      }
     }
   }
+}
+
+async function checkTickLimits(update, counters) {
+  let counter;
+  if (!counters.has(update.guild)) {
+    const guild = await update.getGuild();
+    counter = { guildCount: 0, channelCount: {}, limits: await getLimits(client, guild.ownerID) };
+  } else {
+    counter = counters.get(update.guild);
+  }
+  counter.guildCount += 1;
+  if (counter.guildCount > counter.limits.guildLimit) return false;
+  if (update.channel in counter.channelCount) {
+    counter.channelCount[update.channel] += 1;
+  } else {
+    counter.channelCount[update.channel] = 1;
+  }
+  if (counter.channelCount[update.channel] > counter.limits.channelLimit) return false;
+  return true;
 }
 
 async function start(config) {
