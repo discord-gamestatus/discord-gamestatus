@@ -39,12 +39,12 @@ module.exports.getLimits = async function(client, user) {
   for (let guildID in client.config.limitRules) {
     const guild = await nullError(client.guilds.fetch(guildID), warnLog);
     if (guild === null) continue;
-    const member = await nullError(guild.members.fetch(user), verboseLog);
+    const member = await nullError(guild.members.fetch(user, { rest: true, cache: false, force: true }), verboseLog);
     if (member === null) continue;
     const guildRules = client.config.limitRules[guildID];
     for (let roleID in guildRules) {
-      const role = await nullError(guild.roles.fetch(roleID), warnLog);
-      if (role === null) continue;
+      /*const role = await nullError(guild.roles.fetch(roleID), warnLog);
+      if (role === null) continue;*/
       if (member.roles.cache.has(roleID)) {
         for (let key in limits) {
           limits[key] = max(limits[key], guildRules[roleID][key]);
