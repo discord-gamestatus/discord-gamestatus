@@ -14,12 +14,10 @@ GNU General Public License for more details.
 */
 
 const { performance } = require('perf_hooks');
-const { MessageEmbed, User } = require('discord.js-light');
 
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
 const { debugLog, warnLog, verboseLog } = require('../../debug.js');
-const { allSettled } = require('@douile/bot-utilities');
 
 module.exports = {
   async send(client, tick) {
