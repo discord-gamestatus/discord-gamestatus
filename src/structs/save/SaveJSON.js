@@ -25,39 +25,34 @@ const { infoLog, errorLog } = require('../../debug.js');
 
 
 class SaveJSON extends SaveInterface {
-  filename;
-  #cache;
-  #saveLock;
-  #saveLockQueue;
-
   constructor(filename) {
     super();
     this.filename = filename;
-    this.#saveLock = false;
-    this.#saveLockQueue = new Array();
-    this.#cache = new Collection();
+    this._saveLock = false;
+    this._saveLockQueue = new Array();
+    this._cache = new Collection();
   }
 
   get(key) {
-    return this.#cache.get(key);
+    return this._cache.get(key);
   }
 
   async set(key, value) {
-    this.#cache.set(key, value);
+    this._cache.set(key, value);
     await this.save();
   }
 
   async delete(key) {
-    this.#cache.delete(key);
+    this._cache.delete(key);
     await this.save();
   }
 
   values() {
-    return this.#cache.values();
+    return this._cache.values();
   }
 
   entries() {
-    return this.#cache.entries();
+    return this._cache.entries();
   }
 
   /*****************************************************************************
@@ -65,20 +60,20 @@ class SaveJSON extends SaveInterface {
   *****************************************************************************/
 
   async saveLock() {
-    if (this.#saveLock) {
-      let queue = this.#saveLockQueue;
+    if (this._saveLock) {
+      let queue = this._saveLockQueue;
       await new Promise((resolve) => {
         queue.push(resolve);
       });
     }
-    return this.#saveLock = true;
+    return this._saveLock = true;
   }
 
   async saveUnlock() {
-    if (this.#saveLockQueue.length > 0) {
-      this.#saveLockQueue.pop(0)();
+    if (this._saveLockQueue.length > 0) {
+      this._saveLockQueue.pop(0)();
     } else {
-      this.#saveLock = false;
+      this._saveLock = false;
     }
   }
 
@@ -96,7 +91,7 @@ class SaveJSON extends SaveInterface {
     let obj = {};
 
     let promises = [];
-    for (let [key, item] of this.#cache.entries()) {
+    for (let [key, item] of this._cache.entries()) {
       promises.push(this.saveItem(obj, key, item));
     }
     await allSettled(promises);
@@ -160,7 +155,7 @@ class SaveJSON extends SaveInterface {
     } else {
       res = Update.parse(item);
     }
-    this.#cache.set(key, res, true);
+    this._cache.set(key, res, true);
     return true;
   }
 
