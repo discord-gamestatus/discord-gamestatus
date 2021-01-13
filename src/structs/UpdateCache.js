@@ -52,6 +52,10 @@ class UpdateCache {
     return this.saveInterface.set(key, value);
   }
 
+  has(key) {
+    return this.saveInterface.has(key);
+  }
+
   delete(key) {
     return this.saveInterface.delete(key);
   }
@@ -113,7 +117,7 @@ class UpdateCache {
     const guild = await update.getGuild(client);
     let guildUpdates = 0;
     for (let channel of guild.channels.cache.keys()) {
-      if (this.has(channel)) {
+      if (await this.has(channel)) {
         let channelUpdates = this.get(channel);
         if (!Array.isArray(channelUpdates)) channelUpdates = [channelUpdates];
         guildUpdates += channelUpdates.length;
@@ -136,7 +140,7 @@ class UpdateCache {
 
     // TODO: Check guild limit and duplicates
 
-    if (this.has(update.channel)) {
+    if (await this.has(update.channel)) {
       let updates = await this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
 
@@ -162,7 +166,7 @@ class UpdateCache {
 
     update._deleted = true;
 
-    if (this.has(update.channel)) {
+    if (await this.has(update.channel)) {
       let updates = await this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
       const id = update.ID();

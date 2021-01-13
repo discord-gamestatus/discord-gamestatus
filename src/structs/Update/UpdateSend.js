@@ -21,6 +21,8 @@ const { debugLog, warnLog, verboseLog } = require('../../debug.js');
 
 module.exports = {
   async send(client, tick) {
+    if (this._deleted) return;
+
     let _start = performance.now();
 
     if (!tick) tick = 0;

@@ -107,6 +107,12 @@ class SavePSQL extends SaveInterface {
     await client.query('DELETE FROM statuses WHERE channel_id=$1::text', [key]);
   }
 
+  async has(key) {
+    const client = await this.getClient();
+    const query = await client.query('SELECT 1 FROM statuses WHERE channel_id=$1::text LIMIT 1', [key]);
+    return query.rows.length > 0;
+  }
+
   async values() {
     const all = await this.getAll();
     return Object.values(all);

@@ -55,6 +55,14 @@ class SaveInterface {
   delete() {}
 
   /**
+  * Check if key exists
+  * @async
+  * @param {String} key - Key to check for
+  * @returns {Boolean}
+  */
+  has() {}
+
+  /**
   * Get values iterator
   * @returns AsyncIterator<Update[]>
   */

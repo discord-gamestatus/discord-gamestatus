@@ -47,6 +47,10 @@ class SaveJSON extends SaveInterface {
     await this.save();
   }
 
+  has(key) {
+    return this._cache.has(key);
+  }
+
   values() {
     return this._cache.values();
   }
