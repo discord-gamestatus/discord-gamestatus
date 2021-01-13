@@ -13,14 +13,14 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { debugLog, verboseLog } = require('../debug.js');
+const { infoLog, debugLog, warnLog, verboseLog } = require('../debug.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
 let SavePSQL;
 try {
   SavePSQL = require('./save/SavePSQL.js');
 } catch(e) {
-  verboseLog(e);
+  infoLog('"pg" is not installed, databases are not enabled');
 }
 const Update = require('./Update.js');
 const { getLimits } = require('../limits.js');
@@ -30,6 +30,7 @@ class UpdateCache {
   constructor(opts) {
     this._locks = new Map();
     this.saveInterface = new SaveInterface();
+    if (opts.database && !SavePSQL) warnLog(`Not using database "${opts.database}" as "pg" is not installed`);
     if (opts.database && SavePSQL) {
       this.saveInterface = new SavePSQL(opts.database);
     } else if (opts.filename) {

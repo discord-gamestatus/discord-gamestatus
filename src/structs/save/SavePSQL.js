@@ -77,9 +77,6 @@ class SavePSQL extends SaveInterface {
   async set(key, value) {
     const client = await this.getClient();
     for (let status of value) {
-      /*
-      'INSERT INTO statuses (guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update) VALUES ($1::text, $2::text, $3::text, $4::text, $5::text, $6::text, $7::jsonb, $8::text[], $9::text, $10::text, $11::text, $12::text, $13::int, $14::int, $15::text, $16::text, $17::int, $18::int, $19::bool, $20::bool) ON CONFLICT ON CONSTRAINT statuses_guild_id_channel_id_ip_key DO UPDATE SET message_id=$3::text, type=$4::text, name=$6::text, state=$7::jsonb, dots=$8::text[], title=$9::text, offline_title=$10::text, description=$11::text, offline_description=$12::text, color=$13::int, offline_color=$14::int, image=$15::text, offline_image=$16::text, columns=$17::int, max_edits=$18::int, connect_update=$19::bool, disconnect_update=$20::bool'
-      */
       console.log(status.options?.title);
       await client.query('INSERT INTO statuses (guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) ON CONFLICT ON CONSTRAINT statuses_guild_id_channel_id_ip_key DO UPDATE SET message_id=$3, type=$4, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12, color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20', fixStrings([
         status.guild,
