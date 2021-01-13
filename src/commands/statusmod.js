@@ -45,7 +45,7 @@ const call = async function(message) {
 
   if (!channel) return;
 
-  let statuses = message.client.updateCache.get(channel.id);
+  let statuses = await message.client.updateCache.get(channel.id);
   if (statuses === undefined) {
     statuses = [];
   } else if (!Array.isArray(statuses)) {

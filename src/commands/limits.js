@@ -26,7 +26,7 @@ const call = async function(message) {
     const guild = await message.client.guilds.fetch(message.guild);
     user = await message.client.users.fetch(guild.ownerID);
   }
-  const limits = await getLimits(message.client, user.id);
+  const limits = await getLimits(message.client, user.id, true);
   await message.channel.send(new MessageEmbed({
     author: {
       name: user.username,

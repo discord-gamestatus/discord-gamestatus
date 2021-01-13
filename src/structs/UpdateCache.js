@@ -15,96 +15,67 @@ GNU General Public License for more details.
 
 const { Collection } = require('discord.js-light');
 
+const { errorLog, debugLog, verboseLog } = require('../debug.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
-const { errorLog, debugLog, verboseLog } = require('../debug.js');
+let SavePSQL;
+try {
+  SavePSQL = require('./save/SavePSQL.js');
+} catch(e) {
+  verboseLog(e);
+}
 const Update = require('./Update.js');
 const { getLimits } = require('../limits.js');
+const { asyncArray } = require('../utils.js');
 
-class UpdateCache extends Collection {
-  constructor(filename) {
-    super();
-    this._saveLock = false;
-    this._saveLockQueue = new Array();
+class UpdateCache {
+  constructor(opts) {
     this._locks = new Map();
     this.saveInterface = new SaveInterface();
-    if (filename) {
-      this.saveInterface = new SaveJSON(filename);
+    if (opts.database && SavePSQL) {
+      this.saveInterface = new SavePSQL(opts.database);
+    } else if (opts.filename) {
+      this.saveInterface = new SaveJSON(opts.filename);
+    } else {
+      this.saveInterface = new SaveJSON();
     }
   }
-
-  /*****************************************************************************
-  *** Raw R/W functions
-  *****************************************************************************/
 
   async load() {
-    await this.saveLock();
-    try {
-      await this.saveInterface.load(this);
-    } catch(e) {
-      errorLog(e);
-    }
-    await this.saveUnlock();
+    await this.saveInterface.load();
   }
 
-  async save() {
-    await this.saveLock();
-    try {
-      await this.saveInterface.save(this);
-    } catch(e) {
-      errorLog(e);
-    }
-    await this.saveUnlock();
+  get(key) {
+    return this.saveInterface.get(key);
   }
 
-  set(key, value, dontSave) {
-    Collection.prototype.set.call(this, key, value);
-    if (dontSave !== true) return this.save();
-    verboseLog(`Set ${key} without saving`);
+  set(key, value) {
+    return this.saveInterface.set(key, value);
   }
 
-  delete(key, dontSave) {
-    Collection.prototype.delete.call(this, key);
-    if (!dontSave) return this.save();
-    debugLog(`Deleted ${key} without saving`);
+  delete(key) {
+    return this.saveInterface.delete(key);
   }
 
-  async saveLock() {
-    if (this._saveLock) {
-      let queue = this._saveLockQueue;
-      await new Promise((resolve) => {
-        queue.push(resolve);
-      });
-    }
-    return this._saveLock = true;
+  values() {
+    return this.saveInterface.values();
   }
 
-  async saveUnlock() {
-    if (this._saveLockQueue.length > 0) {
-      this._saveLockQueue.pop(0)();
-    } else {
-      this._saveLock = false;
-    }
+  entries() {
+    return this.saveInterface.entries();
   }
 
   async deleteEmpty() {
-    await this.saveLock();
-    let changed = false;
-    for (let entry of this.entries()) {
+    for (let entry of await this.entries()) {
       if (Array.isArray(entry[1]) && entry[1].length === 0) {
-        this.delete(entry[0], true);
-        changed = true;
+        await this.delete(entry[0]);
         debugLog(`Encountered empty channel ${entry[0]}`);
       }
     }
-    if (changed) {
-      try {
-        await this.saveInterface.save(this);
-      } catch(e) {
-        errorLog(e);
-      }
-    }
-    await this.saveUnlock();
+  }
+
+  close() {
+    return this.saveInterface.close();
   }
 
   /*****************************************************************************
@@ -137,7 +108,7 @@ class UpdateCache extends Collection {
   }
 
   async updateAdd(update, client) {
-    if (!(update instanceof Update)) throw new Error('status must be an instance of status', update);
+    if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
 
     // Perform checks
     const guild = await update.getGuild(client);
@@ -167,7 +138,7 @@ class UpdateCache extends Collection {
     // TODO: Check guild limit and duplicates
 
     if (this.has(update.channel)) {
-      let updates = this.get(update.channel);
+      let updates = await this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
 
       // Check server is allowed to add another updater
@@ -186,14 +157,14 @@ class UpdateCache extends Collection {
   }
 
   async updateRemove(update) {
-    if (!(update instanceof Update)) throw new Error('status must be an instance of status', update);
+    if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
 
     await this._lock(update.channel);
 
     update._deleted = true;
 
     if (this.has(update.channel)) {
-      let updates = this.get(update.channel);
+      let updates = await this.get(update.channel);
       if (!Array.isArray(updates)) updates = [updates];
       const id = update.ID();
       updates = updates.filter(v => v.ID() !== id);
@@ -207,27 +178,37 @@ class UpdateCache extends Collection {
     this._unlock(update.channel);
   }
 
+  async updateSave(update) {
+    if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
+
+    const id = update.ID();
+
+    await this._lock(update.channel);
+    let updates = (await this.get(update.channel)).map(v => v.ID() === id ? update : v);
+    await this.set(update.channel, updates);
+    await this._unlock(update.channel);
+  }
+
+
   /*****************************************************************************
-  *** Read functions
+  *** Value iterators
   *****************************************************************************/
 
-  *flatValues() {
-    const values = this.values();
-    let result = values.next();
-    while (!result.done) {
-      if (Array.isArray(result.value)) {
-        for (let item of result.value) {
+  async *flatValues() {
+    const values = await this.values();
+    for (let value of values) {
+      if (Array.isArray(value)) {
+        for (let item of value) {
           yield item;
         }
       } else {
-        yield result.value;
+        yield value;
       }
-      result = values.next();
     }
   }
 
-  *tickIterable(tickLimit) {
-    const values = Array.from(this.flatValues()),
+  async *tickIterable(tickLimit) {
+    const values = await asyncArray(this.flatValues()),
     size = values.length,
     valueIterator = values.values(); // Maybe a better way to do this
     let tickSize = 1;

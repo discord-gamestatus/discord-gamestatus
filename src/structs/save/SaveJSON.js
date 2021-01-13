@@ -15,6 +15,7 @@ GNU General Public License for more details.
 
 const fs = require('fs').promises;
 
+const { Collection } = require('discord.js-light');
 const { allSettled, isOfBaseType } = require('@douile/bot-utilities');
 
 const SaveInterface = require('./SaveInterface.js');
@@ -24,17 +25,78 @@ const { infoLog, errorLog } = require('../../debug.js');
 
 
 class SaveJSON extends SaveInterface {
+  filename;
+  #cache;
+  #saveLock;
+  #saveLockQueue;
+
   constructor(filename) {
     super();
     this.filename = filename;
+    this.#saveLock = false;
+    this.#saveLockQueue = new Array();
+    this.#cache = new Collection();
   }
 
-  async save(updateCache) {
-    if (!this.isUpdateCache(updateCache)) throw new Error('Must provide an UpdateCache object');
+  get(key) {
+    return this.#cache.get(key);
+  }
+
+  async set(key, value) {
+    this.#cache.set(key, value);
+    await this.save();
+  }
+
+  async delete(key) {
+    this.#cache.delete(key);
+    await this.save();
+  }
+
+  values() {
+    return this.#cache.values();
+  }
+
+  entries() {
+    return this.#cache.entries();
+  }
+
+  /*****************************************************************************
+  *** Save/load
+  *****************************************************************************/
+
+  async saveLock() {
+    if (this.#saveLock) {
+      let queue = this.#saveLockQueue;
+      await new Promise((resolve) => {
+        queue.push(resolve);
+      });
+    }
+    return this.#saveLock = true;
+  }
+
+  async saveUnlock() {
+    if (this.#saveLockQueue.length > 0) {
+      this.#saveLockQueue.pop(0)();
+    } else {
+      this.#saveLock = false;
+    }
+  }
+
+  async save() {
+    await this.saveLock();
+    try {
+      await this._save(this);
+    } catch(e) {
+      errorLog(e);
+    }
+    await this.saveUnlock();
+  }
+
+  async _save() {
     let obj = {};
 
     let promises = [];
-    for (let [key, item] of updateCache.entries()) {
+    for (let [key, item] of this.#cache.entries()) {
       promises.push(this.saveItem(obj, key, item));
     }
     await allSettled(promises);
@@ -59,9 +121,17 @@ class SaveJSON extends SaveInterface {
     return true;
   }
 
-  async load(updateCache) {
-    if (!this.isUpdateCache(updateCache)) throw new Error('Must provide an UpdateCache object');
+  async load() {
+    await this.saveLock();
+    try {
+      await this._load(this);
+    } catch(e) {
+      errorLog(e);
+    }
+    await this.saveUnlock();
+  }
 
+  async _load() {
     let content = await fs.readFile(this.filename);
     let obj;
     try {
@@ -73,14 +143,14 @@ class SaveJSON extends SaveInterface {
 
     let promises = [];
     for (let [key, item] of Object.entries(obj)) {
-      promises.push(this.loadItem(updateCache, key, item));
+      promises.push(this.loadItem(key, item));
     }
     let res = await allSettled(promises), errs = res.filter(v => v !== true);
     infoLog(`Loaded ${promises.length} configs...`);
     if (errs.length > 0) errorLog(errs);
   }
 
-  async loadItem(updateCache, key, item) {
+  async loadItem(key, item) {
     let res; // NOTE: Type checking here is a bit flippant
     if (isOfBaseType(item, Array)) {
       res = new Array(item.length);
@@ -90,8 +160,12 @@ class SaveJSON extends SaveInterface {
     } else {
       res = Update.parse(item);
     }
-    updateCache.set(key, res, true);
+    this.#cache.set(key, res, true);
     return true;
+  }
+
+  close() {
+    return this.save();
   }
 }
 

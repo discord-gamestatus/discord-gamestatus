@@ -51,7 +51,7 @@ const client = new Discord.Client({
 });
 
 Object.defineProperties(client, {
-  updateCache: { value: new UpdateCache(`${__dirname}/../_save.json`) },
+  updateCache: { value: undefined, writable: true, configurable: false, enumerable: false },
   commands: { value: new Map() },
   config: { value: {
     prefix: '!',
@@ -164,7 +164,7 @@ client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
 client.on(TICK_EVENT, errorWrap(async function() {
   if (TICK_GENERATOR === undefined) TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
   if (TICK_LIMITS === undefined) TICK_LIMITS = new Map();
-  let tick = TICK_GENERATOR.next();
+  let tick = await TICK_GENERATOR.next();
   if (tick.done) {
     TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
     tick = TICK_GENERATOR.next();
@@ -256,6 +256,12 @@ async function start(config) {
     if (key in config) client.config[key] = config[key];
   }
 
+  if (config.database) {
+    client.updateCache = new UpdateCache({ database: config.database, filename: `${__dirname}/../_save.json` });
+  } else {
+    client.updateCache = new UpdateCache({ filename: `${__dirname}/../_save.json` });
+  }
+
   verboseLog('CONFIG', client.config);
 
   debugLog('DEBUG LOGS ENABLED');
@@ -270,5 +276,6 @@ async function start(config) {
   await client.login(config.key);
   return client;
 }
+
 
 module.exports = start;

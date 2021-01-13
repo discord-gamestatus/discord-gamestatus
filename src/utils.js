@@ -42,3 +42,16 @@ exports.channelFirstArg = async function(message, args) {
 
   return message.channel;
 }
+
+/**
+* Convert an async generator to an array
+* @param {AsyncGenerator} asyncGenerator
+* @returns {any[]} array
+*/
+exports.asyncArray = async function(asyncGenerator) {
+  const res = [];
+  for await (let i of asyncGenerator) {
+    res.push(i);
+  }
+  return res;
+}

@@ -37,6 +37,7 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.1",
     "erlpack": "github:discord/erlpack",
+    "pg": "^8.5.1",
     "utf-8-validate": "^5.0.2",
     "zlib-sync": "^0.1.6"
   },

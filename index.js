@@ -51,6 +51,7 @@ const setupAndStart = function(env, args) {
     debug: false,
     verbose: false,
     dblKey: env.TOPGG_API_KEY,
+    database: env.PG_DATABASE
   };
 
   for (let i=0;i<args.length;i++) {
@@ -123,11 +124,23 @@ const setupAndStart = function(env, args) {
   if (!dev) {
     start(config).then((client) => {
       let hasShutdown = false;
-      const shutdown = async function() {
+      const shutdown = function() {
         if (hasShutdown) return;
         hasShutdown = true;
-        console.log('Shutting down...');
-        await client.destroy();
+        const shardCount = client.ws.shards.size;
+        console.log(`Shutting down ${shardCount} shards`);
+        let shardsDestroyed = 0, closed = false;
+        client.on('shardDisconnect', function() {
+          if (++shardsDestroyed >= shardCount && !closed) {
+            closed = true;
+            console.log('All shards closing update cache');
+            client.updateCache.close().then(() => process.exit(0)).catch((err) => {
+              console.error(err);
+              process.exit(50);
+            });
+          }
+        });
+        client.destroy();
       }
       process.once('SIGINT', shutdown);
       process.once('SIGTERM', shutdown);

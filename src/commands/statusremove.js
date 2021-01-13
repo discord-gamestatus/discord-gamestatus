@@ -42,7 +42,7 @@ const call = async function(message, parts) {
 
   const response = await message.channel.send({ embed: {title: 'Removing status messages', color: EMBED_COLOR }});
 
-  let statuses = message.client.updateCache.get(channel);
+  let statuses = await message.client.updateCache.get(channel);
 
   let count = 0;
   if (statuses) {

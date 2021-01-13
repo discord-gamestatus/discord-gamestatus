@@ -15,11 +15,12 @@ GNU General Public License for more details.
 
 const { isBotOwner } = require('../checks.js');
 const { EMBED_COLOR } = require('../constants.js');
+const { asyncArray } = require('../utils.js');
 
 const call = async function(message) {
   let i = 0;
   let total = 0;
-  const ticks = message.client.updateCache.tickIterable(message.client.config.tickCount);
+  const ticks = await asyncArray(message.client.updateCache.tickIterable(message.client.config.tickCount));
   const tickList = Array.from(ticks).map(tick => {
     total += tick.length;
     return `${i++}: ${tick.length}`;

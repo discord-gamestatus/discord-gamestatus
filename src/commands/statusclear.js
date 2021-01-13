@@ -27,7 +27,7 @@ const call = async function(message, args) {
     return;
   }
 
-  let statuses = message.client.updateCache.get(channel.id);
+  let statuses = await message.client.updateCache.get(channel.id);
 
   let count = 0;
   if (statuses) {

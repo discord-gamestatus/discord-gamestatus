@@ -22,7 +22,7 @@ const call = async function(message, parts) {
   if (!message.client.updateCache.has(message.channel.id)) return await message.channel.send(`No update message for this channel`);
 
   let added = true;
-  let update = message.client.updateCache.get(message.channel.id);
+  let update = await message.client.updateCache.get(message.channel.id);
   if (isOfBaseType(update, Array)) {
     if (update.length === 1) {
       update = update[0];

@@ -13,21 +13,30 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-/* Abstract base class */
+/* Abstract base class
+All getters/setters are optionally async
+*/
 class SaveInterface {
-  /* Save the entire config */
-  async save(updateCache) {
-    if (!this.isUpdateCache(updateCache)) throw new Error('Must provide an UpdateCache object');
-  }
+  /* Called when bot closes */
+  close() {}
 
-  /* Load the entire config */
-  async load(updateCache) {
-    if (!this.isUpdateCache(updateCache)) throw new Error('Must provide an UpdateCache object');
-  }
+  /* Called when bot starts */
+  load() {}
 
-  isUpdateCache(updateCache) {
-    return updateCache instanceof require('../UpdateCache.js'); // UpdateCache must be required here as SaveInterface is required by UpdateCache
-  }
+  /* Get a value */
+  get(key) {}
+
+  /* Set a value */
+  set(key, value) {}
+
+  /* Delete a value */
+  delete(key) {}
+
+  /* Get values iterator */
+  values() {}
+
+  /* Get entries */
+  entries() {}
 }
 
 module.exports = SaveInterface

@@ -44,6 +44,7 @@ module.exports = {
   },
 
   async setGuild(client, guild) {
+    const oldGuild = this.guild;
     if (guild instanceof Guild) {
       this.guild = guild.id;
       this._guild = guild;
@@ -51,10 +52,13 @@ module.exports = {
       this.guild = guild;
       this._guild = undefined;
     }
-    await client.updateCache.save();
+    if (oldGuild !== this.guild) {
+      await client.updateCache.updateSave(this);
+    }
   },
 
   async setChannel(client, channel) {
+    const oldChannel = this.channel;
     if (channel instanceof TextChannel) {
       this.channel = channel.id;
       this._channel = channel;
@@ -62,10 +66,13 @@ module.exports = {
       this.channel = channel;
       this._channel = undefined;
     }
-    await client.updateCache.save();
+    if (oldChannel !== this.channel) {
+      await client.updateCache.updateSave(this);
+    }
   },
 
   async setMessage(client, message) {
+    const oldMessage = this.message;
     if (message instanceof Message) {
       this.message = message.id;
       this._message = message;
@@ -73,7 +80,9 @@ module.exports = {
       this.message = message;
       this._message = undefined;
     }
-    await client.updateCache.save();
+    if (oldMessage !== this.message) {
+      await client.updateCache.updateSave(this);
+    }
   },
 
   async shouldDelete(client) {

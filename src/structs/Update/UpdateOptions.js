@@ -44,7 +44,7 @@ const DEFAULT_OPTIONS = {
 module.exports = {
   getOption(optionName) {
     return isOfBaseType(this.options, Object) ?
-      (optionName in this.options ? this.options[optionName] : DEFAULT_OPTIONS[optionName]) :
+      (optionName in this.options ? (this.options[optionName] || DEFAULT_OPTIONS[optionName]) : DEFAULT_OPTIONS[optionName]) :
       DEFAULT_OPTIONS[optionName];
   },
 
@@ -61,33 +61,36 @@ module.exports = {
     if (!isOfBaseType(this.options, Object)) this.options = {};
     /* Use DEFAULT_OPTIONS constructors to typecast new value */
     // TODO: Add better support for setting arrays
-    let newValue = new DEFAULT_OPTIONS[optionName].__proto__.constructor(value);
-    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue)) newValue = null;
-    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) {
-      if (isOfBaseType(value, String)) {
-        newValue = ['1','true','t','yes','y'].includes(value.toLowerCase().trim().split(' ')[0]);
+    let newValue = value;
+    if (newValue !== null && newValue !== undefined) {
+      newValue = new DEFAULT_OPTIONS[optionName].__proto__.constructor(value);
+      if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue)) newValue = null;
+      if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) {
+        if (isOfBaseType(value, String)) {
+          newValue = ['1','true','t','yes','y'].includes(value.toLowerCase().trim().split(' ')[0]);
+        }
       }
-    }
-    if (isOfBaseType(DEFAULT_OPTIONS[optionName], Array)) {
-      if (isOfBaseType(value, String)) {
-        newValue = value.split(' ');
-      } else if (isOfBaseType(value, Array)) {
-        newValue = value;
+      if (isOfBaseType(DEFAULT_OPTIONS[optionName], Array)) {
+        if (isOfBaseType(value, String)) {
+          newValue = value.split(' ');
+        } else if (isOfBaseType(value, Array)) {
+          newValue = value;
+        }
       }
+      if (!isOfBaseType(newValue, DEFAULT_OPTIONS[optionName].__proto__.constructor)) newValue = null;
     }
-    if (!isOfBaseType(newValue, DEFAULT_OPTIONS[optionName].__proto__.constructor)) newValue = null;
-    if ([DEFAULT_OPTIONS[optionName],null].includes(newValue)) {
+    if ([DEFAULT_OPTIONS[optionName],null,undefined].includes(newValue)) {
       delete this.options[optionName];
     } else {
       this.options[optionName] = newValue;
     }
-    if (!dontSave) return client.updateCache.save();
+    if (!dontSave) return client.updateCache.updateSave(this);
   },
 
   async deleteOption(client, optionName) {
     if (!isOfBaseType(this.options, Object)) this.options = {};
     delete this.options[optionName];
-    await client.updateCache.save();
+    await client.updateCache.updateSave(this);
   },
 
   parse(object) {

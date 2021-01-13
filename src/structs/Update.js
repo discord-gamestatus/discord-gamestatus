@@ -57,6 +57,7 @@ class Update extends Serializable {
       }
     }
   }
+  
   ID() {
     return `${this.guild}:${this.channel}:${this.ip}`;
   }
