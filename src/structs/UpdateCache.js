@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,9 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { Collection } = require('discord.js-light');
-
-const { errorLog, debugLog, verboseLog } = require('../debug.js');
+const { debugLog, verboseLog } = require('../debug.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
 let SavePSQL;

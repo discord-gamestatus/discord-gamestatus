@@ -17,25 +17,53 @@ GNU General Public License for more details.
 All getters/setters are optionally async
 */
 class SaveInterface {
-  /* Called when bot closes */
+  /**
+  * Called when bot closes
+  * @async
+  * @void
+   */
   close() {}
 
-  /* Called when bot starts */
+  /**
+  * Called when bot starts
+  * @async
+  * @void
+  */
   load() {}
 
-  /* Get a value */
-  get(key) {}
+  /**
+  * Get a value
+  * @async
+  * @param {String} key - Key to get
+  * @returns {Update[]?} value of key
+  */
+  get() {}
 
-  /* Set a value */
-  set(key, value) {}
+  /**
+  * Set a value
+  * @async
+  * @param {String} key - Key to set
+  * @param {Update[]} value
+  */
+  set() {}
 
-  /* Delete a value */
-  delete(key) {}
+  /**
+  * Delete a value
+  * @async
+  * @param {String} key - Key to delete
+  */
+  delete() {}
 
-  /* Get values iterator */
+  /**
+  * Get values iterator
+  * @returns AsyncIterator<Update[]>
+  */
   values() {}
 
-  /* Get entries */
+  /**
+  * Get entries
+  * @returns AsyncIterator<String, Update[]>
+  */
   entries() {}
 }
 

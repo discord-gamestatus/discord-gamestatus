@@ -17,7 +17,6 @@ const { Client } = require('pg')
 
 const SaveInterface = require('./SaveInterface.js');
 const Update = require('../Update.js');
-const { infoLog } = require('../../debug.js');
 
 function fixStrings(values) {
   return values.map(v => {
