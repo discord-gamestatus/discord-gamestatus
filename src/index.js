@@ -206,10 +206,10 @@ client.on(Discord.Constants.Events.RESUME, (replayed) => {
 
 async function doUpdate(update, tick, counters) {
   if (!Array.isArray(update)) update = [update];
-  for (let u of update) {
+  await Promise.all(update.map(async (u) => {
     if (u._deleted) {
       verboseLog(`Skipping updating [${u.ID()}]: already deleted`);
-      continue; // Don't update already deleted updates
+      return;
     }
     if (await u.shouldDelete(client)) {
       await client.updateCache.updateRemove(u);
@@ -224,7 +224,7 @@ async function doUpdate(update, tick, counters) {
         debugLog(`Deleted update for exceeding limits ${u.ID()}`);
       }
     }
-  }
+  }));
 }
 
 async function checkTickLimits(update, counters) {
@@ -235,6 +235,8 @@ async function checkTickLimits(update, counters) {
   } else {
     counter = counters.get(update.guild);
   }
+
+  console.log(counter);
 
   counter.guildCount += 1;
   if (update.channel in counter.channelCount) {

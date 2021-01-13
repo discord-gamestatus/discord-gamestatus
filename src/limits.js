@@ -38,8 +38,8 @@ const max = function() {
 // Cache used here as guild member endpoint can be very slow (RIP memory usage)
 const limitCache = new Map();
 module.exports.getLimits = async function(client, user, noCache) {
-  if (limitCache.has(client) && !noCache) {
-    return limitCache.get(client);
+  if (limitCache.has(user) && !noCache) {
+    return limitCache.get(user);
   }
   let limits = { channelLimit: client.config.channelLimit, guildLimit: client.config.guildLimit };
   for (let guildID in client.config.limitRules) {
@@ -58,6 +58,6 @@ module.exports.getLimits = async function(client, user, noCache) {
       }
     }
   }
-  limitCache.set(client, limits);
+  limitCache.set(user, limits);
   return limits;
 }
