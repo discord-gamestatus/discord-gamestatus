@@ -17,17 +17,21 @@ const { Guild, Message, TextChannel } = require('discord.js-light');
 // const { STATUS_PERMISSIONS } = require('../../constants.js');
 const { verboseLog } = require('../../debug.js');
 
+function isNull(v) {
+  return v === null || v === undefined;
+}
+
 module.exports = {
   async getGuild(client) {
     if (this._guild) return this._guild;
-    this._guild = await client.guilds.fetch(this.guild);
+    this._guild = !isNull(this.guild) ? await client.guilds.fetch(this.guild) : undefined;
     return this._guild;
   },
 
   async getChannel(client) {
     if (this._channel) return this._channel;
     let guild = await this.getGuild(client);
-    this._channel = guild !== undefined ? await client.channels.fetch(this.channel) : undefined;
+    this._channel = (!isNull(guild) && !isNull(this.channel)) ? await client.channels.fetch(this.channel) : undefined;
     return this._channel;
   },
 
@@ -35,7 +39,7 @@ module.exports = {
     if (this._message) return this._message;
     let channel = await this.getChannel(client);
     try {
-      this._message = (channel !== undefined && this.message !== undefined) ? await channel.messages.fetch(this.message) : undefined;
+      this._message = (!isNull(channel) && !isNull(this.message)) ? await channel.messages.fetch(this.message) : undefined;
     } catch(e) {
       verboseLog(e);
       return undefined;

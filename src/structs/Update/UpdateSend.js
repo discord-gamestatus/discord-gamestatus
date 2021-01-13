@@ -61,89 +61,27 @@ module.exports = {
 
     let message = await this.getMessage(client);
     if (message) {
-      // Unknown message after 184 edits
-      if ((message.edits.length >= this.getOption('maxEdits') || !message.editable) && !message.deleted) { // If mesasge isn't deleted and has expired try to delete it
-        await this.deleteMessage(client, message);
-      } else if (!message.deleted) { // If message isn't deleted it try to edit it
-        let success = true;
-        try {
-          await message.edit.apply(message, args);
-        } catch(e) {
-          success = false;
-          await this.deleteMessage(client, message);
-        }
-        if (success) return; // If sucessfully edited exit function
-      }
-      verboseLog(`Sending new message, ${message.id} should be deleted`);
-    }
-
-    // Send a new message
-    let channel = await this.getChannel(client);
-    if (channel) {
-      let newMessage;
       try {
-        newMessage = await channel.send.apply(channel, args);
+        await message.edit.apply(message, args);
       } catch(e) {
-        if (e.code === 50013) {
-          this._shouldDelete = true;
-        } else {
-          debugLog('Unable to send new update', e);
-        }
+        verboseLog(`Error editing message ${message.id}`, message);
       }
-      await this.setMessage(client, newMessage);
-    }
-  },
-
-  // TODO: If keeping notifications, these functions don't work with d.js-light
-  async sendPlayerNotifications(client, state, diff) {
-    let fields = {};
-    for (let player of diff.all) {
-      if (player.name in this.notifications) {
-        let field = `${player.msg} ${player.connect ? 'to' : 'from'} ${state.name} (${state.connect})`;
-        for (let user in this.notifications[player.name]) {
-          if (user in fields) {
-            fields[user].push(field);
+    } else {
+      let channel = await this.getChannel(client);
+      if (channel) {
+        let newMessage;
+        try {
+          newMessage = await channel.send.apply(channel, args);
+        } catch(e) {
+          if (e.code === 50013) {
+            this._shouldDelete = true;
           } else {
-            fields[user] = [field];
+            debugLog('Unable to send new update', e);
           }
         }
+        await this.setMessage(client, newMessage);
       }
     }
-    let promises = [];
-    for (let user in fields) {
-      let embed = new MessageEmbed({
-        title: 'Player update notification',
-        description: fields[user].join('\n'),
-        timestamp: Date.now()
-      });
-      let u = client.users.get(user);
-      if (u instanceof User) promises.push(u.send(embed));
-      else warnLog(user, 'Is not a valid user snowflake');
-    }
-    return await allSettled(promises);
-  },
-
-  async sendServerNotifications(client, state, changes) {
-    if (!changes.offline && !changes.map) return;
-    let embed = new MessageEmbed({
-      title: 'Server update notification',
-      timestamp: Date.now()
-    });
-    if (changes.offline) {
-      embed.setDescription(`${this.name} is now ${changes.offline.new ? 'Offline' : 'Online'}`);
-    } else {
-      embed.setDescription(this.name);
-    }
-    if (changes.map) {
-      embed.addField('Changed map', `From **${changes.map.old}** to **${changes.map.new}**`);
-    }
-    let promises = [];
-    for (let user in this.notifyServer) {
-      const u = client.users.fetch(user);
-      if (u instanceof User) promises.push(u.send(embed));
-      else warnLog(user, 'Is not a valid user snowflake');
-    }
-    return await allSettled(promises);
   },
 
   async deleteMessage(client, message) {
