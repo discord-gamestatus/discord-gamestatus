@@ -236,8 +236,6 @@ async function checkTickLimits(update, counters) {
     counter = counters.get(update.guild);
   }
 
-  console.log(counter);
-
   counter.guildCount += 1;
   if (update.channel in counter.channelCount) {
     counter.channelCount[update.channel] += 1;
