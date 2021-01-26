@@ -28,7 +28,7 @@ module.exports = {
       this._guild = !isNull(this.guild) ? await client.guilds.fetch(this.guild) : undefined;
       return this._guild;
     }
-    return client.guilds.forge(this.guild);
+    return !isNull(this.guild) ? client.guilds.forge(this.guild) : undefined;
   },
 
   async getChannel(client, dontForge) {
@@ -38,7 +38,7 @@ module.exports = {
       this._channel = (!isNull(guild) && !isNull(this.channel)) ? await client.channels.fetch(this.channel) : undefined;
       return this._channel;
     }
-    return guild.channels.forge(this.channel);
+    return (!isNull(guild) && !isNull(this.channel)) ? guild.channels.forge(this.channel) : undefined;
   },
 
   async getMessage(client, dontForge) {
@@ -53,7 +53,7 @@ module.exports = {
       }
       return this._message;
     }
-    return channel.messages.forge(this.message);
+    return (!isNull(channel) && !isNull(this.message)) ? channel.messages.forge(this.message) : undefined;
   },
 
   async setGuild(client, guild) {
