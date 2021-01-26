@@ -230,7 +230,7 @@ async function doUpdate(update, tick, counters) {
 async function checkTickLimits(update, counters) {
   let counter;
   if (!counters.has(update.guild)) {
-    const guild = await update.getGuild();
+    const guild = await update.getGuild(client, true);
     counter = { guildCount: 0, channelCount: {}, limits: await getLimits(client, guild.ownerID) };
   } else {
     counter = counters.get(update.guild);

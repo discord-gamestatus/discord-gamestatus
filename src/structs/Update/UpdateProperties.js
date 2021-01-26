@@ -22,29 +22,38 @@ function isNull(v) {
 }
 
 module.exports = {
-  async getGuild(client) {
+  async getGuild(client, dontForge) {
     if (this._guild) return this._guild;
-    this._guild = !isNull(this.guild) ? await client.guilds.fetch(this.guild) : undefined;
-    return this._guild;
-  },
-
-  async getChannel(client) {
-    if (this._channel) return this._channel;
-    let guild = await this.getGuild(client);
-    this._channel = (!isNull(guild) && !isNull(this.channel)) ? await client.channels.fetch(this.channel) : undefined;
-    return this._channel;
-  },
-
-  async getMessage(client) {
-    if (this._message) return this._message;
-    let channel = await this.getChannel(client);
-    try {
-      this._message = (!isNull(channel) && !isNull(this.message)) ? await channel.messages.fetch(this.message) : undefined;
-    } catch(e) {
-      verboseLog(e);
-      return undefined;
+    if (dontForge) {
+      this._guild = !isNull(this.guild) ? await client.guilds.fetch(this.guild) : undefined;
+      return this._guild;
     }
-    return this._message;
+    return client.guilds.forge(this.guild);
+  },
+
+  async getChannel(client, dontForge) {
+    if (this._channel) return this._channel;
+    const guild = await this.getGuild(client, dontForge);
+    if (dontForge) {
+      this._channel = (!isNull(guild) && !isNull(this.channel)) ? await client.channels.fetch(this.channel) : undefined;
+      return this._channel;
+    }
+    return guild.channels.forge(this.channel);
+  },
+
+  async getMessage(client, dontForge) {
+    if (this._message) return this._message;
+    const channel = await this.getChannel(client, dontForge);
+    if (dontForge) {
+      try {
+        this._message = (!isNull(channel) && !isNull(this.message)) ? await channel.messages.fetch(this.message) : undefined;
+      } catch(e) {
+        verboseLog(e);
+        return undefined;
+      }
+      return this._message;
+    }
+    return channel.messages.forge(this.message);
   },
 
   async setGuild(client, guild) {
