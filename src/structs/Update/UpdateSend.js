@@ -23,7 +23,7 @@ module.exports = {
   async send(client, tick) {
     if (this._deleted) return;
 
-    let _start = performance.now();
+    const _start = performance.now();
 
     if (!tick) tick = 0;
 
@@ -45,7 +45,7 @@ module.exports = {
       warnLog('Error sending update', e, e.stack);
     }
 
-    let _end = performance.now();
+    const _end = performance.now();
     verboseLog(`Update completed in ${_end-_start}ms`);
     return state;
   },
@@ -69,7 +69,7 @@ module.exports = {
           infoLog(`Removing ${this.ID()} for ${e.code}`);
           await client.updateCache.updateRemove(this); // Delete status
         } else {
-          verboseLog(`Error editing message ${message.id}`, message);
+          verboseLog(`Error editing message ${message.id}`, e.code);
         }
       }
     } else {
@@ -84,7 +84,7 @@ module.exports = {
             infoLog(`Removing ${this.ID()} for ${e.code}`);
             await client.updateCache.updateRemove(this); // delete status
           } else {
-            debugLog('Unable to send new update', e);
+            debugLog('Unable to send new update', e.code);
           }
         }
         await this.setMessage(client, newMessage);
