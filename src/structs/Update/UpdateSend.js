@@ -64,7 +64,13 @@ module.exports = {
       try {
         await message.edit.apply(message, args);
       } catch(e) {
-        verboseLog(`Error editing message ${message.id}`, message);
+        /* Unknown channel, Missing access, Lack permission */
+        if ([10003, 50001, 50013].includes(e.code)) {
+          infoLog(`Removing ${this.ID()} for ${e.code}`);
+          await client.updateCache.updateRemove(this); // Delete status
+        } else {
+          verboseLog(`Error editing message ${message.id}`, message);
+        }
       }
     } else {
       let channel = await this.getChannel(client);
@@ -73,8 +79,10 @@ module.exports = {
         try {
           newMessage = await channel.send.apply(channel, args);
         } catch(e) {
-          if (e.code === 50013) {
-            this._shouldDelete = true;
+          /* Unknown channel, Missing access, Lack permission */
+          if ([10003, 50001, 50013].includes(e.code)) {
+            infoLog(`Removing ${this.ID()} for ${e.code}`);
+            await client.updateCache.updateRemove(this); // delete status
           } else {
             debugLog('Unable to send new update', e);
           }
