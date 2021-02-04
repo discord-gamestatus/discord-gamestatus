@@ -17,7 +17,7 @@ const { performance } = require('perf_hooks');
 
 const stateChanges = require('../../stateChanges.js');
 const { query } = require('../../query.js');
-const { debugLog, warnLog, verboseLog } = require('../../debug.js');
+const { debugLog, infoLog, warnLog, verboseLog } = require('../../debug.js');
 
 module.exports = {
   async send(client, tick) {

@@ -20,7 +20,7 @@ let SavePSQL;
 try {
   SavePSQL = require('./save/SavePSQL.js');
 } catch(e) {
-  infoLog('"pg" is not installed, databases are not enabled');
+  infoLog('[UpdateCache] "pg" is not installed, databases are not enabled');
 }
 const Update = require('./Update.js');
 const { getLimits } = require('../limits.js');
@@ -33,10 +33,13 @@ class UpdateCache {
     if (opts.database && !SavePSQL) warnLog(`Not using database "${opts.database}" as "pg" is not installed`);
     if (opts.database && SavePSQL) {
       this.saveInterface = new SavePSQL(opts.database);
+      infoLog(`[UpdateCache] Using PSQL`);
     } else if (opts.filename) {
       this.saveInterface = new SaveJSON(opts.filename);
+      infoLog(`[UpdateCache] Using JSON "${opts.filename}"`);
     } else {
       this.saveInterface = new SaveJSON();
+      infoLog(`[UpdateCache] using JSON "./_save.json"`);
     }
   }
 
@@ -72,7 +75,7 @@ class UpdateCache {
     for (let entry of await this.entries()) {
       if (Array.isArray(entry[1]) && entry[1].length === 0) {
         await this.delete(entry[0]);
-        debugLog(`Encountered empty channel ${entry[0]}`);
+        debugLog(`[UpdateCache] Encountered empty channel ${entry[0]}`);
       }
     }
   }
