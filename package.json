@@ -26,7 +26,7 @@
     "url": "https://github.com/Douile/discord-gamestatus.git"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=15.0.0"
   },
   "dependencies": {
     "@douile/bot-utilities": "^1.3.1",
