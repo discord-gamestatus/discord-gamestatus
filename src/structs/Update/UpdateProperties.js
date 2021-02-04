@@ -14,9 +14,13 @@ GNU General Public License for more details.
 */
 
 const { Guild, Message, TextChannel } = require('discord.js-light');
-// const { STATUS_PERMISSIONS } = require('../../constants.js');
 const { verboseLog } = require('../../debug.js');
 
+/**
+* Check if a value is null or undefined
+* @param {Any} v - Value to check
+* @returns {Boolean} Whether value is strictly null or undefined
+*/
 function isNull(v) {
   return v === null || v === undefined;
 }
@@ -104,10 +108,9 @@ module.exports = {
     if (guild === undefined || guild.deleted) return true;
     const channel = await this.getChannel(client);
     if (channel === undefined || channel.deleted) return true;
+    /* Permissions not checked here as the status will delete itself if it gets
+    *  lack of permission error code when updating */
     return false;
-    const permissions = channel.permissionsFor(client.user);
-    if (permissions === null) return true;
-    return !permissions.has(STATUS_PERMISSIONS, true);
   },
 
   messageLink() {
