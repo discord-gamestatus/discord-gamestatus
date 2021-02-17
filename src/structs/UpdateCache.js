@@ -190,7 +190,20 @@ class UpdateCache {
     const id = update.ID();
 
     await this._lock(update.channel);
-    let updates = (await this.get(update.channel)).map(v => v.ID() === id ? update : v);
+    let updates;
+    if (await this.has(update.channel)) {
+      let hasSet = false;
+      updates = (await this.get(update.channel)).map(v => {
+        if (v.ID() === id) {
+          hasSet = true;
+          return update;
+        }
+        return v;
+      });
+      if (!hasSet) updates.push(update);
+    } else {
+      updates = [update];
+    }
     await this.set(update.channel, updates);
     await this._unlock(update.channel);
   }
