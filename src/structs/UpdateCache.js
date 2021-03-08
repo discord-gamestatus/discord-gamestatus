@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { infoLog, debugLog, warnLog } = require('../debug.js');
+const { infoLog, debugLog, warnLog, verboseLog } = require('../debug.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
 let SavePSQL;
@@ -115,6 +115,7 @@ class UpdateCache {
 
   async updateAdd(update, client) {
     if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
+    verboseLog(`Attempting to add ${update.ID()}`);
 
     // Perform checks
     const guild = await update.getGuild(client);
@@ -164,6 +165,7 @@ class UpdateCache {
 
   async updateRemove(update) {
     if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
+    verboseLog(`Attempting to remove ${update.ID()}`);
 
     await this._lock(update.channel);
 
@@ -186,6 +188,7 @@ class UpdateCache {
 
   async updateSave(update) {
     if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
+    verboseLog(`Attempting to save ${update.ID()}`);
 
     const id = update.ID();
 

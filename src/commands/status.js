@@ -48,19 +48,12 @@ const call = async function(message, parts) {
     ip: parts[1]
   }, { channel: channel });
 
-  let state = await update.send(message.client, 0);
-  if (state.offline === true) {
-    const updateMessage = await update.getMessage(message.client);
-    if (updateMessage) await updateMessage.delete();
-    await message.channel.send(`The server (\`${parts[1]}\`) was offline or unreachable`);
-    return;
-  }
-
   /*
   Here we do most of the validation checks for adding a new update in UpdateCache.updateAdd
   This is because this function can be used elsewhere, and also due to the fact
   this function already locks the key and retrieves necessary data to do the checks
   */
+
   let error;
   try {
     error = await message.client.updateCache.updateAdd(update, message.client);
@@ -69,6 +62,15 @@ const call = async function(message, parts) {
     if (updateMessage) await updateMessage.delete();
     await channel.send('Sorry an error was encountered saving this update, please try again later');
     debugLog(e);
+    return;
+  }
+
+  let state = await update.send(message.client, 0);
+  if (state.offline === true) {
+    const updateMessage = await update.getMessage(message.client);
+    if (updateMessage) await updateMessage.delete();
+    await message.client.updateCache.updateRemove(update, message.client);
+    await message.channel.send(`The server (\`${parts[1]}\`) was offline or unreachable`);
     return;
   }
 
