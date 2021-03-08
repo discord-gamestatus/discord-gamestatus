@@ -68,10 +68,10 @@ const query = async function(type, ip) {
       port: ip_parts.length > 1 ? ip_parts[1] : undefined,
       realPlayers: [],
     });
+    state.players = Array.from(state.players);
     state.offline = false;
     state.connect = parseConnect(state.connect, protocol);
     state.numplayers = state.raw.numplayers || state.players.length;
-    state.players = Array.from(state.players);
     state.realPlayers = state.players.filter(v => typeof v.name === 'string');
     state.realPlayers.forEach(v => {v.name = markdownEscape(v.name.trim())});
     state.realPlayers = state.realPlayers.filter(v => v.name.length > 0);
