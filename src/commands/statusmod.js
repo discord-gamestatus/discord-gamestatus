@@ -17,7 +17,6 @@ const { MessageEmbed } = require('discord.js-light');
 
 const { isAdmin } = require('../checks.js');
 const { EMBED_COLOR } = require('../constants.js');
-const { channelFirstArg } = require('../utils.js');
 
 const WARNING = '_Changes will not take effect until after the status has updated_';
 const OPTION_LAYOUT = Object.freeze([
@@ -36,16 +35,7 @@ const statusIdentity = function(status) {
 const call = async function(message) {
   const args = message.content.split(' ').splice(1);
 
-  let channel;
-  try {
-    channel = await channelFirstArg(message, args);
-  } catch {
-    return;
-  }
-
-  if (!channel) return;
-
-  let statuses = await message.client.updateCache.get(channel.id);
+  let statuses = await message.client.updateCache.get(message.guild.id);
   if (statuses === undefined) {
     statuses = [];
   } else if (!Array.isArray(statuses)) {
@@ -101,7 +91,7 @@ const call = async function(message) {
       }
     } else {
       if (statuses.length === 0) {
-        await message.channel.send(`There are no status messages in this channel`);
+        await message.channel.send(`There are no status messages in this guild`);
       } else {
         await message.channel.send(`Please enter a valid status ID (between 0 and ${statuses.length-1})`);
       }
