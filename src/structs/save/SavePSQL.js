@@ -17,6 +17,7 @@ const { Pool } = require('pg')
 
 const SaveInterface = require('./SaveInterface.js');
 const Update = require('../Update.js');
+const { errorLog } = require('../../debug.js');
 
 function fixStrings(values) {
   return values.map(v => {
@@ -43,21 +44,27 @@ class SavePSQL extends SaveInterface {
     await this.pool.end();
   }
 
-  async get(key) {
+  async get(guild) {
     const client = await this.pool.connect();
-    const query = await client.query('SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE channel_id=$1::text', [key]);
+    const query = await client.query('SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE guild_id=$1::text', [guild]);
     client.release();
 
     return query.rows.map(item => SavePSQL.rowToUpdate(item));
   }
 
-  async set(key, value) {
+  async set(status) {
+    let success = false;
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      await client.query('DELETE FROM statuses WHERE channel_id=$1', [key]); // Because of JSON indexing have to delete all updates first
-      for (let status of value) {
-        await client.query('INSERT INTO statuses (guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) ON CONFLICT ON CONSTRAINT statuses_guild_id_channel_id_ip_key DO UPDATE SET message_id=$3, type=$4, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12, color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20', fixStrings([
+      await client.query('INSERT INTO statuses \
+          (guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description,\
+          color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update) VALUES \
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)\
+          ON CONFLICT ON CONSTRAINT statuses_guild_id_channel_id_ip_key DO UPDATE SET\
+          message_id=$3, type=$4, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12,\
+          color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20',
+        fixStrings([
           status.guild,
           status.channel,
           status.message,
@@ -78,26 +85,38 @@ class SavePSQL extends SaveInterface {
           status.options?.maxEdits,
           status.options?.connectUpdate,
           status.options?.disconnectUpdate,
-        ]));
-      }
+      ]));
       await client.query('COMMIT');
     } catch(e) {
       await client.query('ROLLBACK');
-      throw e;
+      errorLog(e);
+      success = false;
     } finally {
       client.release();
     }
+    return success;
   }
 
-  async delete(key) {
+  async delete(status) {
+    let success = true;
     const client = await this.pool.connect();
-    await client.query('DELETE FROM statuses WHERE channel_id=$1::text', [key]);
-    client.release();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ip=$3::text', [status.guild, status.channel, status.ip]);
+      await client.query('COMMIT');
+    } catch(e) {
+      await client.query('ROLLBACK');
+      errorLog(e);
+      success = false;
+    } finally {
+      client.release();
+    }
+    return success;
   }
 
-  async has(key) {
+  async has(status) {
     const client = await this.pool.connect();
-    const query = await client.query('SELECT 1 FROM statuses WHERE channel_id=$1::text LIMIT 1', [key]);
+    const query = await client.query('SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ip=$3::text LIMIT 1', [status.guild, status.channel, status.ip]);
     client.release();
     return query.rows.length > 0;
   }

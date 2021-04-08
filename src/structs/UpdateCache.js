@@ -51,16 +51,16 @@ class UpdateCache {
     return this.saveInterface.get(key);
   }
 
-  set(key, value) {
-    return this.saveInterface.set(key, value);
+  set(value) {
+    return this.saveInterface.set(value);
   }
 
-  has(key) {
-    return this.saveInterface.has(key);
+  has(value) {
+    return this.saveInterface.has(value);
   }
 
-  delete(key) {
-    return this.saveInterface.delete(key);
+  delete(value) {
+    return this.saveInterface.delete(value);
   }
 
   values() {
@@ -69,16 +69,7 @@ class UpdateCache {
 
   entries() {
     return this.saveInterface.entries();
-  }
-
-  async deleteEmpty() {
-    for (let entry of await this.entries()) {
-      if (Array.isArray(entry[1]) && entry[1].length === 0) {
-        await this.delete(entry[0]);
-        debugLog(`[UpdateCache] Encountered empty channel ${entry[0]}`);
-      }
-    }
-  }
+  } 
 
   close() {
     return this.saveInterface.close();
@@ -87,128 +78,52 @@ class UpdateCache {
   /*****************************************************************************
   *** Abstracted update functions
   *****************************************************************************/
-
-  async _lock(key) {
-    if (this._locks.has(key)) {
-      const queue = this._locks.get(key);
-      const locks = this._locks;
-      await new Promise((resolve) => {
-        locks.set(key, queue.concat([resolve]));
-      });
-    } else {
-      this._locks.set(key, []);
-    }
-  }
-
-  _unlock(key) {
-    if (this._locks.has(key)) {
-      const queue = this._locks.get(key);
-      if (queue.length > 0) {
-        const promise = queue.splice(0, 1);
-        this._locks.set(key, queue);
-        promise();
-      } else {
-        this._locks.delete(key);
-      }
-    }
-  }
-
+ 
   async updateAdd(update, client) {
     if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
     verboseLog(`Attempting to add ${update.ID()}`);
 
     // Perform checks
-    const guild = await update.getGuild(client);
-    let guildUpdates = 0;
-    for (let channel of guild.channels.cache.keys()) {
-      if (await this.has(channel)) {
-        let channelUpdates = this.get(channel);
-        if (!Array.isArray(channelUpdates)) channelUpdates = [channelUpdates];
-        guildUpdates += channelUpdates.length;
-        for (let channelUpdate of channelUpdates) {
-          if (channelUpdate.ip === update.ip && !client.config.allowDuplicates) {
-            return `Sorry this server already has an update using the IP \`${channelUpdate.ip}\``;
-          }
-        }
-      }
+    
+    const guildUpdates = await this.get(update.guild);
+    const guildUpdateCount = guildUpdates.length;
+    let channelUpdateCount = 0;
+
+    for (let u of guildUpdates) {
+      if (u.ip === update.ip && !client.config.allowDuplicates) 
+        return `Sorry this server already has an update using the IP \`${channelUpdate.ip}\``;
+
+      if (u.channel === update.channel) channelUpdateCount++;
     }
 
     const limits = await getLimits(client, guild.ownerID);
 
-    // TODO: Make logic check less complex
-    if ( !(isNaN(client.config.guildLimit) || client.config.guildLimit === 0 || guildUpdates < limits.guildLimit) ) {
-      return `Sorry this server has reached its limit of ${client.config.guildLimit} active server statuses`;
+    if ( !(isNaN(client.config.guildLimit) || client.config.guildLimit === 0 || guildUpdateCount < limits.guildLimit) ) {
+      return `Sorry this server has reached its limit of ${limits.guildLimit} active server statuses`;
     }
 
-    await this._lock(update.channel);
-
-    // TODO: Check guild limit and duplicates
-
-    if (await this.has(update.channel)) {
-      let updates = await this.get(update.channel);
-      if (!Array.isArray(updates)) updates = [updates];
-
-      // Check server is allowed to add another updater
-      if (isNaN(client.config.channelLimit) || client.config.channelLimit === 0 || updates.length < limits.channelLimit) {
-        updates.push(update);
-        await this.set(update.channel, updates);
-      } else {
-        await this._unlock(update.channel);
-        return `Sorry this channel has reached its limit of ${client.config.channelLimit} active server statuses`;
-      }
-    } else {
-      await this.set(update.channel, [update]);
+    if ( !(isNaN(client.config.channelLimit) || client.config.channelLimit === 0 || channelUpdateCount < limits.channelLimit) ) {
+      return `Sorry this channel has reached its limit of ${limits.channelLimit} active server statuses`;
     }
 
-    this._unlock(update.channel);
+    await this.set(update);
+
   }
 
   async updateRemove(update) {
     if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
     verboseLog(`Attempting to remove ${update.ID()}`);
 
-    await this._lock(update.channel);
-
     update._deleted = true;
+    await this.delete(update); 
 
-    if (await this.has(update.channel)) {
-      let updates = await this.get(update.channel);
-      if (!Array.isArray(updates)) updates = [updates];
-      const id = update.ID();
-      updates = updates.filter(v => v.ID() !== id);
-      if (updates.length > 0) {
-        await this.set(update.channel, updates);
-      } else {
-        await this.delete(update.channel);
-      }
-    }
-
-    this._unlock(update.channel);
   }
 
   async updateSave(update) {
     if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
     verboseLog(`Attempting to save ${update.ID()}`);
 
-    const id = update.ID();
-
-    await this._lock(update.channel);
-    let updates;
-    if (await this.has(update.channel)) {
-      let hasSet = false;
-      updates = (await this.get(update.channel)).map(v => {
-        if (v.ID() === id) {
-          hasSet = true;
-          return update;
-        }
-        return v;
-      });
-      if (!hasSet) updates.push(update);
-    } else {
-      updates = [update];
-    }
-    await this.set(update.channel, updates);
-    await this._unlock(update.channel);
+    await this.set(update);
   }
 
 
