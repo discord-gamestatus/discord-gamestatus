@@ -26,6 +26,15 @@ function fixStrings(values) {
   })
 }
 
+// Use IP if available otherwise use message id
+function eitherSelector(update) {
+  if (update.ip !== undefined)
+    return { key: 'ip', value: update.ip };
+  if (update.message !== undefined)
+    return { key: 'message_id', value: update.message };
+  throw new Error('Not enough identifiers for', update);
+}
+
 class SavePSQL extends SaveInterface {
   constructor(database) {
     super();
@@ -54,6 +63,7 @@ class SavePSQL extends SaveInterface {
 
   async set(status) {
     let success = false;
+    
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -99,10 +109,11 @@ class SavePSQL extends SaveInterface {
 
   async delete(status) {
     let success = true;
+    const selector = eitherSelector(status);
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      await client.query('DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ip=$3::text', [status.guild, status.channel, status.ip]);
+      await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text`, [status.guild, status.channel, selector.value]);
       await client.query('COMMIT');
     } catch(e) {
       await client.query('ROLLBACK');
@@ -115,8 +126,9 @@ class SavePSQL extends SaveInterface {
   }
 
   async has(status) {
+    const selector = eitherSelector(status);
     const client = await this.pool.connect();
-    const query = await client.query('SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ip=$3::text LIMIT 1', [status.guild, status.channel, status.ip]);
+    const query = await client.query(`SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text LIMIT 1`, [status.guild, status.channel, selector.value]);
     client.release();
     return query.rows.length > 0;
   }

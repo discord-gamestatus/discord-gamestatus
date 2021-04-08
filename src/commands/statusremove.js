@@ -40,24 +40,19 @@ const call = async function(message, parts) {
     return await message.channel.send({ embed: unknownError });
   }
 
-  const response = await message.channel.send({ embed: {title: 'Removing status messages', color: EMBED_COLOR }});
+  const response = await message.channel.send({ embed: {title: 'Removing status message', color: EMBED_COLOR }});
 
-  let statuses = await message.client.updateCache.get(channel);
+  const success = await updateCache.delete({
+    guild: message.guild.id,
+    channel,
+    message: deleteMessage,
+  });
 
-  let count = 0;
-  if (statuses) {
-    if (!Array.isArray(statuses)) statuses = [statuses];
-    const promises = statuses.filter((status) => {
-      return status.message === deleteMessage;
-    }).map(async (status) => {
-      await message.client.updateCache.updateRemove(status);
-      await status.deleteMessage(message.client);
-    });
-    await Promise.all(promises);
-    count = promises.length;
+  if (success) {
+    await response.edit({ embed: {title: 'Done', description: 'The status message has been removed', color: EMBED_COLOR}});
+  } else {
+    await response.edit({ embed: {title: 'Error', description: 'Unable to remove the status message', color: 0xff0000}});
   }
-
-  await response.edit({ embed: {title: 'Done', description: `${count} Status updates have been removed`, color: EMBED_COLOR}});
 }
 
 exports.name = 'statusremove';
