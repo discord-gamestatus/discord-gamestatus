@@ -53,9 +53,23 @@ class SavePSQL extends SaveInterface {
     await this.pool.end();
   }
 
-  async get(guild) {
+  async get(opts) {
+    let key, value;
+    if (opts.message !== undefined) {
+      key = 'message_id';
+      value = opts.message;
+    } else if (opts.channel !== undefined) {
+      key = 'channel_id';
+      value = opts.channel;
+    } else if (opts.guild !== undefined) {
+      key = 'guild_id';
+      value = opts.guild;
+    } else {
+      throw new Error('Must specify a search param when getting statuses');
+    }
+
     const client = await this.pool.connect();
-    const query = await client.query('SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE guild_id=$1::text', [guild]);
+    const query = await client.query('SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE $1=$2::text', [key, value]);
     client.release();
 
     return query.rows.map(item => SavePSQL.rowToUpdate(item));
@@ -113,7 +127,7 @@ class SavePSQL extends SaveInterface {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text`, [status.guild, status.channel, selector.value]);
+      await client.query('DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND $3=$4::text', [status.guild, status.channel, selector.key, selector.value]);
       await client.query('COMMIT');
     } catch(e) {
       await client.query('ROLLBACK');
@@ -128,7 +142,7 @@ class SavePSQL extends SaveInterface {
   async has(status) {
     const selector = eitherSelector(status);
     const client = await this.pool.connect();
-    const query = await client.query(`SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text LIMIT 1`, [status.guild, status.channel, selector.value]);
+    const query = await client.query(`SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND $3=$4::text LIMIT 1`, [status.guild, status.channel, selector.key, selector.value]);
     client.release();
     return query.rows.length > 0;
   }

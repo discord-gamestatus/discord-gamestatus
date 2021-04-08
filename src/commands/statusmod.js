@@ -35,7 +35,7 @@ const statusIdentity = function(status) {
 const call = async function(message) {
   const args = message.content.split(' ').splice(1);
 
-  let statuses = await message.client.updateCache.get(message.guild.id);
+  let statuses = await message.client.updateCache.get({ guild: message.guild.id });
   if (statuses === undefined) {
     statuses = [];
   } else if (!Array.isArray(statuses)) {
