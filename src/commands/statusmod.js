@@ -107,7 +107,6 @@ const call = async function(message) {
     });
     await message.channel.send(new MessageEmbed({
       title: `${fields.length} Active statuses`,
-      description: `in <#${channel.id}>`,
       fields: fields,
       timestamp: Date.now(),
       color: EMBED_COLOR
@@ -120,8 +119,8 @@ const { FORMAT_PROPERTIES } = require('../constants.js');
 exports.name = 'statusmod';
 exports.call = call;
 exports.check = isAdmin;
-exports.help = `Modify status messages in the channel.\nUse cases:\n\
-  - List statuses in current channel \`!statusmod\`\n\
+exports.help = `Modify status messages in the guild.\nUse cases:\n\
+  - List statuses in current guild \`!statusmod\`\n\
   - Get status config \`!statusmod ID\` (e.g. \`!statusmod 0\`)\n\
   - Reset config option \`!statusmod ID option\` (e.g. \`!statusmod 0 title)\`\n\
   - Set config option \`statusmod ID option value\` (e.g. \`!statusmod 0 title Playing {map}\`)\n\
