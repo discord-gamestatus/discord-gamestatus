@@ -269,7 +269,6 @@ async function start(config) {
   await loadCommands();
   await loadAdditionalConfigs();
   await client.updateCache.load();
-  await client.updateCache.deleteEmpty();
   if (isOfBaseType(config.dblKey, String) && config.dblKey.length > 0) {
     require('./dblapi.js')(client, config.dblKey);
   }
