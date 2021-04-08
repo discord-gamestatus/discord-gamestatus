@@ -42,7 +42,7 @@ const call = async function(message, parts) {
 
   const response = await message.channel.send({ embed: {title: 'Removing status message', color: EMBED_COLOR }});
 
-  const success = await updateCache.delete({
+  const success = await message.client.updateCache.delete({
     guild: message.guild.id,
     channel,
     message: deleteMessage,
