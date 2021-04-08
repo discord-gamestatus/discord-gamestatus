@@ -85,13 +85,15 @@ class UpdateCache {
 
     // Perform checks
     
+    const guild = await update.getGuild(client);
+
     const guildUpdates = await this.get(update.guild);
     const guildUpdateCount = guildUpdates.length;
     let channelUpdateCount = 0;
 
     for (let u of guildUpdates) {
       if (u.ip === update.ip && !client.config.allowDuplicates) 
-        return `Sorry this server already has an update using the IP \`${channelUpdate.ip}\``;
+        return `Sorry this server already has an update using the IP \`${update.ip}\``;
 
       if (u.channel === update.channel) channelUpdateCount++;
     }
