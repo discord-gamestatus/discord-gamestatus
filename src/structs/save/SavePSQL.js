@@ -69,7 +69,10 @@ class SavePSQL extends SaveInterface {
     }
 
     const client = await this.pool.connect();
-    const query = await client.query('SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE $1=$2::text', [key, value]);
+    // FIXME: Make this a non-template string: this is bad as it is injectable.
+    // Should be fine for now as key can only be one of the 3 above values
+    // but if there is some kind of other injection this would be exploitable
+    const query = await client.query(`SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE ${key}=$1::text`, [value]);
     client.release();
 
     return query.rows.map(item => SavePSQL.rowToUpdate(item));
