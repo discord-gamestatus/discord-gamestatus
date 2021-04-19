@@ -27,6 +27,7 @@ const { infoLog, errorLog } = require('../../debug.js');
 class SaveJSON extends SaveInterface {
   constructor(filename) {
     super();
+    throw new Error('SaveJSON is not currently supported');
     this.filename = filename;
     this._saveLock = false;
     this._saveLockQueue = new Array();
