@@ -87,7 +87,7 @@ class UpdateCache {
     
     const guild = await update.getGuild(client);
 
-    const guildUpdates = await this.get(update.guild);
+    const guildUpdates = await this.get({ guild: update.guild });
     const guildUpdateCount = guildUpdates.length;
     let channelUpdateCount = 0;
 

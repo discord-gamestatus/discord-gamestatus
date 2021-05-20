@@ -126,11 +126,12 @@ class SavePSQL extends SaveInterface {
 
   async delete(status) {
     let success = true;
+    let result;
     const selector = eitherSelector(status);
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      await client.query('DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND $3=$4::text', [status.guild, status.channel, selector.key, selector.value]);
+      result = await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text`, [status.guild, status.channel, selector.value]);
       await client.query('COMMIT');
     } catch(e) {
       await client.query('ROLLBACK');
@@ -139,7 +140,7 @@ class SavePSQL extends SaveInterface {
     } finally {
       client.release();
     }
-    return success;
+    return success ? result.rowCount > 0 : success;
   }
 
   async has(status) {
