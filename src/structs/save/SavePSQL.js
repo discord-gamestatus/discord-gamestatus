@@ -146,7 +146,7 @@ class SavePSQL extends SaveInterface {
   async has(status) {
     const selector = eitherSelector(status);
     const client = await this.pool.connect();
-    const query = await client.query(`SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND $3=$4::text LIMIT 1`, [status.guild, status.channel, selector.key, selector.value]);
+    const query = await client.query(`SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$4::text LIMIT 1`, [status.guild, status.channel, selector.value]);
     client.release();
     return query.rows.length > 0;
   }
