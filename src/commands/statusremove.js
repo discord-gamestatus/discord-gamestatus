@@ -49,6 +49,10 @@ const call = async function(message, parts) {
   });
 
   if (success) {
+    const oldMessage = message.channel.messages.forge(deleteMessage);
+    try {
+      await oldMessage.delete();
+    } catch(e) {}
     await response.edit({ embed: {title: 'Done', description: 'The status message has been removed', color: EMBED_COLOR}});
   } else {
     await response.edit({ embed: {title: 'Error', description: 'Unable to remove the status message', color: 0xff0000}});
