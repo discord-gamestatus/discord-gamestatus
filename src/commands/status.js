@@ -16,9 +16,7 @@ GNU General Public License for more details.
 const Update = require('../structs/Update.js');
 const { isAdmin } = require('../checks.js');
 const { isValidGame } = require('../query.js');
-// const { STATUS_PERMISSIONS } = require('../constants.js');
 const { debugLog } = require('../debug.js');
-// const STATUS_PERMISSIONS_READABLE = STATUS_PERMISSIONS.map(p => `\`${p}\``).join(', ');
 
 const call = async function(message, parts) {
   parts = parts.filter(s => s.length > 0);
@@ -26,22 +24,7 @@ const call = async function(message, parts) {
   if (!isValidGame(parts[0])) return await message.channel.send(`\`${parts[0]}\` is not a valid game please check \`${message.client.config.prefix}gamelist\``);
 
   // Check channel permissions
-  const channel = await message.client.channels.fetch(message.channel);
-  /*
-  const permissions = channel.permissionsFor(message.client.user);
-  if (permissions !== null) {
-    if (!permissions.has(STATUS_PERMISSIONS, true)) {
-      const errorMessage = `It doesn't look like I have enough permissions to create a status message in this channel. Please check <@!${message.client.user.id}> has ${STATUS_PERMISSIONS_READABLE} in this channel (<#${message.channel.id}>)`;
-      try {
-        await message.channel.send(errorMessage);
-      } catch(e) {
-        // DM user
-        await message.author.send(errorMessage);
-      }
-      return;
-    }
-  }
-  */
+  const channel = await message.client.channels.fetch(message.channel);  
 
   let update = new Update({
     type: parts[0],
@@ -65,12 +48,6 @@ const call = async function(message, parts) {
     await message.client.updateCache.updateRemove(update, message.client);
     await message.channel.send(`The server (\`${parts[1]}\`) was offline or unreachable`);
     return;
-  }
-
-  if (error !== undefined) {
-    const updateMessage = await update.getMessage(message.client);
-    if (updateMessage) await updateMessage.delete();
-    await channel.send(error);
   }
 }
 
