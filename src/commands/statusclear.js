@@ -13,8 +13,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { allSettled } = require('@douile/bot-utilities');
-
 const { isAdmin } = require('../checks.js');
 const { channelFirstArg } = require('../utils.js');
 
