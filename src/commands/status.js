@@ -16,7 +16,6 @@ GNU General Public License for more details.
 const Update = require('../structs/Update.js');
 const { isAdmin } = require('../checks.js');
 const { isValidGame } = require('../query.js');
-const { debugLog } = require('../debug.js');
 
 const call = async function(message, parts) {
   parts = parts.filter(s => s.length > 0);
