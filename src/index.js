@@ -167,7 +167,7 @@ client.on(TICK_EVENT, errorWrap(async function() {
   let tick = await TICK_GENERATOR.next();
   if (tick.done) {
     TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
-    tick = TICK_GENERATOR.next();
+    tick = await TICK_GENERATOR.next();
     TICK_LIMITS.clear();
   }
 
