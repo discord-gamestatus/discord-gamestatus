@@ -27,20 +27,12 @@ const call = async function(message, args) {
     return;
   }
 
-  let statuses = await message.client.updateCache.get(channel.id);
-
-  let count = 0;
-  if (statuses) {
-    if (!Array.isArray(statuses)) statuses = [statuses];
-    let promises = statuses.map((status) => {
-      status._deleted = true;
-      return status.deleteMessage(message.client);
-    });
-    await allSettled(promises);
-    count = statuses.length;
+  const updates = await message.client.updateCache.get({ channel: channel.id });
+  for (let update of updates) {
+    await (await update.getMessage(message.client)).delete();
   }
 
-  await message.client.updateCache.delete(channel.id);
+  const count = await message.client.updateCache.delete({guild: channel.guild.id, channel: channel.id});
   await response.edit(`${count} Status updates have been cleared`);
 }
 

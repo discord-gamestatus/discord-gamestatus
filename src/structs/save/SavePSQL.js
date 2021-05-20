@@ -124,14 +124,27 @@ class SavePSQL extends SaveInterface {
     return success;
   }
 
-  async delete(status) {
+  async delete(opts) {
     let success = true;
     let result;
-    const selector = eitherSelector(status);
+
+    if (opts.guild === undefined || opts.channel === undefined) {
+      throw new Error('Must specify search params when deleting statuses');
+    }
+
+    let selector;
+    if (opts instanceof Update) {
+      selector = eitherSelector(opts);
+    }
+
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      result = await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text`, [status.guild, status.channel, selector.value]);
+      if (selector !== undefined) {
+        result = await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text`, [opts.guild, opts.channel, selector.value]);
+      } else {
+        result = await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text`, [opts.guild, opts.channel]);
+      }
       await client.query('COMMIT');
     } catch(e) {
       await client.query('ROLLBACK');
@@ -140,7 +153,7 @@ class SavePSQL extends SaveInterface {
     } finally {
       client.release();
     }
-    return success ? result.rowCount > 0 : success;
+    return success ? result.rowCount : -1;
   }
 
   async has(status) {
