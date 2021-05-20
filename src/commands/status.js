@@ -48,23 +48,16 @@ const call = async function(message, parts) {
     ip: parts[1]
   }, { channel: channel });
 
-  /*
-  Here we do most of the validation checks for adding a new update in UpdateCache.updateAdd
-  This is because this function can be used elsewhere, and also due to the fact
-  this function already locks the key and retrieves necessary data to do the checks
-  */
-
-  let error;
-  try {
-    error = await message.client.updateCache.updateAdd(update, message.client);
-  } catch(e) {
+  // Check if this is a valid status message to add
+  let error = await message.client.updateCache.canAddUpdate(update, message.client);
+  if (error !== undefined) {
     const updateMessage = await update.getMessage(message.client);
     if (updateMessage) await updateMessage.delete();
-    await channel.send('Sorry an error was encountered saving this update, please try again later');
-    debugLog(e);
+    await channel.send(error);
     return;
   }
 
+  // update.send will call UpdateSave as there is a new message
   let state = await update.send(message.client, 0);
   if (state.offline === true) {
     const updateMessage = await update.getMessage(message.client);

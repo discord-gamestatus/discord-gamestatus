@@ -78,11 +78,15 @@ class UpdateCache {
   /*****************************************************************************
   *** Abstracted update functions
   *****************************************************************************/
- 
-  async updateAdd(update, client) {
-    if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
-    verboseLog(`Attempting to add ${update.ID()}`);
 
+  /**
+   * Check if an update would be valid to add
+   * @param update Update to check
+   * @param client Discord.js Client object
+   * @return String? Optional error message (undefined if no error)
+   */
+  async canAddUpdate(update, client) {
+    if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
     // Perform checks
     
     const guild = await update.getGuild(client);
@@ -108,8 +112,7 @@ class UpdateCache {
       return `Sorry this channel has reached its limit of ${limits.channelLimit} active server statuses`;
     }
 
-    await this.set(update);
-
+    return undefined;
   }
 
   async updateRemove(update) {
