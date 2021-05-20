@@ -34,31 +34,41 @@ class SaveInterface {
   /**
   * Get a value
   * @async
-  * @param {String} key - Key to get
-  * @returns {Update[]?} value of key
+  * @param {String} guild     - Guild to get
+  * @param {String} channel   - Channel to get
+  * @param {String} ip        - IP to get
+  * @returns {Update?} value of key
   */
   get() {}
 
   /**
   * Set a value
   * @async
-  * @param {String} key - Key to set
-  * @param {Update[]} value
-  */
+  * @param {String} guild     - Guild to set
+  * @param {String} channel   - Channel to set
+  * @param {String} ip        - IP to set
+  * @param {Update} value
+  * @returns {Boolean} success?
+  * */
   set() {}
 
   /**
   * Delete a value
   * @async
-  * @param {String} key - Key to delete
+  * @param {String} guild     - Guild to delete
+  * @param {String} channel   - Channel to delete
+  * @param {String} ip        - IP to set
+  * @returns {Boolean} success?
   */
   delete() {}
 
   /**
   * Check if key exists
   * @async
-  * @param {String} key - Key to check for
-  * @returns {Boolean}
+  * @param {String} guild     - Guild to check for
+  * @param {String} channel   - Channel to check for
+  * @param {String} ip        - IP to check for
+  * @returns {Boolean} Whether update exists
   */
   has() {}
 

@@ -178,6 +178,7 @@ client.on(TICK_EVENT, errorWrap(async function() {
 
   TICK += 1;
 
+  verboseLog('[TICKER] Starting tick', r, tick.value !== undefined);
   let promises = [];
   if (tick.value) {
     for (let update of tick.value) {
@@ -185,7 +186,7 @@ client.on(TICK_EVENT, errorWrap(async function() {
     }
   }
   let res = await allSettled(promises);
-  if (res.length > 0) verboseLog(r,  promises.length, res);
+  if (res.length > 0) verboseLog('[TICKER] Finished tick', r,  promises.length, res);
 }));
 
 client.on(Discord.Constants.Events.RATE_LIMIT, verboseLog);
@@ -265,11 +266,10 @@ async function start(config) {
   verboseLog('CONFIG', client.config);
 
   debugLog('DEBUG LOGS ENABLED');
-  verboseLog('VERBOOSE LOGS ENABLED');
+  verboseLog('VERBOSE LOGS ENABLED');
   await loadCommands();
   await loadAdditionalConfigs();
   await client.updateCache.load();
-  await client.updateCache.deleteEmpty();
   if (isOfBaseType(config.dblKey, String) && config.dblKey.length > 0) {
     require('./dblapi.js')(client, config.dblKey);
   }

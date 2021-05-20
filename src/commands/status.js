@@ -16,9 +16,6 @@ GNU General Public License for more details.
 const Update = require('../structs/Update.js');
 const { isAdmin } = require('../checks.js');
 const { isValidGame } = require('../query.js');
-// const { STATUS_PERMISSIONS } = require('../constants.js');
-const { debugLog } = require('../debug.js');
-// const STATUS_PERMISSIONS_READABLE = STATUS_PERMISSIONS.map(p => `\`${p}\``).join(', ');
 
 const call = async function(message, parts) {
   parts = parts.filter(s => s.length > 0);
@@ -26,45 +23,23 @@ const call = async function(message, parts) {
   if (!isValidGame(parts[0])) return await message.channel.send(`\`${parts[0]}\` is not a valid game please check \`${message.client.config.prefix}gamelist\``);
 
   // Check channel permissions
-  const channel = await message.client.channels.fetch(message.channel);
-  /*
-  const permissions = channel.permissionsFor(message.client.user);
-  if (permissions !== null) {
-    if (!permissions.has(STATUS_PERMISSIONS, true)) {
-      const errorMessage = `It doesn't look like I have enough permissions to create a status message in this channel. Please check <@!${message.client.user.id}> has ${STATUS_PERMISSIONS_READABLE} in this channel (<#${message.channel.id}>)`;
-      try {
-        await message.channel.send(errorMessage);
-      } catch(e) {
-        // DM user
-        await message.author.send(errorMessage);
-      }
-      return;
-    }
-  }
-  */
+  const channel = await message.client.channels.fetch(message.channel);  
 
   let update = new Update({
     type: parts[0],
     ip: parts[1]
   }, { channel: channel });
 
-  /*
-  Here we do most of the validation checks for adding a new update in UpdateCache.updateAdd
-  This is because this function can be used elsewhere, and also due to the fact
-  this function already locks the key and retrieves necessary data to do the checks
-  */
-
-  let error;
-  try {
-    error = await message.client.updateCache.updateAdd(update, message.client);
-  } catch(e) {
+  // Check if this is a valid status message to add
+  let error = await message.client.updateCache.canAddUpdate(update, message.client);
+  if (error !== undefined) {
     const updateMessage = await update.getMessage(message.client);
     if (updateMessage) await updateMessage.delete();
-    await channel.send('Sorry an error was encountered saving this update, please try again later');
-    debugLog(e);
+    await channel.send(error);
     return;
   }
 
+  // update.send will call UpdateSave as there is a new message
   let state = await update.send(message.client, 0);
   if (state.offline === true) {
     const updateMessage = await update.getMessage(message.client);
@@ -72,12 +47,6 @@ const call = async function(message, parts) {
     await message.client.updateCache.updateRemove(update, message.client);
     await message.channel.send(`The server (\`${parts[1]}\`) was offline or unreachable`);
     return;
-  }
-
-  if (error !== undefined) {
-    const updateMessage = await update.getMessage(message.client);
-    if (updateMessage) await updateMessage.delete();
-    await channel.send(error);
   }
 }
 

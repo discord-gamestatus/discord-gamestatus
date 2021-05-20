@@ -31,6 +31,7 @@ class SaveJSON extends SaveInterface {
     this._saveLock = false;
     this._saveLockQueue = new Array();
     this._cache = new Collection();
+    throw new Error('SaveJSON is not currently supported');
   }
 
   get(key) {
