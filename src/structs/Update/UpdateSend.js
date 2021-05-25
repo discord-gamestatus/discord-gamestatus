@@ -67,7 +67,12 @@ module.exports = {
         /* Unknown channel, Missing access, Lack permission */
         if ([10003, 50001, 50013].includes(e.code)) {
           infoLog(`Removing ${this.ID()} for ${e.code}`);
-          await client.updateCache.updateRemove(this); // Delete status
+          await client.updateCache.delete(this); // Delete status
+          try {
+            await message.delete();
+          } catch(e) {
+            // DO NOTHING
+          }
         } else {
           verboseLog(`Error editing message ${message.id}`, e.code);
         }
