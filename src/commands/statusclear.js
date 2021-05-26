@@ -27,8 +27,14 @@ const call = async function(message, args) {
 
   const updates = await message.client.updateCache.get({ channel: channel.id });
   for (let update of updates) {
-    const message = await update.getMessage(message.client);
-    if (message) await message.delete();
+    const msg = await update.getMessage(message.client);
+    if (msg) {
+      try {
+        await msg.delete();
+      } catch(e) {
+        // DO NOTHING
+      }
+    }
   }
 
   const count = await message.client.updateCache.delete({guild: channel.guild.id, channel: channel.id});
