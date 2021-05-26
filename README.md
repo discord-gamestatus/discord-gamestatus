@@ -25,8 +25,10 @@ cd discord-gamestatus
 # git reset --hard latest
 git checkout master
 git tag -d latest
-git pull --ff # This will overwrite local changes, If you wish to save them use git stash
+git stash
+git pull
 git checkout latest # Checkout latest stable version
+git stash pop
 git log --name-status HEAD^..HEAD # Check latest commit
 npm install --no-optional # Update dependencies (remove --no-optional for optional dependencies, they are faster but need to be compiled)
 ```
@@ -41,6 +43,9 @@ _At the moment there is no help command_
 | status | `!status {game} {ip}` | ADMINISTRATOR | Add a status message to current channel
 | statusclear | `!statusclear` | ADMINISTRATOR | Clear all status messages from current channel
 | statusmod | `!statusmod [id] [property] [value]` | ADMINISTRATOR | Modify status messages in the current channel
+| statusrefresh | `!statusrefresh` | ADMINISTRATOR | Make all statuses in the specified channel send a new message
+| statusremove | `!statusremove [#channel] [#message]` (can just use `!statusremove` when reacting to a status | ADMINISTRATOR | Remove a status message
+| limits | `!limits` | None | View your guilds status limits
 | botinfo | `!botinfo` | None | Print information about current versions, uptime and ping of the bot
 
 ## Configuring
