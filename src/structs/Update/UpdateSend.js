@@ -60,7 +60,9 @@ module.exports = {
     let args = [changesToSend.length > 0 ? changesToSend.map(v => v.msg).join('\n').substring(0,500) : '', embed];
 
     let message = await this.getMessage(client);
+    let needsNewMessage = true;
     if (message) {
+      needsNewMessage = false;
       try {
         await message.edit.apply(message, args);
       } catch(e) {
@@ -73,11 +75,15 @@ module.exports = {
           } catch(e) {
             // DO NOTHING
           }
+        } else if (e.code === 10008) {
+          needsNewMessage = true;
         } else {
           verboseLog(`Error editing message ${message.id}`, e.code);
         }
       }
-    } else {
+    }
+
+    if (needsNewMessage) {
       let channel = await this.getChannel(client);
       if (channel) {
         let newMessage;
