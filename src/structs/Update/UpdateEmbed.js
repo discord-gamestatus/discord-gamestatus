@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,7 +47,8 @@ module.exports = {
     embed.setFooter(dots[tick % dots.length]);
 
     let image = server.image;
-    if (this.getOption(OPT_IMAGE[isOffline]).length > 0) image = {type: 'url', url: this.getOption('image')};
+    const selectedImage = this.getOption(OPT_IMAGE[isOffline]);
+    if (selectedImage.length > 0) image = {type: 'url', url: selectedImage};
 
     if (image) {
       let embedImage = undefined;
