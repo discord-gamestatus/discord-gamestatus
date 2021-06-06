@@ -32,7 +32,7 @@ const IMAGE = {
     return info?.icon ? { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' } : undefined;
   },
   discord: async function(state) {
-    let guild = this.guilds.get(state.gameHost);
+    let guild = this.guilds.resolve(state.gameHost);
     return guild ? { url: guild.iconURL, type: 'url' } : undefined;
   }
 }
@@ -58,15 +58,18 @@ const parseMap = function(map, protocol) {
 }
 
 const query = async function(type, ip) {
-  let ip_parts = ip.split(':'), state;
-  let protocol = getResolver().lookup(type).protocol;
+  const ip_parts = ip.split(':');
+  const protocol = getResolver().lookup(type).protocol;
+  const isDiscord = protocol === 'discord';
+  let state;
 
   try {
     state = await GameDig.query({
       type: type,
-      host: ip_parts[0],
+      host: isDiscord ? 'localhost' : ip_parts[0],
       port: ip_parts.length > 1 ? ip_parts[1] : undefined,
       realPlayers: [],
+      guildId: isDiscord ? ip_parts[0] : undefined,
     });
     state.players = Array.from(state.players);
     state.offline = false;
