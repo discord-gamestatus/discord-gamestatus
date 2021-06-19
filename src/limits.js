@@ -25,16 +25,6 @@ const nullError = function(promise, onError) {
   })
 }
 
-const max = function() {
-  let v = 0;
-  for (let arg of arguments) {
-    if (arg === undefined) return undefined;
-    if (arg > v) v = arg;
-  }
-  return v;
-}
-
-
 // Cache used here as guild member endpoint can be very slow (RIP memory usage)
 const limitCache = new Map();
 module.exports.getLimits = async function(client, user, noCache) {
@@ -53,7 +43,7 @@ module.exports.getLimits = async function(client, user, noCache) {
       if (role === null) continue;*/
       if (member.roles.cache.has(roleID)) {
         for (let key in limits) {
-          limits[key] = max(limits[key], guildRules[roleID][key]);
+          limits[key] = Math.max(limits[key], guildRules[roleID][key]);
         }
       }
     }
