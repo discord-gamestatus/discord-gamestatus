@@ -48,7 +48,7 @@ const call = async function(message, parts) {
     message: deleteMessage,
   });
 
-  if (success) {
+  if (success > 0) {
     const oldMessage = message.channel.messages.forge(deleteMessage);
     try {
       await oldMessage.delete();
