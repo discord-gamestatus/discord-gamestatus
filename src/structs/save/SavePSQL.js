@@ -133,7 +133,7 @@ class SavePSQL extends SaveInterface {
     }
 
     let selector;
-    if (opts instanceof Update) {
+    if (opts instanceof Update || 'ip' in opts || 'message' in opts) {
       selector = eitherSelector(opts);
     }
 
@@ -157,6 +157,9 @@ class SavePSQL extends SaveInterface {
   }
 
   async has(status) {
+    if (status.guild === undefined || status.channel === undefined) {
+      throw new Error('Must specify search params when querying statuses');
+    }
     const selector = eitherSelector(status);
     const client = await this.pool.connect();
     const query = await client.query(`SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$4::text LIMIT 1`, [status.guild, status.channel, selector.value]);
