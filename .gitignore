@@ -7,6 +7,7 @@ _save.json
 start.sh
 update-discord-gamestatus.sh
 limit-rules.json
+dist/
 
 # Vim
 *~

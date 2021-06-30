@@ -42,6 +42,7 @@
     "zlib-sync": "^0.1.6"
   },
   "devDependencies": {
-    "eslint": "^7.20.0"
+    "eslint": "^7.20.0",
+    "typescript": "^4.3.4"
   }
 }
