@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { infoLog, warnLog, verboseLog } = require('../debug.js');
+const { infoLog, warnLog } = require('../debug.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
 let SavePSQL;
