@@ -84,13 +84,13 @@ module.exports = {
     } else {
       this.options[optionName] = newValue;
     }
-    if (!dontSave) return client.updateCache.updateSave(this);
+    if (!dontSave && !this._dontAutoSave) return client.updateCache.update(this);
   },
 
   async deleteOption(client, optionName) {
     if (!isOfBaseType(this.options, Object)) this.options = {};
     delete this.options[optionName];
-    await client.updateCache.updateSave(this);
+    if (!this._dontAutoSave) await client.updateCache.update(this);
   },
 
   parse(object) {

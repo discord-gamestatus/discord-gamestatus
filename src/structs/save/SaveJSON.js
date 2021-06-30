@@ -82,11 +82,36 @@ class SaveJSON extends SaveInterface {
     }
   }
 
-  set(status) {
+  update(status) {
+    if (!(status instanceof Update)) {
+      throw new Error();
+    }
+
+    if (!this._cache.has(status.channel)) throw new Error('No such StatusUpdate exists');
+    const cached = this._cache.get(status.channel);
+    let found = false;
+    for (let i=0;i<cached.length;i++) {
+      if (cached[i].ip === status.ip && cached[i].guild === status.guild && cached[i].channel === status.channel) {
+        found = true;
+        cached[i] = status;
+        break;
+      }
+    }
+    if (!found) throw new Error('No such StatusUpdate exists');
+    this.queueSave();
+  }
+
+  create(status) {
+    if (!(status instanceof Update)) {
+      throw new Error();
+    }
+
     if (this._cache.has(status.channel)) {
-      const l = this._cache.get(status.channel);
-      if (!l.includes(status)) l.push(status);
-      this._cache.set(status.channel, l);
+      const cached = this._cache.get(status.channel);
+      if (cached.some(s => s.ip === status.ip && s.guild === status.guild && s.channel === status.channel))
+        throw new Error('StatusUpdate already exists');
+
+      this._cache.set(status.channel, cached.concat([status]));
     } else {
       this._cache.set(status.channel, [status]);
     }

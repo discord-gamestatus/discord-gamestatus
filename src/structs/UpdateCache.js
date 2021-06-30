@@ -51,16 +51,20 @@ class UpdateCache {
     return this.saveInterface.get(key);
   }
 
-  set(value) {
-    return this.saveInterface.set(value);
+  create(status) {
+    return this.saveInterface.create(status);
+  }
+
+  update(status) {
+    return this.saveInterface.update(status);
   }
 
   has(value) {
     return this.saveInterface.has(value);
   }
 
-  delete(value) {
-    return this.saveInterface.delete(value);
+  delete(status) {
+    return this.saveInterface.delete(status);
   }
 
   values() {
@@ -114,23 +118,6 @@ class UpdateCache {
 
     return undefined;
   }
-
-  async updateRemove(update) {
-    if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
-    verboseLog(`Attempting to remove ${update.ID()}`);
-
-    update._deleted = true;
-    await this.delete(update); 
-
-  }
-
-  async updateSave(update) {
-    if (!(update instanceof Update)) throw new Error('update must be an instance of Update', update);
-    verboseLog(`Attempting to save ${update.ID()}`);
-
-    await this.set(update);
-  }
-
 
   /*****************************************************************************
   *** Value iterators

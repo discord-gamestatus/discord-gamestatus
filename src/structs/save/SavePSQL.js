@@ -78,20 +78,20 @@ class SavePSQL extends SaveInterface {
     return query.rows.map(item => SavePSQL.rowToUpdate(item));
   }
 
-  async set(status) {
+  async create(status) {
+    if (!(status instanceof Update)) {
+      throw new Error('Can only create instances of Updates');
+    }
+
     let success = false;
-    
+
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
       await client.query('INSERT INTO statuses \
           (guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description,\
           color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update) VALUES \
-          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)\
-          ON CONFLICT ON CONSTRAINT statuses_guild_id_channel_id_ip_key DO UPDATE SET\
-          message_id=$3, type=$4, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12,\
-          color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20',
-        fixStrings([
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)', fixStrings([
           status.guild,
           status.channel,
           status.message,
@@ -113,6 +113,53 @@ class SavePSQL extends SaveInterface {
           status.options?.connectUpdate,
           status.options?.disconnectUpdate,
       ]));
+      await client.query('COMMIT');
+    } catch(e) {
+      await client.query('ROLLBACK');
+      errorLog(e);
+      success = false;
+    } finally {
+      client.release();
+    }
+    return success;
+  }
+
+  async update(status) {
+    if (!(status instanceof Update)) {
+      throw new Error('Can only update status objects');
+    }
+
+    let success = false;
+
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const r = await client.query('UPDATE statuses SET\
+          message_id=$4, type=$5, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12,\
+          color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20\
+          WHERE guild_id=$1 AND channel_id=$2 and ip=$3', fixStrings([
+          status.guild,
+          status.channel,
+          status.ip,
+          status.message,
+          status.type,
+          status.name,
+          JSON.stringify(status.state),
+          status.options?.dots,
+          status.options?.title,
+          status.options?.offlineTitle,
+          status.options?.description,
+          status.options?.offlineDescription,
+          status.options?.color,
+          status.options?.offlineColor,
+          status.options?.image,
+          status.options?.offlineImage,
+          status.options?.columns,
+          status.options?.maxEdits,
+          status.options?.connectUpdate,
+          status.options?.disconnectUpdate,
+      ]));
+      if (r.rowCount !== 1) throw new Error(`Invalid amount (${r.rowCount}) of statuses were updated`);
       await client.query('COMMIT');
     } catch(e) {
       await client.query('ROLLBACK');

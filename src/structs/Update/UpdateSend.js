@@ -93,7 +93,7 @@ module.exports = {
           /* Unknown channel, Missing access, Lack permission */
           if ([10003, 50001, 50013].includes(e.code)) {
             infoLog(`Removing ${this.ID()} for ${e.code}`);
-            await client.updateCache.updateRemove(this); // delete status
+            await client.updateCache.delete(this); // delete status
           } else {
             debugLog('Unable to send new update', e.code);
           }

@@ -213,14 +213,14 @@ async function doUpdate(update, tick, counters) {
       return;
     }
     if (await u.shouldDelete(client)) {
-      await client.updateCache.updateRemove(u);
+      await client.updateCache.delete(u);
       await u.deleteMessage(client);
       debugLog(`Deleted obselete update ${u.ID()}`);
     } else {
       if (await checkTickLimits(u, counters)) {
         await u.send(client, tick);
       } else {
-        await client.updateCache.updateRemove(u);
+        await client.updateCache.delete(u);
         await u.deleteMessage(client);
         debugLog(`Deleted update for exceeding limits ${u.ID()}`);
       }

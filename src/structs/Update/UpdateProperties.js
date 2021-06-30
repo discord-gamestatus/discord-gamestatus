@@ -69,8 +69,8 @@ module.exports = {
       this.guild = guild;
       this._guild = undefined;
     }
-    if (oldGuild !== this.guild) {
-      await client.updateCache.updateSave(this);
+    if (oldGuild !== this.guild && !this._dontAutoSave) {
+      await client.updateCache.update(this);
     }
   },
 
@@ -83,8 +83,8 @@ module.exports = {
       this.channel = channel;
       this._channel = undefined;
     }
-    if (oldChannel !== this.channel) {
-      await client.updateCache.updateSave(this);
+    if (oldChannel !== this.channel && !this._dontAutoSave) {
+      await client.updateCache.update(this);
     }
   },
 
@@ -97,8 +97,8 @@ module.exports = {
       this.message = message;
       this._message = undefined;
     }
-    if (oldMessage !== this.message) {
-      await client.updateCache.updateSave(this);
+    if (oldMessage !== this.message && !this._dontAutoSave) {
+      await client.updateCache.update(this);
     }
   },
 

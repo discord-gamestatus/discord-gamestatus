@@ -24,6 +24,7 @@ const call = async function(message, parts) {
 
   // Check channel permissions
   const channel = await message.client.channels.fetch(message.channel);  
+  const updateCache = message.client.updateCache;
 
   let update = new Update({
     type: parts[0],
@@ -31,23 +32,23 @@ const call = async function(message, parts) {
   }, { channel: channel });
 
   // Check if this is a valid status message to add
-  let error = await message.client.updateCache.canAddUpdate(update, message.client);
+  let error = await updateCache.canAddUpdate(update, message.client);
   if (error !== undefined) {
-    const updateMessage = await update.getMessage(message.client);
-    if (updateMessage) await updateMessage.delete();
     await channel.send(error);
     return;
   }
 
-  // update.send will call UpdateSave as there is a new message
+  update._dontAutoSave = true;
   let state = await update.send(message.client, 0);
   if (state.offline === true) {
     const updateMessage = await update.getMessage(message.client);
     if (updateMessage) await updateMessage.delete();
-    await message.client.updateCache.updateRemove(update, message.client);
+    // No need to delete as update isn't in database yet
     await message.channel.send(`The server (\`${parts[1]}\`) was offline or unreachable`);
     return;
   }
+  await updateCache.create(update); 
+  update._dontAutoSave = false;
 }
 
 exports.name = 'status';
