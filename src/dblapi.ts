@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,16 +13,27 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
-const { debugLog, verboseLog } = require('./debug.js');
+import Client from './structs/Client';
+import { debugLog, verboseLog } from './debug';
 
 const URL_API = 'https://top.gg/api';
 const DBL_TIMEOUT = 1000;
 
-const sendDBLUpdateRequest = async function(client, key) {
+interface DBLInfo {
+  lastUpdate: number,
+  currentTimeout: NodeJS.Timeout | null,
+}
+
+let DBL_INFO: DBLInfo = {
+  lastUpdate: 0,
+  currentTimeout: null,
+};
+
+async function sendDBLUpdateRequest(client: Client, key: string) {
   const servers = client.guilds.cache.size;
-  const res = await fetch(`${URL_API}/bots/${client.user.id}/stats`, {
+  const res = await fetch(`${URL_API}/bots/${client?.user?.id}/stats`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${key}`,
@@ -30,14 +41,14 @@ const sendDBLUpdateRequest = async function(client, key) {
     },
     body: JSON.stringify({
       server_count: servers,
-      shard_id: client.shard ? client.shard.id : 0,
+      shard_id: 0,
       shard_count: client.shard ? client.shard.count : 1
     })
   });
   if (res.status === 429) {
     const data = await res.json();
-    client._DBL_INFO.lastUpdate = Date.now() + data['retry-after'];
-    if (isNaN(client._DBL_INFO.lastUpdate)) client._DBL_INFO.lastUpdate = Date.now() + 0x36ee80;
+    DBL_INFO.lastUpdate = Date.now() + data['retry-after'];
+    if (isNaN(DBL_INFO.lastUpdate)) DBL_INFO.lastUpdate = Date.now() + 0x36ee80;
     return sendDBLUpdate(client, key)();
   } else if (!res.ok) {
     throw new Error(`DBL api returned error code ${res.status} ${res.statusText}`);
@@ -45,34 +56,24 @@ const sendDBLUpdateRequest = async function(client, key) {
   verboseLog(`Successfully update DBL (server count: ${servers})`);
 }
 
-const sendDBLUpdate = function(client, key) {
+const sendDBLUpdate = function(client: Client, key: string) {
   const CLIENT = client;
   const KEY = key;
   return function() {
     const now = Date.now();
-    const next = CLIENT._DBL_INFO.lastUpdate + DBL_TIMEOUT;
+    const next = DBL_INFO.lastUpdate + DBL_TIMEOUT;
     if (next <= now) {
       sendDBLUpdateRequest(CLIENT, KEY).then(null).catch(debugLog);
-    } else if (CLIENT._DBL_INFO.currentTimeout === null) {
-      CLIENT._DBL_INFO.currentTimeout = setTimeout(function() {
-        CLIENT._DBL_INFO.currentTimeout = null;
+    } else if (DBL_INFO.currentTimeout === null) {
+      DBL_INFO.currentTimeout = setTimeout(function() {
+        DBL_INFO.currentTimeout = null;
         sendDBLUpdate(client, key)();
       }, next-now);
     }
   }
 }
 
-const startDBLApiHook = function(client, key) {
-  Object.defineProperty(client, '_DBL_INFO', {
-    configurable: false,
-    enumerable: false,
-    writable: true,
-    value: {
-      lastUpdate: 0,
-      currentTimeout: null
-    }
-  });
-
+export function startDBLApiHook(client: Client, key: string) {
   const sendUpdate = sendDBLUpdate(client, key);
 
   client.once('ready', sendUpdate);
@@ -81,5 +82,3 @@ const startDBLApiHook = function(client, key) {
 
   debugLog('Successfully setup DBL API hook');
 }
-
-module.exports = startDBLApiHook;

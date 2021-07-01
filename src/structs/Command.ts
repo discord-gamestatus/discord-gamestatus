@@ -1,8 +1,6 @@
-'use strict';
-
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,6 +13,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-exports.FORMAT_PROPERTIES = Object.freeze([ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ]);
-exports.MAX_EMBED_FIELD_SIZE = 2000;
-exports.EMBED_COLOR = 0x5555ff;
+import Message from './Message';
+import { Check } from '../checks';
+
+export default interface Command {
+  name: string,
+  help?: string,
+  check?: Check,
+  call: (message?: Message, parts?: string[]) => Promise<void>,
+}

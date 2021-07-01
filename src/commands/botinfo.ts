@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,39 +13,44 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { MessageEmbed } = require('discord.js-light');
+import { MessageEmbed } from "discord.js-light";
 
-const Package = require('../../package.json');
-const { humanDuration } = require('@douile/bot-utilities');
+const Package = require("../../package.json");
+import { humanDuration } from "@douile/bot-utilities";
 
-const { EMBED_COLOR } = require('../constants.js');
+import Message from "../structs/Message";
+import { EMBED_COLOR } from "../constants";
 
-const call = async function(message) {
+export const name = "botinfo";
+export const help = "Output runtime information";
+export async function call(message: Message) {
   const client = message.client;
 
   const memoryUsage = process.memoryUsage();
-  let supportLink = '';
+  let supportLink = "";
   if (client.config.supportServer !== undefined) {
     supportLink = `[Join the support server](${client.config.supportServer})\n`;
   }
 
-  await message.channel.send(new MessageEmbed({
-    title: `${Package.name} info`,
-    description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n${supportLink}\
-    Average ping: ${Math.round(client.ws.ping,2)}ms\n\
-    Uptime: ${humanDuration(client.uptime, 1000)}\n\
+  await message.channel.send(
+    new MessageEmbed({
+      title: `${Package.name} info`,
+      description: `[${Package.name} v${Package.version}](${
+        Package.homepage
+      }) [Report bugs here](${Package.bugs.url})\n${supportLink}\
+    Average ping: ${Math.round(client.ws.ping * 10) / 10}ms\n\
+    Uptime: ${humanDuration(client.uptime || 0, 1000)}\n\
     Working in ${client.guilds.cache.size} guilds\n\
-    Memory usage: ${Math.round(memoryUsage.heapUsed/1024)}kb/${Math.round(memoryUsage.heapTotal/1024)}kb\n\
+    Memory usage: ${Math.round(memoryUsage.heapUsed / 1024)}kb/${Math.round(
+        memoryUsage.heapTotal / 1024
+      )}kb\n\
     **Dependencies**\n\
     [NodeJS ${process.version}](https://nodejs.org)\n\
     [discord.js-light](https://github.com/timotejroiko/discord.js-light)\n\
     [discord.js](https://github.com/discordjs/discord.js)\n\
     [gamedig](https://github.com/gamedig/node-gamedig)`,
-    timestamp: Date.now(),
-    color: EMBED_COLOR
-  }))
+      timestamp: Date.now(),
+      color: EMBED_COLOR
+    })
+  );
 }
-
-exports.name = 'botinfo';
-exports.call = call;
-exports.help = 'Output runtime information';

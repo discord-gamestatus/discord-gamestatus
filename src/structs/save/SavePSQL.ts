@@ -13,85 +13,81 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { Pool } = require('pg')
+import { Pool, QueryResult, QueryResultRow } from "pg";
 
-const SaveInterface = require('./SaveInterface.js');
-const Update = require('../Update.js');
-const { errorLog } = require('../../debug.js');
+import SaveInterface, {
+  GetOpts,
+  DeleteOpts,
+  eitherSelector,
+  Selector
+} from "./SaveInterface";
+import Update from "../Update";
+import { errorLog } from "../../debug";
 
-function fixStrings(values) {
+function fixStrings(values: any[]): string[] {
   return values.map(v => {
     if (v instanceof String) return v.toString();
     return v;
-  })
+  });
 }
 
-// Use IP if available otherwise use message id
-function eitherSelector(update) {
-  if (update.ip !== undefined)
-    return { key: 'ip', value: update.ip };
-  if (update.message !== undefined)
-    return { key: 'message_id', value: update.message };
-  throw new Error('Not enough identifiers for', update);
-}
+export default class SavePSQL implements SaveInterface {
+  private pool: Pool;
 
-class SavePSQL extends SaveInterface {
-  constructor(database) {
-    super();
-    this.pool = new Pool({ database: database || 'discord_gamestatus' });
+  constructor(database?: string) {
+    this.pool = new Pool({ database: database || "discord_gamestatus" });
   }
 
   /*****************************************************************************
-  *** Interface funcs
-  *****************************************************************************/
+   *** Interface funcs
+   *****************************************************************************/
 
-  async load() {
-
-  }
+  async load() {}
 
   async close() {
     await this.pool.end();
   }
 
-  async get(opts) {
+  async get(opts: GetOpts): Promise<Update[]> {
     let key, value;
     if (opts.message !== undefined) {
-      key = 'message_id';
+      key = "message_id";
       value = opts.message;
     } else if (opts.channel !== undefined) {
-      key = 'channel_id';
+      key = "channel_id";
       value = opts.channel;
     } else if (opts.guild !== undefined) {
-      key = 'guild_id';
+      key = "guild_id";
       value = opts.guild;
     } else {
-      throw new Error('Must specify a search param when getting statuses');
+      throw new Error("Must specify a search param when getting statuses");
     }
 
     const client = await this.pool.connect();
     // FIXME: Make this a non-template string: this is bad as it is injectable.
     // Should be fine for now as key can only be one of the 3 above values
     // but if there is some kind of other injection this would be exploitable
-    const query = await client.query(`SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE ${key}=$1::text`, [value]);
+    const query = await client.query(
+      `SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses WHERE ${key}=$1::text`,
+      [value]
+    );
     client.release();
 
     return query.rows.map(item => SavePSQL.rowToUpdate(item));
   }
 
-  async create(status) {
-    if (!(status instanceof Update)) {
-      throw new Error('Can only create instances of Updates');
-    }
-
+  async create(status: Update): Promise<boolean> {
     let success = false;
 
     const client = await this.pool.connect();
     try {
-      await client.query('BEGIN');
-      await client.query('INSERT INTO statuses \
+      await client.query("BEGIN");
+      await client.query(
+        "INSERT INTO statuses \
           (guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description,\
           color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update) VALUES \
-          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)', fixStrings([
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)",
+        fixStrings([
           status.guild,
           status.channel,
           status.message,
@@ -111,11 +107,12 @@ class SavePSQL extends SaveInterface {
           status.options?.columns,
           status.options?.maxEdits,
           status.options?.connectUpdate,
-          status.options?.disconnectUpdate,
-      ]));
-      await client.query('COMMIT');
-    } catch(e) {
-      await client.query('ROLLBACK');
+          status.options?.disconnectUpdate
+        ])
+      );
+      await client.query("COMMIT");
+    } catch (e) {
+      await client.query("ROLLBACK");
       errorLog(e);
       success = false;
     } finally {
@@ -124,20 +121,18 @@ class SavePSQL extends SaveInterface {
     return success;
   }
 
-  async update(status) {
-    if (!(status instanceof Update)) {
-      throw new Error('Can only update status objects');
-    }
-
+  async update(status: Update): Promise<boolean> {
     let success = false;
 
     const client = await this.pool.connect();
     try {
-      await client.query('BEGIN');
-      const r = await client.query('UPDATE statuses SET\
+      await client.query("BEGIN");
+      const r = await client.query(
+        "UPDATE statuses SET\
           message_id=$4, type=$5, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12,\
           color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20\
-          WHERE guild_id=$1 AND channel_id=$2 and ip=$3', fixStrings([
+          WHERE guild_id=$1 AND channel_id=$2 and ip=$3",
+        fixStrings([
           status.guild,
           status.channel,
           status.ip,
@@ -157,12 +152,16 @@ class SavePSQL extends SaveInterface {
           status.options?.columns,
           status.options?.maxEdits,
           status.options?.connectUpdate,
-          status.options?.disconnectUpdate,
-      ]));
-      if (r.rowCount !== 1) throw new Error(`Invalid amount (${r.rowCount}) of statuses were updated`);
-      await client.query('COMMIT');
-    } catch(e) {
-      await client.query('ROLLBACK');
+          status.options?.disconnectUpdate
+        ])
+      );
+      if (r.rowCount !== 1)
+        throw new Error(
+          `Invalid amount (${r.rowCount}) of statuses were updated`
+        );
+      await client.query("COMMIT");
+    } catch (e) {
+      await client.query("ROLLBACK");
       errorLog(e);
       success = false;
     } finally {
@@ -171,45 +170,54 @@ class SavePSQL extends SaveInterface {
     return success;
   }
 
-  async delete(opts) {
+  async delete(opts: DeleteOpts): Promise<number> {
     let success = true;
-    let result;
+    let result: QueryResult | undefined = undefined;
 
     if (opts.guild === undefined || opts.channel === undefined) {
-      throw new Error('Must specify search params when deleting statuses');
+      throw new Error("Must specify search params when deleting statuses");
     }
 
-    let selector;
-    if (opts instanceof Update || 'ip' in opts || 'message' in opts) {
+    let selector: Selector | undefined = undefined;
+    if (opts instanceof Update || "ip" in opts || "message" in opts) {
       selector = eitherSelector(opts);
     }
 
     const client = await this.pool.connect();
     try {
-      await client.query('BEGIN');
+      await client.query("BEGIN");
       if (selector !== undefined) {
-        result = await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text`, [opts.guild, opts.channel, selector.value]);
+        result = await client.query(
+          `DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$3::text`,
+          [opts.guild, opts.channel, selector.value]
+        );
       } else {
-        result = await client.query(`DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text`, [opts.guild, opts.channel]);
+        result = await client.query(
+          `DELETE FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text`,
+          [opts.guild, opts.channel]
+        );
       }
-      await client.query('COMMIT');
-    } catch(e) {
-      await client.query('ROLLBACK');
+      await client.query("COMMIT");
+    } catch (e) {
+      await client.query("ROLLBACK");
       errorLog(e);
       success = false;
     } finally {
       client.release();
     }
-    return success ? result.rowCount : -1;
+    return success && result ? result.rowCount : -1;
   }
 
-  async has(status) {
+  async has(status: Update): Promise<boolean> {
     if (status.guild === undefined || status.channel === undefined) {
-      throw new Error('Must specify search params when querying statuses');
+      throw new Error("Must specify search params when querying statuses");
     }
     const selector = eitherSelector(status);
     const client = await this.pool.connect();
-    const query = await client.query(`SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$4::text LIMIT 1`, [status.guild, status.channel, selector.value]);
+    const query = await client.query(
+      `SELECT 1 FROM statuses WHERE guild_id=$1::text AND channel_id=$2::text AND ${selector.key}=$4::text LIMIT 1`,
+      [status.guild, status.channel, selector.value]
+    );
     client.release();
     return query.rows.length > 0;
   }
@@ -225,18 +233,20 @@ class SavePSQL extends SaveInterface {
   }
 
   /*****************************************************************************
-  *** Helpers
-  *****************************************************************************/
+   *** Helpers
+   *****************************************************************************/
 
-  async getAll() {
+  async getAll(): Promise<{ [id: string]: Update[] }> {
     const client = await this.pool.connect();
-    const query = await client.query('SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses');
+    const query = await client.query(
+      "SELECT guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description, color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update FROM statuses"
+    );
     client.release();
 
-    const res = {};
+    const res: { [id: string]: Update[] } = {};
 
     query.rows.forEach(item => {
-      let channel = [];
+      let channel: Update[] = [];
       if (item.channel in res) {
         channel = res[item.channel];
       }
@@ -247,7 +257,7 @@ class SavePSQL extends SaveInterface {
     return res;
   }
 
-  static rowToUpdate(row) {
+  static rowToUpdate(row: QueryResultRow): Update {
     return Update.parse({
       guild: row.guild_id,
       channel: row.channel_id,
@@ -269,10 +279,8 @@ class SavePSQL extends SaveInterface {
         columns: row.columns,
         maxEdits: row.max_edits,
         connectUpdate: row.connect_update,
-        disconnectUpdate: row.disconnect_update,
-      },
-    });
+        disconnectUpdate: row.disconnect_update
+      }
+    }) as Update;
   }
 }
-
-module.exports = SavePSQL;

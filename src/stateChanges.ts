@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,9 +13,22 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-function playerChanges(curPlayers, prevPlayers) {
+
+export interface PlayerChange {
+  name: string,
+  connect: boolean,
+  msg: string,
+}
+export interface PlayerChanges {
+  connect: PlayerChange[],
+  disconnect: PlayerChange[],
+  all: PlayerChange[],
+}
+
+function playerChanges(curPlayers?: string[], prevPlayers?: string[]): PlayerChanges {
   if (!(prevPlayers instanceof Array) || !(curPlayers instanceof Array)) return { connect: [], disconnect: [], all: [] };
-  let result = { connect: [], disconnect: [] };
+
+  let result: any = { connect: [], disconnect: [] };
   for (let player of curPlayers) {
     if (!prevPlayers.includes(player)) result.connect.push({name: player, connect: true, msg: `**${player}** connected`});
   }
@@ -27,15 +40,25 @@ function playerChanges(curPlayers, prevPlayers) {
 }
 
 
+export interface Change {
+  old: any,
+  new: any,
+}
+
+export interface Changes {
+  players: PlayerChanges,
+  props: {
+    [key: string]: Change,
+  },
+}
+
 const KEYS = [ 'offline', 'map' ];
-function stateChanges(curState, prevState) {
-  let res = { players: playerChanges(curState.players, prevState.players) };
+export default function stateChanges(curState: any, prevState: any): Changes {
+  let res: Changes = { players: playerChanges(curState.players, prevState.players), props: {} };
   for (let key of KEYS) {
     if (curState[key] !== prevState[key]) {
-      res[key] = { old: prevState[key], new: curState[key] };
+      res.props[key] = { old: prevState[key], new: curState[key] };
     }
   }
   return res;
 }
-
-module.exports = stateChanges;

@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,30 +13,36 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { MessageEmbed } = require('discord.js-light');
+import { MessageEmbed } from "discord.js-light";
 
-const { getLimits } = require('../limits.js');
-const { EMBED_COLOR } = require('../constants.js');
+import Message from "../structs/Message";
+import { getLimits } from "../limits";
+import { EMBED_COLOR } from "../constants";
 
-const call = async function(message) {
+export const name = "limits";
+export const help = "View your guild/channel limits";
+
+export async function call(message: Message) {
   let user;
-  if (message.channel.type === 'dm') {
+  if (message.channel.type === "dm" || !message.guild) {
     user = message.author;
   } else {
     const guild = await message.client.guilds.fetch(message.guild);
     user = await message.client.users.fetch(guild.ownerID);
   }
   const limits = await getLimits(message.client, user.id, true);
-  await message.channel.send(new MessageEmbed({
-    author: {
-      name: user.username,
-      iconURL: user.displayAvatarURL()
-    },
-    fields: Object.entries(limits).map(e => {return {name:e[0],value:e[1],inline:true}}),
-    color: EMBED_COLOR,
-  }));
+  await message.channel.send(
+    new MessageEmbed({
+      author: {
+        name: user.username,
+        iconURL: user.displayAvatarURL()
+      },
+      fields: limits
+        ? Object.entries(limits).map(e => {
+            return { name: e[0], value: e[1], inline: true };
+          })
+        : [],
+      color: EMBED_COLOR
+    })
+  );
 }
-
-exports.name = 'limits';
-exports.call = call;
-exports.help = 'View your guild/channel limits';

@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,9 +13,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-class Serializable {
+type JSONValue = string | number | boolean | JSONObject | JSONValue[];
+interface JSONObject {
+  [key: string]: JSONValue;
+};
+
+export default class Serializable {
   serialize() {
-    let object = {}, descriptors = Object.getOwnPropertyDescriptors(this);
+    let object: JSONObject = {};
+    let descriptors = Object.getOwnPropertyDescriptors(this);
     for (let name in descriptors) {
       let descriptor = descriptors[name], type = typeof descriptor.value;
       if (descriptor.enumerable && type !== 'function' && type !== 'undefined' && !name.startsWith('_')) {
@@ -25,7 +31,7 @@ class Serializable {
     return object;
   }
 
-  static parse(object) {
+  static parse(object: any) {
     let result = new this();
     return Object.defineProperties(result, Object.getOwnPropertyDescriptors(object));
   }
@@ -34,9 +40,7 @@ class Serializable {
     return JSON.stringify(this.serialize());
   }
 
-  static parseJson(data) {
+  static parseJson(data: string) {
     return this.parse(JSON.parse(data));
   }
 }
-
-module.exports = Serializable;

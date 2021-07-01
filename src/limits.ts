@@ -13,37 +13,62 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { warnLog, debugLog, verboseLog } = require('./debug.js');
+import Client from "./structs/Client";
+import { Snowflake } from "discord.js-light";
 
-const nullError = function(promise, onError) {
-  onError ||= debugLog;
-  return new Promise((resolve) => {
-    promise.then(resolve).catch((err) => {
-      onError(err);
+import { warnLog, debugLog, verboseLog } from "./debug";
+
+function nullError<T>(
+  promise: Promise<T>,
+  onError?: Function
+): Promise<T | null> {
+  const reject = onError || debugLog;
+  return new Promise(resolve => {
+    promise.then(resolve).catch(err => {
+      reject(err);
       resolve(null);
-    })
-  })
+    });
+  });
+}
+
+export interface Limit {
+  channelLimit?: number;
+  guildLimit?: number;
 }
 
 // Cache used here as guild member endpoint can be very slow (RIP memory usage)
-const limitCache = new Map();
-module.exports.getLimits = async function(client, user, noCache) {
+const limitCache: Map<string, Limit> = new Map();
+export async function getLimits(
+  client: Client,
+  user: Snowflake,
+  noCache: boolean = false
+) {
   if (limitCache.has(user) && !noCache) {
     return limitCache.get(user);
   }
-  let limits = { channelLimit: client.config.channelLimit, guildLimit: client.config.guildLimit };
+  let limits: Limit = {
+    channelLimit: client.config.channelLimit,
+    guildLimit: client.config.guildLimit
+  };
   for (let guildID in client.config.limitRules) {
     const guild = await nullError(client.guilds.fetch(guildID), warnLog);
     if (guild === null) continue;
-    const member = await nullError(guild.members.fetch(user, { rest: true, cache: false, force: true }), verboseLog);
+    const member = await nullError(
+      guild.members.fetch(user, { rest: true, cache: false, force: true }),
+      verboseLog
+    );
     if (member === null) continue;
     const guildRules = client.config.limitRules[guildID];
     for (let roleID in guildRules) {
       /*const role = await nullError(guild.roles.fetch(roleID), warnLog);
       if (role === null) continue;*/
       if (member.roles.cache.has(roleID)) {
-        for (let key in limits) {
-          limits[key] = Math.max(limits[key], guildRules[roleID][key]);
+        let key: keyof Limit;
+        for (key in limits) {
+          limits[key] = Math.max(
+            limits[key] || 0,
+            guildRules[roleID][key] || 0
+          );
         }
       }
     }

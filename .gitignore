@@ -1,13 +1,13 @@
-# NPM
-node_modules/
+/*
 
-# Project
-trigger-run.js
-_save.json
-start.sh
-update-discord-gamestatus.sh
-limit-rules.json
-dist/
+!.github
+!scripts
+!src
 
-# Vim
-*~
+!.gitignore
+!.eslintrc.json
+!index.js
+!LICENSE
+!package*.json
+!README.md
+!tsconfig.json

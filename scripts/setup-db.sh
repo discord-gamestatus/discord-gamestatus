@@ -2,17 +2,17 @@
 
 set -eux
 
-USER="discord-gamestatus"
+USER="tom"
 DATABASE="discord_gamestatus"
 DIR=$(realpath $(dirname $0))
 
 echo "Installing postgres"
 # apt-get install postgresql
 
-echo "Setting up database in /var/lib/postgres/data"
-mkdir -p /var/lib/postgres/data
-chown postgres:postgres /var/lib/postgres/data
-su - postgres -c "initdb --locale en_US.UTF-8 -D '/var/lib/postgres/data'"
+#echo "Setting up database in /var/lib/postgres/data"
+#mkdir -p /var/lib/postgres/data
+#chown postgres:postgres /var/lib/postgres/data
+#su - postgres -c "initdb --locale en_US.UTF-8 -D '/var/lib/postgres/data'"
 
 echo "Enabling service"
 systemctl enable --now postgresql

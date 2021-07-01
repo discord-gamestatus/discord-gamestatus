@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,40 +13,46 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-exports.isAdmin = function(message) {
+import { PermissionResolvable } from "discord.js-light";
+
+import Message from "./structs/Message";
+
+export type Check = (message: Message) => boolean;
+
+export function isAdmin(message: Message) {
   if (!message.member) return false;
-  return message.member.hasPermission(message.client.config.adminFlag);
+  return message.member.hasPermission(
+    message.client.config.adminFlag as PermissionResolvable
+  );
 }
 
-exports.isOwner = function(message) {
+export function isOwner(message: Message) {
   if (!message.guild) return false;
   return message.guild.ownerID === message.author.id;
 }
 
-exports.isBotOwner = function(message) {
+export function isBotOwner(message: Message) {
   return message.client.config.owner === message.author.id;
 }
 
-exports.isDMChannel = function(message) {
-  return message.channel.type === 'dm';
+export function isDMChannel(message: Message) {
+  return message.channel.type === "dm";
 }
 
-exports.combineAll = function() {
-  const checks = Array.from(arguments);
-  return function(message) {
+export function combineAll(...checks: Check[]) {
+  return function(message: Message) {
     for (let check of checks) {
       if (!check(message)) return false;
     }
     return true;
-  }
+  };
 }
 
-exports.combineAny = function() {
-  const checks = Array.from(arguments);
-  return function(message) {
+export function combineAny(...checks: Check[]) {
+  return function(message: Message) {
     for (let check of checks) {
       if (check(message)) return true;
     }
     return false;
-  }
+  };
 }

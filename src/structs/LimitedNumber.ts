@@ -1,8 +1,6 @@
-'use strict';
-
-function LimitedNumber(min, max) {
+export default function LimitedNumber(min: number, max: number) {
   class LN extends Number {
-    constructor(from) {
+    constructor(from: any) {
       from = Number(from);
       if (from > max) {
         from = max;
@@ -15,5 +13,3 @@ function LimitedNumber(min, max) {
   }
   return LN;
 }
-
-module.exports = LimitedNumber;

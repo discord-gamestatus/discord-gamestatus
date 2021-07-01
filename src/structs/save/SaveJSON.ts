@@ -13,27 +13,31 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const fs = require('fs').promises;
+import { promises as fs } from "fs";
 
-const { Collection } = require('discord.js-light');
-const { allSettled, isOfBaseType } = require('@douile/bot-utilities');
+import { Collection } from "discord.js-light";
+import { allSettled, isOfBaseType } from "@douile/bot-utilities";
 
-const SaveInterface = require('./SaveInterface.js');
-const Update = require('../Update.js');
-const Serializable = require('../Serializable.js');
-const { infoLog, errorLog } = require('../../debug.js');
+import SaveInterface, {
+  GetOpts,
+  DeleteOpts,
+  eitherSelector,
+  Selector
+} from "./SaveInterface";
+import Update from "../Update";
+import Serializable from "../Serializable";
+import { infoLog, errorLog } from "../../debug";
 
-function eitherSelector(update) {
-  if (update.ip !== undefined)
-    return { key: 'ip', value: update.ip };
-  if (update.message !== undefined)
-    return { key: 'message', value: update.message };
-  throw new Error('Not enough identifiers for', update);
-}
+export default class SaveJSON implements SaveInterface {
+  filename: string;
+  saveTimeout: number;
 
-class SaveJSON extends SaveInterface {
-  constructor(filename) {
-    super();
+  _saveTimer: NodeJS.Timeout | null;
+  _saveInProgress: Promise<void> | null;
+  _requeueWhenDone: boolean;
+  _cache: Collection<string, Update[]>;
+
+  constructor(filename: string = "_save.json") {
     this.filename = filename;
     this.saveTimeout = 30000; // 30 secs
 
@@ -47,9 +51,9 @@ class SaveJSON extends SaveInterface {
     let r;
     try {
       r = await this._load();
-    } catch(e) {
-      if (e.code === 'ENOENT') {
-        console.warn('No save file found, starting new save file');
+    } catch (e) {
+      if (e.code === "ENOENT") {
+        console.warn("No save file found, starting new save file");
       } else {
         throw e;
       }
@@ -68,73 +72,86 @@ class SaveJSON extends SaveInterface {
     return this._save();
   }
 
-  get(opts) {
+  get(opts: GetOpts) {
     if (opts.message !== undefined) {
       // Very slow
-      return Array.from(this._cache.values()).flat().filter(i => i.message === opts.message);
+      return Array.from(this._cache.values())
+        .flat()
+        .filter(i => i.message === opts.message);
     } else if (opts.channel !== undefined) {
-      return this._cache.get(opts.channel);
+      return this._cache.get(opts.channel) || [];
     } else if (opts.guild !== undefined) {
       // Very slow
-      return Array.from(this._cache.values()).flat().filter(i => i.guild === opts.guild);
+      return Array.from(this._cache.values())
+        .flat()
+        .filter(i => i.guild === opts.guild);
     } else {
-      throw new Error('Must specify a search param when getting statuses');
+      throw new Error("Must specify a search param when getting statuses");
     }
   }
 
-  update(status) {
-    if (!(status instanceof Update)) {
-      throw new Error();
-    }
-
-    if (!this._cache.has(status.channel)) throw new Error('No such StatusUpdate exists');
+  update(status: Update) {
+    if (!status.channel) throw new Error("Status has no channel");
     const cached = this._cache.get(status.channel);
+    if (!cached) throw new Error("No such StatusUpdate exists");
+
     let found = false;
-    for (let i=0;i<cached.length;i++) {
-      if (cached[i].ip === status.ip && cached[i].guild === status.guild && cached[i].channel === status.channel) {
+    for (let i = 0; i < cached.length; i++) {
+      if (
+        cached[i].ip === status.ip &&
+        cached[i].guild === status.guild &&
+        cached[i].channel === status.channel
+      ) {
         found = true;
         cached[i] = status;
         break;
       }
     }
-    if (!found) throw new Error('No such StatusUpdate exists');
     this.queueSave();
+    return found;
   }
 
-  create(status) {
-    if (!(status instanceof Update)) {
-      throw new Error();
-    }
-
+  create(status: Update) {
+    if (!status.channel) throw new Error("Status has no channel");
     if (this._cache.has(status.channel)) {
       const cached = this._cache.get(status.channel);
-      if (cached.some(s => s.ip === status.ip && s.guild === status.guild && s.channel === status.channel))
-        throw new Error('StatusUpdate already exists');
+      if (
+        !cached ||
+        cached.some(
+          s =>
+            s.ip === status.ip &&
+            s.guild === status.guild &&
+            s.channel === status.channel
+        )
+      )
+        return false;
 
       this._cache.set(status.channel, cached.concat([status]));
     } else {
       this._cache.set(status.channel, [status]);
     }
     this.queueSave();
+    return true;
   }
 
-  delete(opts) {
+  delete(opts: Update | DeleteOpts) {
     // Here we don't use guild as channel IDs are unique and the key we use,
     // however guild is checked to be specified to maintain consitency with
     // SavePSQL
     if (opts.guild === undefined || opts.channel === undefined) {
-      throw new Error('Must specify search params when deleting statuses');
+      throw new Error("Must specify search params when deleting statuses");
     }
 
-    let selector;
-    if (opts instanceof Update || 'ip' in opts || 'message' in opts) {
+    let selector: Selector | undefined = undefined;
+    if (opts instanceof Update || "ip" in opts || "message" in opts) {
       selector = eitherSelector(opts);
     }
 
     let deleted = -1;
-    if (selector !== undefined) {
-      const l = this._cache.get(opts.channel);
-      const n = l.filter(i => i[selector.key] !== selector.value);
+    if (selector) {
+      const s = selector;
+      const l = this._cache.get(opts.channel) || [];
+      const n = l.filter(i => i[s.key] !== s.value);
       if (n.length > 0) {
         this._cache.set(opts.channel, n);
       } else {
@@ -142,7 +159,7 @@ class SaveJSON extends SaveInterface {
       }
       deleted = l.length - n.length;
     } else {
-      deleted = this._cache.get(opts.channel).length;
+      deleted = this._cache.get(opts.channel)?.length || 0;
       this._cache.delete(opts.channel);
     }
 
@@ -150,14 +167,14 @@ class SaveJSON extends SaveInterface {
     return deleted;
   }
 
-  has(status) {
-    if (status.guild === undefined || status.channel === undefined) {
-      throw new Error('Must specify search params when querying statuses');
-    }
-
+  has(status: Update) {
     let selector = eitherSelector(status);
-    if (this._cache.has(status.channel)) {
-      return this._cache.get(status.channel).some(i => i[selector.key] === selector.value);
+    if (this._cache.has(status.channel as string)) {
+      return (
+        this._cache
+          .get(status.channel as string)
+          ?.some(i => i[selector.key] === selector.value) || false
+      );
     }
     return false;
   }
@@ -171,10 +188,10 @@ class SaveJSON extends SaveInterface {
   }
 
   /*****************************************************************************
-  *** Helpers
-  *****************************************************************************/
+   *** Helpers
+   *****************************************************************************/
 
-  queueSave() {
+  queueSave(): void {
     if (this._saveTimer !== null) {
       if (this._saveInProgress !== null) this._requeueWhenDone = true;
     } else {
@@ -182,25 +199,27 @@ class SaveJSON extends SaveInterface {
     }
   }
 
-  save() {
+  save(): void {
     this._saveInProgress = this._save();
     const i = this;
-    this._saveInProgress.then(function() {
-      i._saveTimer = null;
-      i._saveInProgress = null;
-      if (i._requeueWhenDone) {
+    this._saveInProgress
+      .then(function() {
+        i._saveTimer = null;
+        i._saveInProgress = null;
+        if (i._requeueWhenDone) {
+          i.queueSave();
+          i._requeueWhenDone = false;
+        }
+      })
+      .catch(function(...args: any[]) {
+        console.error(...args);
+        i._saveTimer = null;
+        i._saveInProgress = null;
         i.queueSave();
-        i._reqeueWhenDone = false;
-      }
-    }).catch(function() {
-      console.error.apply(this, arguments);
-      i._saveTimer = null;
-      i._saveInProgress = null;
-      i.queueSave();
-      i._requeueWhenDone = false;
-    })
+        i._requeueWhenDone = false;
+      });
   }
-  async _save() {
+  async _save(): Promise<void> {
     let obj = {};
 
     let promises = [];
@@ -212,13 +231,18 @@ class SaveJSON extends SaveInterface {
     await fs.writeFile(this.filename, content);
   }
 
-  async serializeItem(obj, key, item) {
+  async serializeItem(
+    obj: any,
+    key: string | number,
+    item: any
+  ): Promise<boolean> {
     if (isOfBaseType(item, Array)) {
       obj[key] = new Array(item.length);
-      for (let i=0;i<item.length;i++) {
+      for (let i = 0; i < item.length; i++) {
         await this.serializeItem(obj[key], i, item[i]);
       }
-    } else if (isOfBaseType(item, Object)) { // NOTE: Maybe we shouldn't deal with this cases as Serializables are transformed into objects
+    } else if (isOfBaseType(item, Object)) {
+      // NOTE: Maybe we shouldn't deal with this cases as Serializables are transformed into objects
       obj[key] = {};
       for (let i in item) {
         await this.serializeItem(obj[key], i, item[i]);
@@ -229,12 +253,12 @@ class SaveJSON extends SaveInterface {
     return true;
   }
 
-  async _load() {
-    let content = await fs.readFile(this.filename);
+  async _load(): Promise<void> {
+    let content = await fs.readFile(this.filename, { encoding: "utf-8" });
     let obj;
     try {
       obj = JSON.parse(content);
-    } catch(e) {
+    } catch (e) {
       await fs.copyFile(this.filename, `${this.filename}.damaged`);
       throw e;
     }
@@ -243,25 +267,23 @@ class SaveJSON extends SaveInterface {
     for (let [key, item] of Object.entries(obj)) {
       promises.push(this.parseItem(key, item));
     }
-    let res = await allSettled(promises), errs = res.filter(v => v !== true);
+    let res = await allSettled(promises),
+      errs = res.filter(v => v !== true);
     infoLog(`Loaded ${promises.length} configs...`);
     if (errs.length > 0) errorLog(errs);
   }
 
-  async parseItem(key, item) {
+  async parseItem(key: string, item: any): Promise<boolean> {
     let res; // NOTE: Type checking here is a bit flippant
     if (isOfBaseType(item, Array)) {
       res = new Array(item.length);
-      for (let i=0;i<item.length;i++) {
+      for (let i = 0; i < item.length; i++) {
         res[i] = Update.parse(item[i]);
       }
     } else {
-      res = Update.parse(item);
+      res = [Update.parse(item)];
     }
-    this._cache.set(key, res, true);
+    this._cache.set(key, res);
     return true;
   }
-
 }
-
-module.exports = SaveJSON;

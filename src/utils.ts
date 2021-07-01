@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,16 +13,18 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { is } = require('@douile/bot-utilities');
+import { is } from "@douile/bot-utilities";
 
-exports.channelFirstArg = async function(message, args) {
+import { Message } from "discord.js-light";
+
+export async function channelFirstArg(message: Message, args: string[]) {
   if (args.length > 0) {
     const channelArg = is.discordChannel(args[0]);
     if (channelArg) {
-      console.log('Fetching', channelArg);
+      console.log("Fetching", channelArg);
       let channelFetch;
       try {
-        channelFetch = await message.guild.channels.fetch(channelArg);
+        channelFetch = await message.guild?.channels.fetch(channelArg);
       } catch {
         // nop, undefined is handled by if statement
       }
@@ -30,11 +32,13 @@ exports.channelFirstArg = async function(message, args) {
         args.splice(0, 1);
         return channelFetch;
       } else {
-        await message.channel.send({ embed: {
-          title: 'Could not find specified channel',
-          description: `Couldn't find <#${channelArg}>`,
-          color: 0xff0000,
-        }});
+        await message.channel.send({
+          embed: {
+            title: "Could not find specified channel",
+            description: `Couldn't find <#${channelArg}>`,
+            color: 0xff0000
+          }
+        });
         return undefined;
       }
     }
@@ -44,12 +48,13 @@ exports.channelFirstArg = async function(message, args) {
 }
 
 /**
-* Convert an async generator to an array
-* @param {AsyncGenerator} asyncGenerator
-* @returns {any[]} array
-*/
-exports.asyncArray = async function(asyncGenerator) {
-  const res = [];
+ * Convert an async generator to an array
+ * @returns {any[]} array
+ */
+export async function asyncArray<T>(
+  asyncGenerator: AsyncGenerator<T>
+): Promise<T[]> {
+  const res: T[] = [];
   for await (let i of asyncGenerator) {
     res.push(i);
   }

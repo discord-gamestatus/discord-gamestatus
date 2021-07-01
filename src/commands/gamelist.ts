@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2020 Douile
+Copyright (C) 2019-2021 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,18 +13,30 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-const { MessageEmbed } = require('discord.js-light');
+import { MessageEmbed } from "discord.js-light";
 
-const { gameList } = require('../query.js');
-const { isAdmin, isDMChannel, combineAny }  = require('../checks.js');
-const { EMBED_COLOR } = require('../constants.js');
+import { gameList } from "../query";
+import { isAdmin, isDMChannel, combineAny } from "../checks";
+import { EMBED_COLOR } from "../constants";
+import Message from "../structs/Message";
 
-const call = async function(message, parts) {
-  let games = await gameList(), gameIterator = games.values();
-  let embed = new MessageEmbed({color:EMBED_COLOR}), embedSize = 100, embeds = [], embedI = 0;
+export const name = "gamelist";
+export const check = combineAny(isAdmin, isDMChannel);
+export const help =
+  "Output the list of games availabe, searchable with any text";
+
+export async function call(message: Message, parts: string[]) {
+  let games = await gameList(),
+    gameIterator = games.values();
+  let embed = new MessageEmbed({ color: EMBED_COLOR }),
+    embedSize = 100,
+    embeds = [],
+    embedI = 0;
   embed.setFooter(++embedI);
-  let field = '', key = gameIterator.next(), count = 0;
-  let regex = parts.length > 0 ? parts.map(s => new RegExp(s,'i')) : undefined;
+  let field = "",
+    key = gameIterator.next(),
+    count = 0;
+  let regex = parts.length > 0 ? parts.map(s => new RegExp(s, "i")) : undefined;
 
   while (!key.done) {
     let game = key.value;
@@ -41,32 +53,28 @@ const call = async function(message, parts) {
       }
     }
     if (match) {
-      let value = `${game.pretty} = ${game.keys.map(v => `\`${v}\``).join(', ')}\n`;
+      let value = `${game.pretty} = ${game.keys
+        .map(v => `\`${v}\``)
+        .join(", ")}\n`;
       if (field.length + value.length > 1024) {
         if (embedSize + field.length + 3 > 6000) {
           embeds.push(embed);
-          embed = new MessageEmbed({color:EMBED_COLOR});
+          embed = new MessageEmbed({ color: EMBED_COLOR });
           embed.setFooter(++embedI);
           embedSize = 100;
         }
-        embed.addField('_ _', field, false);
-        embedSize += field.length+3;
-        field = '';
+        embed.addField("_ _", field, false);
+        embedSize += field.length + 3;
+        field = "";
       }
       field += value;
       count += 1;
     }
     key = gameIterator.next();
   }
-  if (field.length > 0) embed.addField('_ _', field);
+  if (field.length > 0) embed.addField("_ _", field);
   for (let e of embeds.concat(embed)) {
     e.setTitle(`${count} Available games`);
     await message.channel.send(e);
   }
-
 }
-
-exports.name = 'gamelist';
-exports.call = call;
-exports.check = combineAny(isAdmin, isDMChannel);
-exports.help = 'Output the list of games availabe, searchable with any text';
