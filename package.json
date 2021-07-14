@@ -2,7 +2,11 @@
   "name": "discord-gamestatus",
   "version": "1.15.3",
   "description": "Monitor game servers via discord",
-  "main": "index.js",
+  "main": "dist/index",
+  "directories": {
+    "lib": "src",
+    "bin": "bin"
+  },
   "author": "Douile",
   "keywords": [
     "discord",
@@ -14,7 +18,8 @@
   ],
   "scripts": {
     "test": "npm run lint",
-    "lint": "npx eslint src *.js"
+    "lint": "npx eslint . --ext .ts,.js",
+    "build": "rm -rf dist && npx tsc"
   },
   "license": "GPL-3.0",
   "bugs": {

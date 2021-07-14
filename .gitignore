@@ -3,10 +3,10 @@
 !.github
 !scripts
 !src
+!bin
 
 !.gitignore
 !.eslintrc.json
-!index.js
 !LICENSE
 !package*.json
 !README.md
