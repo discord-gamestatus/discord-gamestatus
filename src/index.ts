@@ -276,8 +276,18 @@ async function checkTickLimits(
   return true;
 }
 
-// TODO: Add raw Config interface
-export default async function start(config: any): Promise<Client> {
+export interface StartupConfig extends ClientConfig {
+  error: boolean,
+  warn: boolean,
+  info: boolean,
+  debug: boolean,
+  verbose: boolean,
+  database?: string,
+  key: string,
+  dblKey?: string,
+}; 
+
+export default async function start(config: StartupConfig): Promise<Client> {
   setDebugFlag(
     config.error,
     config.warn,
@@ -286,11 +296,10 @@ export default async function start(config: any): Promise<Client> {
     config.verbose
   );
   /* Override owner, prefix, tickCount, tickTime */
-  const clientConfig = DEFAULT_CONFIG;
-  let key: keyof ClientConfig;
-  for (key in clientConfig) {
-    if (key in config) (clientConfig as any)[key] = config[key];
-  }
+  const clientConfig: ClientConfig = {
+    ...DEFAULT_CONFIG,
+    ...config,
+  };
 
   let updateCache;
   if (config.database) {
@@ -368,7 +377,7 @@ export default async function start(config: any): Promise<Client> {
     );
   });
 
-  if (isOfBaseType(config.dblKey, String) && config.dblKey.length > 0) {
+  if (config.dblKey && config.dblKey.length > 0) {
     require("./dblapi.js")(client, config.dblKey);
   }
   await client.login(config.key);
