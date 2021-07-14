@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 import GameDig from 'gamedig';
-const GameResolver = 'gamedig/lib/GameResolver.js';
+const GameResolver = require('gamedig/lib/GameResolver.js');
 
 import { markdownEscape } from '@douile/bot-utilities';
 
@@ -39,7 +39,6 @@ interface GameResolver {
 let resolver: GameResolver;
 
 function getResolver() {
-  // @ts-ignore
   if (!resolver) resolver = new GameResolver();
   return resolver;
 }
