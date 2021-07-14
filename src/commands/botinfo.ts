@@ -36,15 +36,14 @@ export async function call(message: Message): Promise<void> {
   await message.channel.send(
     new MessageEmbed({
       title: `${Package.name} info`,
-      description: `[${Package.name} v${Package.version}](${
-        Package.homepage
-      }) [Report bugs here](${Package.bugs.url})\n${supportLink}\
+      description: `[${Package.name} v${Package.version}](${Package.homepage
+        }) [Report bugs here](${Package.bugs.url})\n${supportLink}\
     Average ping: ${Math.round(client.ws.ping * 10) / 10}ms\n\
     Uptime: ${humanDuration(client.uptime || 0, 1000)}\n\
     Working in ${client.guilds.cache.size} guilds\n\
     Memory usage: ${Math.round(memoryUsage.heapUsed / 1024)}kb/${Math.round(
-        memoryUsage.heapTotal / 1024
-      )}kb\n\
+          memoryUsage.heapTotal / 1024
+        )}kb\n\
     **Dependencies**\n\
     [NodeJS ${process.version}](https://nodejs.org)\n\
     [discord.js-light](https://github.com/timotejroiko/discord.js-light)\n\

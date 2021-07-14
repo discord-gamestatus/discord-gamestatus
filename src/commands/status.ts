@@ -29,8 +29,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   parts = parts.filter(s => s.length > 0);
   if (parts.length < 2)
     return void await message.channel.send(
-      `You must provide a game type (view and search the gamelist with \`${
-        message.client.config.prefix
+      `You must provide a game type (view and search the gamelist with \`${message.client.config.prefix
       }gamelist\`) and IP instead of \`${parts.join(" ")}\``
     );
   if (!isValidGame(parts[0]))

@@ -13,6 +13,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-export const FORMAT_PROPERTIES = Object.freeze([ 'name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect' ]);
+export const FORMAT_PROPERTIES = Object.freeze(['name', 'map', 'numplayers', 'validPlayers', 'maxplayers', 'connect']);
 export const MAX_EMBED_FIELD_SIZE = 2000;
 export const EMBED_COLOR = 0x5555ff;

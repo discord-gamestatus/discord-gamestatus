@@ -39,8 +39,8 @@ export async function call(message: Message): Promise<void> {
       },
       fields: limits
         ? Object.entries(limits).map(e => {
-            return { name: e[0], value: e[1], inline: true };
-          })
+          return { name: e[0], value: e[1], inline: true };
+        })
         : [],
       color: EMBED_COLOR
     })

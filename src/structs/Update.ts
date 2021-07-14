@@ -381,9 +381,9 @@ export default class Update extends Serializable {
     const args: [string, MessageEmbed] = [
       changesToSend.length > 0
         ? changesToSend
-            .map(v => v.msg)
-            .join("\n")
-            .substring(0, 500)
+          .map(v => v.msg)
+          .join("\n")
+          .substring(0, 500)
         : "",
       embed
     ];

@@ -61,8 +61,8 @@ export const help = `Modify status messages in the guild.\nUse cases:\n\
   Options will automatically be converted to the same type as seen when getting status options, this means for numbers you can do things like \`0xffe\` or \`2e3\`\n\
   When changing the title or description of an embed you can include formattable options that will be replaced with a value e.g. \`{validplayers}\` will be replaced with the number of players displayed in the embed\n\
   Full list of formattables: ${FORMAT_PROPERTIES.map(p => `\`{${p}}\``).join(
-    ", "
-  )}`;
+  ", "
+)}`;
 
 export async function call(message: Message): Promise<void> {
   const args = message.content.split(" ").splice(1);
@@ -114,9 +114,8 @@ export async function call(message: Message): Promise<void> {
         await message.channel.send(
           new MessageEmbed({
             title: `#${index}`,
-            description: `${statusIdentity(status)}\nReset: \`${
-              args[1]
-            }\`\n${WARNING}`,
+            description: `${statusIdentity(status)}\nReset: \`${args[1]
+              }\`\n${WARNING}`,
             timestamp: Date.now(),
             color: EMBED_COLOR
           })
@@ -138,11 +137,10 @@ export async function call(message: Message): Promise<void> {
         await message.channel.send(
           new MessageEmbed({
             title: `#${index}`,
-            description: `${statusIdentity(status)}\nSet: \`${
-              args[1]
-            }=${status.getOption(
-              args[1] as keyof UpdateOptions
-            )}\`\n${WARNING}`,
+            description: `${statusIdentity(status)}\nSet: \`${args[1]
+              }=${status.getOption(
+                args[1] as keyof UpdateOptions
+              )}\`\n${WARNING}`,
             timestamp: Date.now(),
             color: EMBED_COLOR
           })
@@ -156,7 +154,7 @@ export async function call(message: Message): Promise<void> {
       } else {
         await message.channel.send(
           `Please enter a valid status ID (between 0 and ${statuses.length -
-            1})`
+          1})`
         );
       }
     }

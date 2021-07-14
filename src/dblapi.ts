@@ -68,7 +68,7 @@ const sendDBLUpdate = function(client: Client, key: string) {
       DBL_INFO.currentTimeout = setTimeout(function() {
         DBL_INFO.currentTimeout = null;
         sendDBLUpdate(client, key)();
-      }, next-now);
+      }, next - now);
     }
   }
 }

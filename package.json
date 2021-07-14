@@ -19,7 +19,8 @@
   "scripts": {
     "test": "npm run lint",
     "lint": "npx eslint src --ext .ts,.js",
-    "build": "rm -rf dist && npx tsc"
+    "build": "rm -rf dist && npx tsc",
+    "format": "npx tsfmt -r"
   },
   "license": "GPL-3.0",
   "bugs": {
@@ -54,6 +55,7 @@
     "@typescript-eslint/eslint-plugin": "^4.28.1",
     "@typescript-eslint/parser": "^4.28.1",
     "eslint": "^7.20.0",
-    "typescript": "^4.3.4"
+    "typescript": "^4.3.4",
+    "typescript-formatter": "^7.2.2"
   }
 }

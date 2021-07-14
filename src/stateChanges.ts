@@ -30,10 +30,10 @@ function playerChanges(curPlayers?: string[], prevPlayers?: string[]): PlayerCha
 
   const result: any = { connect: [], disconnect: [] };
   for (const player of curPlayers) {
-    if (!prevPlayers.includes(player)) result.connect.push({name: player, connect: true, msg: `**${player}** connected`});
+    if (!prevPlayers.includes(player)) result.connect.push({ name: player, connect: true, msg: `**${player}** connected` });
   }
   for (const player of prevPlayers) {
-    if (!curPlayers.includes(player)) result.disconnect.push({name: player, connect: false, msg: `**${player}** disconnected`});
+    if (!curPlayers.includes(player)) result.disconnect.push({ name: player, connect: false, msg: `**${player}** disconnected` });
   }
   result.all = result.connect.concat(result.disconnect);
   return result;
@@ -52,7 +52,7 @@ export interface Changes {
   },
 }
 
-const KEYS = [ 'offline', 'map' ];
+const KEYS = ['offline', 'map'];
 export default function stateChanges(curState: any, prevState: any): Changes {
   const res: Changes = { players: playerChanges(curState.players, prevState.players), props: {} };
   for (const key of KEYS) {

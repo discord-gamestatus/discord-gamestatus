@@ -57,7 +57,7 @@ type ImageResolvers = {
 
 const IMAGE: ImageResolvers = {
   fivem: async function(this: Client, state: State): Promise<ImageBuffer | undefined> {
-    const info = (state?.raw as { info?: { icon: string | undefined }}).info;
+    const info = (state?.raw as { info?: { icon: string | undefined } }).info;
     return info?.icon ? { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' } || undefined : undefined;
   },
   discord: async function(this: Client, state: State): Promise<ImageUrl | undefined> {
@@ -69,22 +69,22 @@ const IMAGE: ImageResolvers = {
 }
 
 const parseConnect = function(connect: string, protocol: string) {
-  switch(protocol) {
+  switch (protocol) {
     case 'valve':
-    return `<steam://connect/${connect}>`;
+      return `<steam://connect/${connect}>`;
     case 'fivem':
-    return `<fivem://connect/${connect}>`;
+      return `<fivem://connect/${connect}>`;
     default:
-    return connect;
+      return connect;
   }
 }
 
 const parseMap = function(map: string, protocol: string) {
-  switch(protocol) {
+  switch (protocol) {
     case 'minecraft':
-    return 'Minecraft world';
+      return 'Minecraft world';
     default:
-    return map;
+      return map;
   }
 }
 
@@ -127,11 +127,11 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
       // guildId: isDiscord ? ip_parts[0] : undefined,
     });
     const realPlayers = rawState.players.filter(v => typeof v.name === 'string')
-      .map(v => {v.name = markdownEscape(v.name?.trim() || '');return v})
+      .map(v => { v.name = markdownEscape(v.name?.trim() || ''); return v })
       .filter(v => v.name?.length || 0 > 0);
     state = {
       offline: false,
-      numplayers: (rawState.raw as {[key: string]: number})['numplayers'] || rawState.players.length,
+      numplayers: (rawState.raw as { [key: string]: number })['numplayers'] || rawState.players.length,
       realPlayers,
       validPlayers: realPlayers.length,
       gameHost: ip_parts[0],
@@ -140,7 +140,7 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
     state.players = Array.from(state.players || []);
     state.connect = parseConnect(state.connect, protocol);
     state.map = parseMap(state.map, protocol);
-  } catch(e) {
+  } catch (e) {
     verboseLog(e);
     state = {
       name: 'OFFLINE',

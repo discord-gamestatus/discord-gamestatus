@@ -54,7 +54,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
         fields: Array.from(message.client.commands.entries())
           .filter(cmd =>
             matchAny(`${message.client.config.prefix}${cmd[0]}`, search) &&
-            cmd[1].check
+              cmd[1].check
               ? cmd[1].check(message)
               : true
           )
