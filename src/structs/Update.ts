@@ -258,7 +258,7 @@ export default class Update extends Serializable {
   }
 
   setOption<P extends UpdateOption>(
-    client: Client,
+    client: Client | undefined,
     optionName: P,
     value: UpdateOptions[P],
     dontSave: boolean = false
@@ -268,7 +268,7 @@ export default class Update extends Serializable {
     // TODO: Add better support for setting arrays
     let newValue: any = value;
     if (newValue !== null && newValue !== undefined) {
-      newValue = new (DEFAULT_OPTIONS[optionName] as any).prototype.constructor(
+      newValue = new (DEFAULT_OPTIONS[optionName] as any).__proto__.constructor(
         value
       );
       if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue))
@@ -293,7 +293,7 @@ export default class Update extends Serializable {
       if (
         !isOfBaseType(
           newValue,
-          (DEFAULT_OPTIONS[optionName] as any).prototype.constructor
+          (DEFAULT_OPTIONS[optionName] as any).__proto__.constructor
         )
       )
         newValue = null;
@@ -303,7 +303,7 @@ export default class Update extends Serializable {
     } else {
       this.options[optionName] = newValue;
     }
-    if (!dontSave && !this._dontAutoSave)
+    if (client && !dontSave && !this._dontAutoSave)
       return client.updateCache.update(this);
   }
 
@@ -313,15 +313,14 @@ export default class Update extends Serializable {
     if (!this._dontAutoSave) await client.updateCache.update(this);
   }
 
-  parse(object: any): UpdateOptions {
-    // @ts-ignore
-    let result = new this();
+  parse(object: any): Update {
+    let result = new Update(object);
 
     const options = object?.options || {};
     delete object["options"];
     for (let key in options) {
       if (key in DEFAULT_OPTIONS) {
-        result.setOption(undefined, key, options[key], true);
+        result.setOption(undefined, key as keyof UpdateOptions, options[key], true);
       }
     }
 
