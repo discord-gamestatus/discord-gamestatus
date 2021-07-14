@@ -16,12 +16,7 @@ GNU General Public License for more details.
 import { MessageEmbed } from "discord.js-light";
 
 // import * as Package from '../../package.json';
-const Package = {
-  name: 'discord-gamestatus',
-  version: '15.0',
-  homepage: '',
-  bugs: { url: '' },
-}
+const Package = require('../../package.json');
 import { humanDuration } from "@douile/bot-utilities";
 
 import Message from "../structs/Message";
