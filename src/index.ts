@@ -139,7 +139,7 @@ function stopIntervals(client: Client) {
  *******************************************************************************/
 
 async function onMessage(oMessage: Discord.Message) {
-  let message: Message = oMessage as Message;
+  const message: Message = oMessage as Message;
   if (message.author.bot) return;
   if (!message.content.startsWith(message.client.config.prefix)) return;
 
@@ -152,15 +152,13 @@ async function onMessage(oMessage: Discord.Message) {
     .trim()
     .toLowerCase();
 
-  if (message.client.commands.has(command)) {
+  const cmd = message.client.commands.get(command);
+  if (cmd) {
     debugLog(
-      `${message.author.id} :: ${command} / ${parts
+      `[Command] ${message.author.username} [${message.author.id}] :: ${command} / ${parts
         .map(v => `"${v}"`)
         .join(", ")}`
     );
-
-    let cmd = message.client.commands.get(command);
-    if (!cmd) throw new Error("ASSERT_NOT_REACHED");
 
     if (!(cmd.check instanceof Function) || cmd.check(message)) {
       try {
