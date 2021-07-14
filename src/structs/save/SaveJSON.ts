@@ -16,7 +16,8 @@ GNU General Public License for more details.
 import { promises as fs } from "fs";
 
 import { Collection } from "discord.js-light";
-import { allSettled, isOfBaseType } from "@douile/bot-utilities";
+import { isOfBaseType } from "@douile/bot-utilities";
+
 
 import SaveInterface, {
   GetOpts,
@@ -25,17 +26,33 @@ import SaveInterface, {
   Selector
 } from "./SaveInterface";
 import Update from "../Update";
+import { UpdateOptions } from "../Update/UpdateOptions";
 import Serializable from "../Serializable";
 import { infoLog, errorLog } from "../../debug";
 
-export default class SaveJSON implements SaveInterface {
-  filename: string;
-  saveTimeout: number;
+type SerializedUpdate = {
+  guild?: string,
+  channel?: string,
+  message?: string,
+  state?: any,
+  type: string,
+  ip: string,
+  name: string,
+  options: UpdateOptions,
+};
 
-  _saveTimer: NodeJS.Timeout | null;
-  _saveInProgress: Promise<void> | null;
-  _requeueWhenDone: boolean;
-  _cache: Collection<string, Update[]>;
+type SerializedStore = {
+  [channel: string]: SerializedUpdate[],
+};
+
+export default class SaveJSON implements SaveInterface {
+  private filename: string;
+  private saveTimeout: number;
+
+  private _saveTimer: NodeJS.Timeout | null;
+  private _saveInProgress: Promise<void> | null;
+  private _requeueWhenDone: boolean;
+  private _cache: Collection<string, Update[]>;
 
   constructor(filename: string = "_save.json") {
     this.filename = filename;
@@ -226,7 +243,7 @@ export default class SaveJSON implements SaveInterface {
     for (let [key, item] of this._cache.entries()) {
       promises.push(this.serializeItem(obj, key, item));
     }
-    await allSettled(promises);
+    await Promise.allSettled(promises);
     let content = JSON.stringify(obj);
     await fs.writeFile(this.filename, content);
   }
@@ -255,33 +272,37 @@ export default class SaveJSON implements SaveInterface {
 
   async _load(): Promise<void> {
     let content = await fs.readFile(this.filename, { encoding: "utf-8" });
-    let obj;
+    let obj: SerializedStore;
     try {
       obj = JSON.parse(content);
     } catch (e) {
       await fs.copyFile(this.filename, `${this.filename}.damaged`);
       throw e;
     }
+    this._cache.clear();
 
-    let promises = [];
+    const promises = [];
     for (let [key, item] of Object.entries(obj)) {
       promises.push(this.parseItem(key, item));
     }
-    let res = await allSettled(promises),
-      errs = res.filter(v => v !== true);
+    const res = await Promise.allSettled(promises);
+    const errs = res.filter(v => v.status === 'rejected');
     infoLog(`Loaded ${promises.length} configs...`);
-    if (errs.length > 0) errorLog(errs);
+    if (errs.length > 0) {
+      errorLog(errs);
+      await fs.copyFile(this.filename, `${this.filename}.damaged`);
+    }
   }
 
-  async parseItem(key: string, item: any): Promise<boolean> {
-    let res; // NOTE: Type checking here is a bit flippant
-    if (isOfBaseType(item, Array)) {
+  async parseItem(key: string, item: SerializedUpdate | SerializedUpdate[]): Promise<boolean> {
+    let res: Update[];
+    if (item instanceof Array) {
       res = new Array(item.length);
       for (let i = 0; i < item.length; i++) {
-        res[i] = Update.parse(item[i]);
+        res[i] = new Update(item[i]);
       }
     } else {
-      res = [Update.parse(item)];
+      res = [new Update(item)];
     }
     this._cache.set(key, res);
     return true;
