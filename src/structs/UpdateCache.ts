@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 import Client from "./Client";
 
-import { infoLog, warnLog } from "../debug";
+import { infoLog, warnLog, verboseLog } from "../debug";
 import SaveInterface, { GetOpts, DeleteOpts } from "./save/SaveInterface";
 import SaveJSON from "./save/SaveJSON";
 let SavePSQL: typeof import("./save/SavePSQL").default | undefined;
@@ -65,10 +65,12 @@ export default class UpdateCache {
   }
 
   create(status: Update) {
+    verboseLog(`[UpdateCache] creating:`, status);
     return this.saveInterface.create(status);
   }
 
   update(status: Update) {
+    verboseLog(`[UpdateCache] updating: ${status.ID()}`);
     return this.saveInterface.update(status);
   }
 
@@ -77,6 +79,7 @@ export default class UpdateCache {
   }
 
   delete(status: Update | DeleteOpts) {
+    verboseLog(`[UpdateCache] deleting:`, status);
     return this.saveInterface.delete(status);
   }
 
