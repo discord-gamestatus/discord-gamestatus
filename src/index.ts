@@ -270,8 +270,8 @@ async function checkTickLimits(
   }
 
   counters.set(update.guild, counter);
-  if (counter.guildCount > (counter.limits.guildLimit || 0)) return false;
-  if (counter.channelCount[update.channel] > (counter.limits.channelLimit || 0))
+  if (counter.guildCount > (counter.limits.guildLimit || Infinity)) return false;
+  if (counter.channelCount[update.channel] > (counter.limits.channelLimit || Infinity))
     return false;
   return true;
 }

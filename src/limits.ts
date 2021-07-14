@@ -31,6 +31,13 @@ function nullError<T>(
   });
 }
 
+function max(a?: number, b?: number): number | undefined {
+  if (!a) return b;
+  if (!b) return a;
+  if (a > b) return a;
+  return b;
+}
+
 export interface Limit {
   channelLimit?: number;
   guildLimit?: number;
@@ -65,9 +72,9 @@ export async function getLimits(
       if (member.roles.cache.has(roleID)) {
         let key: keyof Limit;
         for (key in limits) {
-          limits[key] = Math.max(
-            limits[key] || 0,
-            guildRules[roleID][key] || 0
+          limits[key] = max(
+            limits[key],
+            guildRules[roleID][key]
           );
         }
       }
