@@ -15,9 +15,9 @@ GNU General Public License for more details.
 
 import { is } from "@douile/bot-utilities";
 
-import { Message } from "discord.js-light";
+import { Channel, Message } from "discord.js-light";
 
-export async function channelFirstArg(message: Message, args: string[]) {
+export async function channelFirstArg(message: Message, args: string[]): Promise<Channel | undefined> {
   if (args.length > 0) {
     const channelArg = is.discordChannel(args[0]);
     if (channelArg) {
@@ -55,7 +55,7 @@ export async function asyncArray<T>(
   asyncGenerator: AsyncGenerator<T>
 ): Promise<T[]> {
   const res: T[] = [];
-  for await (let i of asyncGenerator) {
+  for await (const i of asyncGenerator) {
     res.push(i);
   }
   return res;

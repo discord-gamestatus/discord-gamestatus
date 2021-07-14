@@ -48,16 +48,16 @@ const limitCache: Map<string, Limit> = new Map();
 export async function getLimits(
   client: Client,
   user: Snowflake,
-  noCache: boolean = false
+  noCache = false
 ) {
   if (limitCache.has(user) && !noCache) {
     return limitCache.get(user);
   }
-  let limits: Limit = {
+  const limits: Limit = {
     channelLimit: client.config.channelLimit,
     guildLimit: client.config.guildLimit
   };
-  for (let guildID in client.config.limitRules) {
+  for (const guildID in client.config.limitRules) {
     const guild = await nullError(client.guilds.fetch(guildID), warnLog);
     if (guild === null) continue;
     const member = await nullError(
@@ -66,7 +66,7 @@ export async function getLimits(
     );
     if (member === null) continue;
     const guildRules = client.config.limitRules[guildID];
-    for (let roleID in guildRules) {
+    for (const roleID in guildRules) {
       /*const role = await nullError(guild.roles.fetch(roleID), warnLog);
       if (role === null) continue;*/
       if (member.roles.cache.has(roleID)) {

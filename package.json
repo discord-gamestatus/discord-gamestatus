@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "test": "npm run lint",
-    "lint": "npx eslint . --ext .ts,.js",
+    "lint": "npx eslint src --ext .ts,.js",
     "build": "rm -rf dist && npx tsc"
   },
   "license": "GPL-3.0",

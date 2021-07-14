@@ -42,9 +42,11 @@ export default class SavePSQL implements SaveInterface {
    *** Interface funcs
    *****************************************************************************/
 
-  async load() {}
+  async load(): Promise<void> {
+    // No load needed
+  }
 
-  async close() {
+  async close(): Promise<void> {
     await this.pool.end();
   }
 
@@ -222,12 +224,12 @@ export default class SavePSQL implements SaveInterface {
     return query.rows.length > 0;
   }
 
-  async values() {
+  async values(): Promise<Update[][]> {
     const all = await this.getAll();
     return Object.values(all);
   }
 
-  async entries() {
+  async entries(): Promise<[string, Update[]][]> {
     const all = await this.getAll();
     return Object.entries(all);
   }

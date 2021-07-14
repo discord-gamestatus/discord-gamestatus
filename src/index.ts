@@ -128,7 +128,7 @@ function startIntervals(client: Client) {
 }
 
 function stopIntervals(client: Client) {
-  for (let key in UPDATE_INTERVALS) {
+  for (const key in UPDATE_INTERVALS) {
     client.clearInterval(UPDATE_INTERVALS[key]);
     delete UPDATE_INTERVALS[key];
   }
@@ -143,11 +143,11 @@ async function onMessage(oMessage: Discord.Message) {
   if (message.author.bot) return;
   if (!message.content.startsWith(message.client.config.prefix)) return;
 
-  let parts = message.content
+  const parts = message.content
     .substr(message.client.config.prefix.length)
     .split(" ");
   if (parts.length === 0) return;
-  let command = parts
+  const command = parts
     .splice(0, 1)[0]
     .trim()
     .toLowerCase();
@@ -192,20 +192,20 @@ function onTick(client: Client) {
     }
 
     if (TICK >= MAX_TICK) TICK = 0;
-    let r = TICK % client.config.tickCount;
+    const r = TICK % client.config.tickCount;
     if (r === 0) TICK_SECOND += 1;
     if (TICK_SECOND >= MAX_TICK) TICK_SECOND = 0;
 
     TICK += 1;
 
     verboseLog("[TICKER] Starting tick", r, tick.value !== undefined);
-    let promises = [];
+    const promises = [];
     if (tick.value) {
-      for (let update of tick.value) {
+      for (const update of tick.value) {
         promises.push(doUpdate(client, update, TICK_SECOND, TICK_LIMITS));
       }
     }
-    let res = await allSettled(promises);
+    const res = await allSettled(promises);
     if (res.length > 0)
       verboseLog("[TICKER] Finished tick", r, promises.length, res);
   };
@@ -277,7 +277,7 @@ async function checkTickLimits(
 }
 
 // TODO: Add raw Config interface
-export default async function start(config: any) {
+export default async function start(config: any): Promise<Client> {
   setDebugFlag(
     config.error,
     config.warn,
@@ -286,7 +286,7 @@ export default async function start(config: any) {
     config.verbose
   );
   /* Override owner, prefix, tickCount, tickTime */
-  let clientConfig = DEFAULT_CONFIG;
+  const clientConfig = DEFAULT_CONFIG;
   let key: keyof ClientConfig;
   for (key in clientConfig) {
     if (key in config) (clientConfig as any)[key] = config[key];
@@ -306,7 +306,7 @@ export default async function start(config: any) {
 
   debugLog("DEBUG LOGS ENABLED");
   verboseLog("VERBOSE LOGS ENABLED");
-  let commands: Map<string, Command> = new Map();
+  const commands: Map<string, Command> = new Map();
   await loadCommands(commands);
   await loadAdditionalConfigs(clientConfig);
   await updateCache.load();
@@ -323,7 +323,7 @@ export default async function start(config: any) {
     Discord.Constants.Events.CLIENT_READY,
     errorWrap(async function() {
       infoLog(`Logged in ${client.user?.username} [${client.user?.id}]...`);
-      let invite = await client.generateInvite({
+      const invite = await client.generateInvite({
         permissions: <Discord.PermissionString[]>INVITE_FLAGS
       });
       infoLog(`Invite link ${invite}`);

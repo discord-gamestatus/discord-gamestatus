@@ -23,7 +23,7 @@ import { FORMAT_PROPERTIES } from "../../constants";
 import { State } from "../../query";
 
 function serverFormat(string: string, server: State) {
-  for (let prop of <[keyof State]>FORMAT_PROPERTIES) {
+  for (const prop of <[keyof State]>FORMAT_PROPERTIES) {
     string = string.replace(
       new RegExp(`\\{${prop}\\}`, "gi"),
       <any>server[prop]
@@ -44,12 +44,12 @@ export async function generateEmbed(
   update: Update,
   server: State,
   tick: number
-) {
-  let players = server.realPlayers === null ? [] : server.realPlayers;
+): Promise<MessageEmbed> {
+  const players = server.realPlayers === null ? [] : server.realPlayers;
 
   const isOffline = server.offline ? 1 : 0;
 
-  let embed = new MessageEmbed({
+  const embed = new MessageEmbed({
     title: serverFormat(
       update.getOption(OPT_TITLE[isOffline]) as string,
       server
@@ -62,7 +62,7 @@ export async function generateEmbed(
     timestamp: Date.now()
   });
 
-  let dots = update.getOption("dots") as string[];
+  const dots = update.getOption("dots") as string[];
   embed.setFooter(dots[tick % dots.length]);
 
   let image = server.image;
@@ -86,11 +86,11 @@ export async function generateEmbed(
     embed.setThumbnail(embedImage);
   }
 
-  let columns = update.getOption("columns") as number;
-  let rows = Math.ceil(players.length / columns);
+  const columns = update.getOption("columns") as number;
+  const rows = Math.ceil(players.length / columns);
 
   for (let i = 0; i < columns; i++) {
-    let column = players.splice(0, rows);
+    const column = players.splice(0, rows);
     if (column.length > 0) {
       const columnText = column.map((v: Player) => v.name).join("\n");
       embed.addField("_ _", columnText, true);

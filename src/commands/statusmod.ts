@@ -64,7 +64,7 @@ export const help = `Modify status messages in the guild.\nUse cases:\n\
     ", "
   )}`;
 
-export async function call(message: Message) {
+export async function call(message: Message): Promise<void> {
   const args = message.content.split(" ").splice(1);
 
   if (!message.guild) return;
@@ -81,11 +81,11 @@ export async function call(message: Message) {
   if (args.length > 0) {
     const index = parseInt(args[0].replace(/^#/, ""));
     if (!isNaN(index) && index < statuses.length && index >= 0) {
-      let status = statuses[index];
+      const status = statuses[index];
       if (args.length === 1) {
         const opts = status.getOptions();
-        let options = [];
-        for (let fieldName of OPTION_LAYOUT) {
+        const options = [];
+        for (const fieldName of OPTION_LAYOUT) {
           if (fieldName === "spacer") {
             options.push({ name: "_ _", value: "_ _", inline: false });
           } else {

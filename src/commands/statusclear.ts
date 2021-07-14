@@ -23,8 +23,8 @@ export const name = "statusclear";
 export const check = isAdmin;
 export const help = "Clear all status messages from the channel";
 
-export async function call(message: Message, args: string[]) {
-  let response = await message.channel.send("Clearing status updates...");
+export async function call(message: Message, args: string[]): Promise<void> {
+  const response = await message.channel.send("Clearing status updates...");
   let channel;
   try {
     channel = await channelFirstArg(message, args);
@@ -38,7 +38,7 @@ export async function call(message: Message, args: string[]) {
     channel: channel.id,
     guild: channel.guild.id
   });
-  for (let update of updates) {
+  for (const update of updates) {
     const msg = await update.getMessage(message.client);
     if (msg) {
       try {

@@ -21,14 +21,14 @@ import Message from "../structs/Message";
 import { EMBED_COLOR } from "../constants";
 
 function matchAny(text: string, search: RegExp[]) {
-  for (let s of search) {
+  for (const s of search) {
     if (text.match(s) !== null) return true;
   }
   return false;
 }
 
 export const name = "help";
-export async function call(message: Message, parts: string[]) {
+export async function call(message: Message, parts: string[]): Promise<void> {
   const search = parts.map(s => new RegExp(s, "gi"));
   if (search.length === 0) {
     await message.channel.send(

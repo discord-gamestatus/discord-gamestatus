@@ -24,7 +24,7 @@ import { EMBED_COLOR } from "../constants";
 
 export const name = "botinfo";
 export const help = "Output runtime information";
-export async function call(message: Message) {
+export async function call(message: Message): Promise<void> {
   const client = message.client;
 
   const memoryUsage = process.memoryUsage();

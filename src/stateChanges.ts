@@ -28,11 +28,11 @@ export interface PlayerChanges {
 function playerChanges(curPlayers?: string[], prevPlayers?: string[]): PlayerChanges {
   if (!(prevPlayers instanceof Array) || !(curPlayers instanceof Array)) return { connect: [], disconnect: [], all: [] };
 
-  let result: any = { connect: [], disconnect: [] };
-  for (let player of curPlayers) {
+  const result: any = { connect: [], disconnect: [] };
+  for (const player of curPlayers) {
     if (!prevPlayers.includes(player)) result.connect.push({name: player, connect: true, msg: `**${player}** connected`});
   }
-  for (let player of prevPlayers) {
+  for (const player of prevPlayers) {
     if (!curPlayers.includes(player)) result.disconnect.push({name: player, connect: false, msg: `**${player}** disconnected`});
   }
   result.all = result.connect.concat(result.disconnect);
@@ -54,8 +54,8 @@ export interface Changes {
 
 const KEYS = [ 'offline', 'map' ];
 export default function stateChanges(curState: any, prevState: any): Changes {
-  let res: Changes = { players: playerChanges(curState.players, prevState.players), props: {} };
-  for (let key of KEYS) {
+  const res: Changes = { players: playerChanges(curState.players, prevState.players), props: {} };
+  for (const key of KEYS) {
     if (curState[key] !== prevState[key]) {
       res.props[key] = { old: prevState[key], new: curState[key] };
     }

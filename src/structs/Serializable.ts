@@ -16,14 +16,14 @@ GNU General Public License for more details.
 type JSONValue = string | number | boolean | JSONObject | JSONValue[];
 interface JSONObject {
   [key: string]: JSONValue;
-};
+}
 
 export default class Serializable {
   serialize() {
-    let object: JSONObject = {};
-    let descriptors = Object.getOwnPropertyDescriptors(this);
-    for (let name in descriptors) {
-      let descriptor = descriptors[name], type = typeof descriptor.value;
+    const object: JSONObject = {};
+    const descriptors = Object.getOwnPropertyDescriptors(this);
+    for (const name in descriptors) {
+      const descriptor = descriptors[name], type = typeof descriptor.value;
       if (descriptor.enumerable && type !== 'function' && type !== 'undefined' && !name.startsWith('_')) {
         object[name] = descriptor.value;
       }
@@ -32,15 +32,15 @@ export default class Serializable {
   }
 
   static parse(object: any) {
-    let result = new this();
+    const result = new this();
     return Object.defineProperties(result, Object.getOwnPropertyDescriptors(object));
   }
 
-  serializeJson() {
+  serializeJson(): string {
     return JSON.stringify(this.serialize());
   }
 
-  static parseJson(data: string) {
+  static parseJson(data: string): Serializable {
     return this.parse(JSON.parse(data));
   }
 }

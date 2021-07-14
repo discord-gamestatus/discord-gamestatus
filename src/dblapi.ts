@@ -26,7 +26,7 @@ interface DBLInfo {
   currentTimeout: NodeJS.Timeout | null,
 }
 
-let DBL_INFO: DBLInfo = {
+const DBL_INFO: DBLInfo = {
   lastUpdate: 0,
   currentTimeout: null,
 };
@@ -73,7 +73,7 @@ const sendDBLUpdate = function(client: Client, key: string) {
   }
 }
 
-export function startDBLApiHook(client: Client, key: string) {
+export function startDBLApiHook(client: Client, key: string): void {
   const sendUpdate = sendDBLUpdate(client, key);
 
   client.once('ready', sendUpdate);

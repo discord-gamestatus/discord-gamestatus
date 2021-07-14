@@ -56,42 +56,42 @@ export default class UpdateCache {
     this.saveInterface = <SaveInterface>saveInterface;
   }
 
-  async load() {
+  async load(): Promise<void> {
     await this.saveInterface.load();
   }
 
-  get(key: GetOpts) {
+  get(key: GetOpts): Update[] | Promise<Update[]> {
     return this.saveInterface.get(key);
   }
 
-  create(status: Update) {
+  create(status: Update): boolean | Promise<boolean> {
     verboseLog(`[UpdateCache] creating:`, status);
     return this.saveInterface.create(status);
   }
 
-  update(status: Update) {
+  update(status: Update): boolean | Promise<boolean> {
     verboseLog(`[UpdateCache] updating: ${status.ID()}`);
     return this.saveInterface.update(status);
   }
 
-  has(value: Update) {
+  has(value: Update): boolean | Promise<boolean> {
     return this.saveInterface.has(value);
   }
 
-  delete(status: Update | DeleteOpts) {
+  delete(status: Update | DeleteOpts): number | Promise<number> {
     verboseLog(`[UpdateCache] deleting:`, status);
     return this.saveInterface.delete(status);
   }
 
-  values() {
+  values(): Promise<Update[][]> | IterableIterator<Update[]> {
     return this.saveInterface.values();
   }
 
-  entries() {
+  entries(): Promise<[string, Update[]][]> | IterableIterator<[string, Update[]]> {
     return this.saveInterface.entries();
   }
 
-  close() {
+  close(): Promise<void> {
     return this.saveInterface.close();
   }
 
@@ -117,7 +117,7 @@ export default class UpdateCache {
     const guildUpdateCount = guildUpdates.length;
     let channelUpdateCount = 0;
 
-    for (let u of guildUpdates) {
+    for (const u of guildUpdates) {
       if (u.ip === update.ip && !client.config.allowDuplicates)
         return `Sorry this server already has an update using the IP \`${update.ip}\``;
 
@@ -155,9 +155,9 @@ export default class UpdateCache {
 
   async *flatValues(): AsyncGenerator<Update> {
     const values = await this.values();
-    for (let value of values) {
+    for (const value of values) {
       if (Array.isArray(value)) {
-        for (let item of value) {
+        for (const item of value) {
           yield item;
         }
       } else {
@@ -175,10 +175,10 @@ export default class UpdateCache {
     let tickStep = 1;
     if (size < tickLimit) tickStep = Math.floor(tickLimit / size);
     for (let i = 0; i < tickLimit; i++) {
-      let result = [];
+      const result = [];
       if (i % tickStep === 0) {
         for (let j = 0; j < tickSize; j++) {
-          let v = valueIterator.next();
+          const v = valueIterator.next();
           if (!v.done && v.value) result.push(v.value);
         }
       }

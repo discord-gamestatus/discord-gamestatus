@@ -112,7 +112,7 @@ export default class Update extends Serializable {
     }
   }
 
-  ID() {
+  ID(): string {
     return `${this.guild}:${this.channel}:${this.ip}`;
   }
 
@@ -120,7 +120,7 @@ export default class Update extends Serializable {
    *** Properties
    *******************************************************************************/
 
-  async getGuild(client: Client, dontForge: boolean = false) {
+  async getGuild(client: Client, dontForge = false): Promise<Guild | undefined> {
     if (this._guild) return this._guild;
     if (dontForge) {
       this._guild = this.guild
@@ -133,7 +133,7 @@ export default class Update extends Serializable {
 
   async getChannel(
     client: Client,
-    dontForge: boolean = false
+    dontForge = false
   ): Promise<TextChannel | undefined> {
     if (this._channel) return this._channel;
     const guild = await this.getGuild(client, dontForge);
@@ -151,7 +151,7 @@ export default class Update extends Serializable {
 
   async getMessage(
     client: Client,
-    dontForge: boolean = false
+    dontForge = false
   ): Promise<Message | undefined> {
     if (this._message) return this._message;
     const channel = await this.getChannel(client, dontForge);
@@ -231,7 +231,7 @@ export default class Update extends Serializable {
     return false;
   }
 
-  messageLink() {
+  messageLink(): string {
     return `https://discordapp.com/channels/${this.guild}/${this.channel}/${this.message}`;
   }
 
@@ -261,8 +261,8 @@ export default class Update extends Serializable {
     client: Client | undefined,
     optionName: P,
     value: UpdateOptions[P],
-    dontSave: boolean = false
-  ) {
+    dontSave = false
+  ): Promise<boolean> | boolean | void {
     if (!isOfBaseType(this.options, Object)) this.options = {};
     /* Use DEFAULT_OPTIONS constructors to typecast new value */
     // TODO: Add better support for setting arrays
@@ -314,11 +314,11 @@ export default class Update extends Serializable {
   }
 
   parse(object: any): Update {
-    let result = new Update(object);
+    const result = new Update(object);
 
     const options = object?.options || {};
     delete object["options"];
-    for (let key in options) {
+    for (const key in options) {
       if (key in DEFAULT_OPTIONS) {
         result.setOption(undefined, key as keyof UpdateOptions, options[key], true);
       }
@@ -334,16 +334,16 @@ export default class Update extends Serializable {
    *** Send
    *******************************************************************************/
 
-  async send(client: Client, tick: number) {
+  async send(client: Client, tick: number): Promise<State | undefined> {
     if (this._deleted) return;
 
     const _start = performance.now();
 
     if (!tick) tick = 0;
 
-    let prevState = this.state;
+    const prevState = this.state;
     const boundQuery = query.bind(client);
-    let state = await boundQuery(this.type as Type, this.ip);
+    const state = await boundQuery(this.type as Type, this.ip);
     this.state = {
       players: state.realPlayers ? state.realPlayers.map(v => v.name) : null,
       offline: state.offline,
@@ -351,7 +351,7 @@ export default class Update extends Serializable {
     };
     if (!state.offline) this.name = state.name;
 
-    let changes = stateChanges(this.state, prevState);
+    const changes = stateChanges(this.state, prevState);
 
     try {
       await this.sendUpdate(client, tick, state, changes);
@@ -369,7 +369,7 @@ export default class Update extends Serializable {
     tick: number,
     state: State,
     changes: Changes
-  ) {
+  ): Promise<void> {
     const embed = await generateEmbed(this, state, tick);
 
     let changesToSend: PlayerChange[] = [];
@@ -378,7 +378,7 @@ export default class Update extends Serializable {
     if (this.getOption("disconnectUpdate"))
       changesToSend = changesToSend.concat(changes.players.disconnect);
 
-    let args: [string, MessageEmbed] = [
+    const args: [string, MessageEmbed] = [
       changesToSend.length > 0
         ? changesToSend
             .map(v => v.msg)
@@ -388,12 +388,12 @@ export default class Update extends Serializable {
       embed
     ];
 
-    let message = await this.getMessage(client);
+    const message = await this.getMessage(client);
     let needsNewMessage = true;
     if (message) {
       needsNewMessage = false;
       try {
-        await message.edit.apply(message, args);
+        await message.edit.call(message, ...args);
       } catch (e) {
         /* Unknown channel, Missing access, Lack permission */
         if ([10003, 50001, 50013].includes(e.code)) {
@@ -413,12 +413,12 @@ export default class Update extends Serializable {
     }
 
     if (needsNewMessage) {
-      let channel = await this.getChannel(client);
+      const channel = await this.getChannel(client);
       if (channel) {
         let newMessage: Message | undefined = undefined;
         try {
           // Ignore Message[] here as we know will only ever send 1 message
-          newMessage = (await channel.send.apply(channel, args)) as Message;
+          newMessage = (await channel.send.call(channel, ...args)) as Message;
         } catch (e) {
           /* Unknown channel, Missing access, Lack permission */
           if ([10003, 50001, 50013].includes(e.code)) {
@@ -433,7 +433,7 @@ export default class Update extends Serializable {
     }
   }
 
-  async deleteMessage(client: Client, message?: Message) {
+  async deleteMessage(client: Client, message?: Message): Promise<Message | undefined> {
     if (!message) message = await this.getMessage(client);
     if (!message) return;
     try {

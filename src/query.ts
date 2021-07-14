@@ -21,12 +21,19 @@ import { markdownEscape } from '@douile/bot-utilities';
 import { verboseLog } from './debug';
 import Client from './structs/Client';
 
-interface Game {
+export type Game = {
   keys: string[],
   pretty: string,
-  options: any,
-  extra?: any,
-  protocol: string,
+  options: {
+    protocol: string,
+    port?: number,
+    port_query?: number,
+    port_query_offset?: number,
+  },
+  extra?: {
+    doc_notes?: string,
+  },
+  protocol?: string,
 }
 
 interface GameResolver {
@@ -104,21 +111,22 @@ export interface ImageBuffer {
 
 export type Image = ImageUrl | ImageBuffer;
 
-export async function query(this: Client, type: GameDig.Type, ip: string) {
+export async function query(this: Client, queryType: GameDig.Type, ip: string): Promise<State> {
   const ip_parts = ip.split(':');
-  const protocol = getResolver().lookup(type).protocol;
+  const game = getResolver().lookup(queryType);
+  const protocol = game.protocol || game.options.protocol;
   const isDiscord = protocol === 'discord';
   let state: State;
 
   try {
     const rawState = await GameDig.query({
-      type: type,
+      type: queryType,
       host: isDiscord ? 'localhost' : ip_parts[0],
       port: ip_parts.length > 1 ? parseInt(ip_parts[1]) : undefined,
       // realPlayers: [],
       // guildId: isDiscord ? ip_parts[0] : undefined,
     });
-    let realPlayers = rawState.players.filter(v => typeof v.name === 'string')
+    const realPlayers = rawState.players.filter(v => typeof v.name === 'string')
       .map(v => {v.name = markdownEscape(v.name?.trim() || '');return v})
       .filter(v => v.name?.length || 0 > 0);
     state = {
@@ -151,19 +159,19 @@ export async function query(this: Client, type: GameDig.Type, ip: string) {
     };
   }
 
-  if (type in IMAGE) {
-    state.image = await IMAGE[type].call(this, state);
+  if (queryType in IMAGE) {
+    state.image = await IMAGE[queryType].call(this, state);
   }
 
   return state;
 }
 
-export async function gameList() {
+export async function gameList(): Promise<Game[]> {
   const resolver = getResolver();
   return resolver.games;
 }
 
-export function isValidGame(game: string) {
+export function isValidGame(game: string): boolean {
   const resolver = getResolver();
   return resolver.gamesByKey.has(game);
 }

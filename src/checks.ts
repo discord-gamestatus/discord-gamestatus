@@ -19,38 +19,38 @@ import Message from "./structs/Message";
 
 export type Check = (message: Message) => boolean;
 
-export function isAdmin(message: Message) {
+export function isAdmin(message: Message): boolean {
   if (!message.member) return false;
   return message.member.hasPermission(
     message.client.config.adminFlag as PermissionResolvable
   );
 }
 
-export function isOwner(message: Message) {
+export function isOwner(message: Message): boolean {
   if (!message.guild) return false;
   return message.guild.ownerID === message.author.id;
 }
 
-export function isBotOwner(message: Message) {
+export function isBotOwner(message: Message): boolean {
   return message.client.config.owner === message.author.id;
 }
 
-export function isDMChannel(message: Message) {
+export function isDMChannel(message: Message): boolean {
   return message.channel.type === "dm";
 }
 
-export function combineAll(...checks: Check[]) {
+export function combineAll(...checks: Check[]): Check {
   return function(message: Message) {
-    for (let check of checks) {
+    for (const check of checks) {
       if (!check(message)) return false;
     }
     return true;
   };
 }
 
-export function combineAny(...checks: Check[]) {
+export function combineAny(...checks: Check[]): Check {
   return function(message: Message) {
-    for (let check of checks) {
+    for (const check of checks) {
       if (check(message)) return true;
     }
     return false;

@@ -25,16 +25,16 @@ export const check = isAdmin;
 export const help =
   "Create a status message, you must provide game and IP\ne.g. `!status csgo 192.168.0.1`";
 
-export async function call(message: Message, parts: string[]) {
+export async function call(message: Message, parts: string[]): Promise<void> {
   parts = parts.filter(s => s.length > 0);
   if (parts.length < 2)
-    return await message.channel.send(
+    return void await message.channel.send(
       `You must provide a game type (view and search the gamelist with \`${
         message.client.config.prefix
       }gamelist\`) and IP instead of \`${parts.join(" ")}\``
     );
   if (!isValidGame(parts[0]))
-    return await message.channel.send(
+    return void await message.channel.send(
       `\`${parts[0]}\` is not a valid game please check \`${message.client.config.prefix}gamelist\``
     );
 
@@ -44,7 +44,7 @@ export async function call(message: Message, parts: string[]) {
   )) as TextChannel;
   const updateCache = message.client.updateCache;
 
-  let update = new Update(
+  const update = new Update(
     {
       type: parts[0],
       ip: parts[1]
@@ -53,14 +53,14 @@ export async function call(message: Message, parts: string[]) {
   );
 
   // Check if this is a valid status message to add
-  let error = await updateCache.canAddUpdate(update, message.client);
+  const error = await updateCache.canAddUpdate(update, message.client);
   if (error !== undefined) {
     await channel.send(error);
     return;
   }
 
   update._dontAutoSave = true;
-  let state = await update.send(message.client, 0);
+  const state = await update.send(message.client, 0);
   if (state?.offline === true) {
     const updateMessage = await update.getMessage(message.client);
     if (updateMessage) await updateMessage.delete();

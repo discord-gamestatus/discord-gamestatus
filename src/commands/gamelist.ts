@@ -26,25 +26,26 @@ export const help =
   "Output the list of games availabe, searchable with any text";
 
 export async function call(message: Message, parts: string[]) {
-  let games = await gameList(),
+  const games = await gameList(),
     gameIterator = games.values();
-  let embed = new MessageEmbed({ color: EMBED_COLOR }),
-    embedSize = 100,
-    embeds = [],
-    embedI = 0;
+  let embed = new MessageEmbed({ color: EMBED_COLOR });
+  let embedSize = 100;
+  const embeds = [];
+  let embedI = 0;
+
   embed.setFooter(++embedI);
   let field = "",
     key = gameIterator.next(),
     count = 0;
-  let regex = parts.length > 0 ? parts.map(s => new RegExp(s, "i")) : undefined;
+  const regex = parts.length > 0 ? parts.map(s => new RegExp(s, "i")) : undefined;
 
   while (!key.done) {
-    let game = key.value;
+    const game = key.value;
     let match = true;
     if (regex) {
       match = false;
-      for (let r of regex) {
-        for (let str of game.keys.concat(game.pretty)) {
+      for (const r of regex) {
+        for (const str of game.keys.concat(game.pretty)) {
           if (str.match(r) !== null) {
             match = true;
             break;
@@ -53,7 +54,7 @@ export async function call(message: Message, parts: string[]) {
       }
     }
     if (match) {
-      let value = `${game.pretty} = ${game.keys
+      const value = `${game.pretty} = ${game.keys
         .map(v => `\`${v}\``)
         .join(", ")}\n`;
       if (field.length + value.length > 1024) {
@@ -73,7 +74,7 @@ export async function call(message: Message, parts: string[]) {
     key = gameIterator.next();
   }
   if (field.length > 0) embed.addField("_ _", field);
-  for (let e of embeds.concat(embed)) {
+  for (const e of embeds.concat(embed)) {
     e.setTitle(`${count} Available games`);
     await message.channel.send(e);
   }

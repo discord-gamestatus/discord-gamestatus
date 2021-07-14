@@ -21,9 +21,9 @@ export enum DEBUG_FLAGS {
   INFO        = 1 << 2,
   DEBUG       = 1 << 3,
   VERBOSE     = 1 << 4,
-};
+}
 
-export function setDebugFlag(error: boolean, warn: boolean, info: boolean, debug: boolean, verbose: boolean) {
+export function setDebugFlag(error: boolean, warn: boolean, info: boolean, debug: boolean, verbose: boolean): void {
   DEBUG_FLAG =  (error ? DEBUG_FLAGS.ERROR : 0) |
                 (warn ? DEBUG_FLAGS.WARN : 0) |
                 (info ? DEBUG_FLAGS.INFO : 0) |
@@ -45,9 +45,8 @@ export const isVerbose = isFlag(DEBUG_FLAGS.VERBOSE);
 
 function logFlag(check: () => boolean, logger?: () => void) {
   const logF = logger ? logger : console.log;
-  return function(...args: any[]) {
-    // @ts-ignore
-    if (check()) logF.apply(this, args);
+  return function<T>(this: T, ...args: any[]) {
+    if (check()) logF.call(this, ...args);
   }
 }
 

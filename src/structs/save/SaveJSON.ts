@@ -54,7 +54,7 @@ export default class SaveJSON implements SaveInterface {
   private _requeueWhenDone: boolean;
   private _cache: Collection<string, Update[]>;
 
-  constructor(filename: string = "_save.json") {
+  constructor(filename = "_save.json") {
     this.filename = filename;
     this.saveTimeout = 30000; // 30 secs
 
@@ -64,7 +64,7 @@ export default class SaveJSON implements SaveInterface {
     this._cache = new Collection();
   }
 
-  async load() {
+  async load(): Promise<void> {
     let r;
     try {
       r = await this._load();
@@ -78,7 +78,7 @@ export default class SaveJSON implements SaveInterface {
     return r;
   }
 
-  close() {
+  close(): Promise<void> {
     if (this._saveTimer !== null) {
       if (this._saveInProgress !== null) {
         return this._saveInProgress;
@@ -89,7 +89,7 @@ export default class SaveJSON implements SaveInterface {
     return this._save();
   }
 
-  get(opts: GetOpts) {
+  get(opts: GetOpts): Update[] {
     if (opts.message !== undefined) {
       // Very slow
       return Array.from(this._cache.values())
@@ -107,7 +107,7 @@ export default class SaveJSON implements SaveInterface {
     }
   }
 
-  update(status: Update) {
+  update(status: Update): boolean {
     if (!status.channel) throw new Error("Status has no channel");
     const cached = this._cache.get(status.channel);
     if (!cached) throw new Error("No such StatusUpdate exists");
@@ -128,7 +128,7 @@ export default class SaveJSON implements SaveInterface {
     return found;
   }
 
-  create(status: Update) {
+  create(status: Update): boolean {
     if (!status.channel) throw new Error("Status has no channel");
     if (this._cache.has(status.channel)) {
       const cached = this._cache.get(status.channel);
@@ -151,7 +151,7 @@ export default class SaveJSON implements SaveInterface {
     return true;
   }
 
-  delete(opts: Update | DeleteOpts) {
+  delete(opts: Update | DeleteOpts): number {
     // Here we don't use guild as channel IDs are unique and the key we use,
     // however guild is checked to be specified to maintain consitency with
     // SavePSQL
@@ -184,8 +184,8 @@ export default class SaveJSON implements SaveInterface {
     return deleted;
   }
 
-  has(status: Update) {
-    let selector = eitherSelector(status);
+  has(status: Update): boolean {
+    const selector = eitherSelector(status);
     if (this._cache.has(status.channel as string)) {
       return (
         this._cache
@@ -196,11 +196,11 @@ export default class SaveJSON implements SaveInterface {
     return false;
   }
 
-  values() {
+  values(): IterableIterator<Update[]> {
     return this._cache.values();
   }
 
-  entries() {
+  entries(): IterableIterator<[string, Update[]]> {
     return this._cache.entries();
   }
 
@@ -218,40 +218,39 @@ export default class SaveJSON implements SaveInterface {
 
   save(): void {
     this._saveInProgress = this._save();
-    const i = this;
     this._saveInProgress
-      .then(function() {
-        i._saveTimer = null;
-        i._saveInProgress = null;
-        if (i._requeueWhenDone) {
-          i.queueSave();
-          i._requeueWhenDone = false;
+      .then(() => {
+        this._saveTimer = null;
+        this._saveInProgress = null;
+        if (this._requeueWhenDone) {
+          this.queueSave();
+          this._requeueWhenDone = false;
         }
       })
-      .catch(function(...args: any[]) {
+      .catch((...args: any[]) => {
         console.error(...args);
-        i._saveTimer = null;
-        i._saveInProgress = null;
-        i.queueSave();
-        i._requeueWhenDone = false;
+        this._saveTimer = null;
+        this._saveInProgress = null;
+        this.queueSave();
+        this._requeueWhenDone = false;
       });
   }
   async _save(): Promise<void> {
-    let obj = {};
+    const obj = {};
 
-    let promises = [];
-    for (let [key, item] of this._cache.entries()) {
+    const promises = [];
+    for (const [key, item] of this._cache.entries()) {
       promises.push(this.serializeItem(obj, key, item));
     }
     await Promise.allSettled(promises);
-    let content = JSON.stringify(obj);
+    const content = JSON.stringify(obj);
     await fs.writeFile(this.filename, content);
   }
 
   async serializeItem(
     obj: any,
     key: string | number,
-    item: any
+    item: any,
   ): Promise<boolean> {
     if (isOfBaseType(item, Array)) {
       obj[key] = new Array(item.length);
@@ -261,7 +260,7 @@ export default class SaveJSON implements SaveInterface {
     } else if (isOfBaseType(item, Object)) {
       // NOTE: Maybe we shouldn't deal with this cases as Serializables are transformed into objects
       obj[key] = {};
-      for (let i in item) {
+      for (const i in item) {
         await this.serializeItem(obj[key], i, item[i]);
       }
     } else if (item instanceof Serializable) {
@@ -271,7 +270,7 @@ export default class SaveJSON implements SaveInterface {
   }
 
   async _load(): Promise<void> {
-    let content = await fs.readFile(this.filename, { encoding: "utf-8" });
+    const content = await fs.readFile(this.filename, { encoding: "utf-8" });
     let obj: SerializedStore;
     try {
       obj = JSON.parse(content);
@@ -282,7 +281,7 @@ export default class SaveJSON implements SaveInterface {
     this._cache.clear();
 
     const promises = [];
-    for (let [key, item] of Object.entries(obj)) {
+    for (const [key, item] of Object.entries(obj)) {
       promises.push(this.parseItem(key, item));
     }
     const res = await Promise.allSettled(promises);

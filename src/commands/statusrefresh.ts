@@ -23,7 +23,7 @@ import { channelFirstArg } from "../utils";
 export const name = "statusrefresh";
 export const check = isAdmin;
 
-export async function call(message: Message) {
+export async function call(message: Message): Promise<void> {
   const args = message.content.split(" ").splice(1);
 
   let channel;
@@ -46,7 +46,7 @@ export async function call(message: Message) {
   }
 
   if (statuses.length === 0) {
-    return await message.channel.send({
+    return void await message.channel.send({
       embed: {
         title: "Error",
         description: `No statuses in the channel <#${channel.id}>`,
@@ -63,7 +63,7 @@ export async function call(message: Message) {
     }
   });
 
-  for (let status of statuses) {
+  for (const status of statuses) {
     await status.deleteMessage(message.client);
     await status.setMessage(message.client, undefined); // Clear message
   }

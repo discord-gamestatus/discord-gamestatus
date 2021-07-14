@@ -31,7 +31,7 @@ export const check = isAdmin;
 export const help =
   "Remove a status message by replying to it, or by giving its channel ID and message ID\nRight click status, press reply to message, and use `!statusremove`\n`!statusmod #channel messageID`";
 
-export async function call(message: Message, parts: string[]) {
+export async function call(message: Message, parts: string[]): Promise<void> {
   if (!message.guild) return;
 
   let channel, deleteMessage;
@@ -44,13 +44,13 @@ export async function call(message: Message, parts: string[]) {
     deleteMessage = message.reference.messageID;
   } else {
     if (parts.length < 2) {
-      return await message.channel.send({ embed: unknownError });
+      return void await message.channel.send({ embed: unknownError });
     }
     channel = is.discordChannel(parts[0]);
     deleteMessage = parts[1];
   }
   if (channel === undefined || deleteMessage === undefined) {
-    return await message.channel.send({ embed: unknownError });
+    return void await message.channel.send({ embed: unknownError });
   }
 
   const response = await message.channel.send({

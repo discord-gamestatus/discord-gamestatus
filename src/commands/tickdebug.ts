@@ -22,7 +22,7 @@ export const name = "tickdebug";
 export const check = isBotOwner;
 export const help = "Debug status updates`";
 
-export async function call(message: Message) {
+export async function call(message: Message): Promise<void> {
   let i = 0;
   let total = 0;
   const ticks = await asyncArray(

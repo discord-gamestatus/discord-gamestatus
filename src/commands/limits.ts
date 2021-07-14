@@ -22,7 +22,7 @@ import { EMBED_COLOR } from "../constants";
 export const name = "limits";
 export const help = "View your guild/channel limits";
 
-export async function call(message: Message) {
+export async function call(message: Message): Promise<void> {
   let user;
   if (message.channel.type === "dm" || !message.guild) {
     user = message.author;
