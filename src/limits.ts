@@ -18,9 +18,9 @@ import { Snowflake } from "discord.js-light";
 
 import { warnLog, debugLog, verboseLog } from "./debug";
 
-function nullError<T>(
+function nullError<T, E>(
   promise: Promise<T>,
-  onError?: Function
+  onError?: (reason: E) => unknown,
 ): Promise<T | null> {
   const reject = onError || debugLog;
   return new Promise(resolve => {
@@ -49,7 +49,7 @@ export async function getLimits(
   client: Client,
   user: Snowflake,
   noCache = false
-) {
+): Promise<Limit | undefined> {
   if (limitCache.has(user) && !noCache) {
     return limitCache.get(user);
   }

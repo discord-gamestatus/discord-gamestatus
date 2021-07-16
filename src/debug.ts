@@ -45,7 +45,7 @@ export const isVerbose = isFlag(DEBUG_FLAGS.VERBOSE);
 
 function logFlag(check: () => boolean, logger?: () => void) {
   const logF = logger ? logger : console.log;
-  return function <T>(this: T, ...args: any[]) {
+  return function <T>(this: T, ...args: unknown[]) {
     if (check()) logF.call(this, ...args);
   }
 }

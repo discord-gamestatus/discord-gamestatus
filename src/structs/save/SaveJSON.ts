@@ -227,7 +227,7 @@ export default class SaveJSON implements SaveInterface {
           this._requeueWhenDone = false;
         }
       })
-      .catch((...args: any[]) => {
+      .catch((...args: unknown[]) => {
         console.error(...args);
         this._saveTimer = null;
         this._saveInProgress = null;

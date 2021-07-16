@@ -25,7 +25,7 @@ export const check = combineAny(isAdmin, isDMChannel);
 export const help =
   "Output the list of games availabe, searchable with any text";
 
-export async function call(message: Message, parts: string[]) {
+export async function call(message: Message, parts: string[]): Promise<void> {
   const games = await gameList(),
     gameIterator = games.values();
   let embed = new MessageEmbed({ color: EMBED_COLOR });
