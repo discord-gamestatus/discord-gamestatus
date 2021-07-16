@@ -22,14 +22,14 @@ import { UpdateOptions } from "./UpdateOptions";
 import { FORMAT_PROPERTIES } from "../../constants";
 import { State } from "../../query";
 
-function serverFormat(string: string, server: State) {
+function serverFormat(str: string, server: State) {
   for (const prop of <[keyof State]>FORMAT_PROPERTIES) {
-    string = string.replace(
+    str = str.replace(
       new RegExp(`\\{${prop}\\}`, "gi"),
-      <any>server[prop]
+      server[prop]?.toString() || ''
     );
   }
-  return string;
+  return str;
 }
 
 const OPT_TITLE: (keyof UpdateOptions)[] = ["title", "offlineTitle"];

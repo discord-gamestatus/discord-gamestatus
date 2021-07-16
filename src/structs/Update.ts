@@ -248,11 +248,13 @@ export default class Update extends Serializable {
   }
 
   getOptions(): UpdateOptions {
-    const res: UpdateOptions = {};
+    let res: UpdateOptions = {};
     let prop: UpdateOption;
     for (prop in DEFAULT_OPTIONS) {
-      // @ts-ignore
-      res[prop] = this.getOption(prop);
+      res = {
+        [prop]: this.getOption(prop),
+        ...res,
+      };
     }
     return res;
   }

@@ -24,13 +24,6 @@ import SaveInterface, {
 import Update from "../Update";
 import { errorLog } from "../../debug";
 
-function fixStrings(values: any[]): string[] {
-  return values.map(v => {
-    if (v instanceof String) return v.toString();
-    return v;
-  });
-}
-
 export default class SavePSQL implements SaveInterface {
   private pool: Pool;
 
@@ -89,7 +82,7 @@ export default class SavePSQL implements SaveInterface {
           (guild_id, channel_id, message_id, type, ip, name, state, dots, title, offline_title, description, offline_description,\
           color, offline_color, image, offline_image, columns, max_edits, connect_update, disconnect_update) VALUES \
           ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)",
-        fixStrings([
+        [
           status.guild,
           status.channel,
           status.message,
@@ -110,7 +103,7 @@ export default class SavePSQL implements SaveInterface {
           status.options?.maxEdits,
           status.options?.connectUpdate,
           status.options?.disconnectUpdate
-        ])
+        ]
       );
       await client.query("COMMIT");
     } catch (e) {
@@ -134,7 +127,7 @@ export default class SavePSQL implements SaveInterface {
           message_id=$4, type=$5, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12,\
           color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20\
           WHERE guild_id=$1 AND channel_id=$2 and ip=$3",
-        fixStrings([
+        [
           status.guild,
           status.channel,
           status.ip,
@@ -155,7 +148,7 @@ export default class SavePSQL implements SaveInterface {
           status.options?.maxEdits,
           status.options?.connectUpdate,
           status.options?.disconnectUpdate
-        ])
+        ]
       );
       if (r.rowCount !== 1)
         throw new Error(
