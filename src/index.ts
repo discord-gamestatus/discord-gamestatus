@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 import Discord from "discord.js-light";
 import { promises as fs } from "fs";
-import { allSettled, errorWrap, isOfBaseType } from "@douile/bot-utilities";
+import { allSettled, errorWrap } from "@douile/bot-utilities";
 
 import UpdateCache from "./structs/UpdateCache";
 import Command from "./structs/Command";
@@ -41,7 +41,7 @@ const INVITE_FLAGS = [
   "EMBED_LINKS",
   "ATTACH_FILES",
   "READ_MESSAGE_HISTORY",
-  "ADD_REACTIONS"
+  "ADD_REACTIONS",
 ];
 
 const UPDATE_INTERVALS: { [key: string]: NodeJS.Timeout } = {};
@@ -60,7 +60,7 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
     status: "online",
     activity: {
       type: "WATCHING",
-      name: "always 👀"
+      name: "always 👀",
     }
   }
 };
@@ -285,7 +285,7 @@ export interface StartupConfig extends ClientConfig {
   database?: string,
   key: string,
   dblKey?: string,
-}; 
+}
 
 export default async function start(config: StartupConfig): Promise<Client> {
   setDebugFlag(
@@ -305,7 +305,7 @@ export default async function start(config: StartupConfig): Promise<Client> {
   if (config.database) {
     updateCache = new UpdateCache({
       database: config.database,
-      filename: `${__dirname}/../_save.json`
+      filename: `${__dirname}/../_save.json`,
     });
   } else {
     updateCache = new UpdateCache({ filename: `${__dirname}/../_save.json` });
@@ -327,7 +327,7 @@ export default async function start(config: StartupConfig): Promise<Client> {
     CLIENT_OPTIONS
   );
 
-  client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap<[messsage: Discord.Message], any, any, void>(onMessage));
+  client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap<[messsage: Discord.Message], unknown, unknown, void>(onMessage));
   client.on(
     Discord.Constants.Events.CLIENT_READY,
     errorWrap(async function() {
@@ -351,7 +351,7 @@ export default async function start(config: StartupConfig): Promise<Client> {
         status: "online",
         activity: {
           type: "WATCHING",
-          name: `always 👀 | ${client.config.prefix}help`
+          name: `always 👀 | ${client.config.prefix}help`,
         }
       });
     })
