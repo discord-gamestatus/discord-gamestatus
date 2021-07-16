@@ -18,7 +18,6 @@ import { promises as fs } from "fs";
 import { Collection } from "discord.js-light";
 import { isOfBaseType } from "@douile/bot-utilities";
 
-
 import SaveInterface, {
   GetOpts,
   DeleteOpts,
@@ -28,13 +27,14 @@ import SaveInterface, {
 import Update from "../Update";
 import { UpdateOptions } from "../Update/UpdateOptions";
 import Serializable from "../Serializable";
+import { State } from "../../query";
 import { infoLog, errorLog } from "../../debug";
 
 type SerializedUpdate = {
   guild?: string,
   channel?: string,
   message?: string,
-  state?: any,
+  state?: State,
   type: string,
   ip: string,
   name: string,
