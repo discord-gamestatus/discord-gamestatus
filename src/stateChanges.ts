@@ -66,7 +66,7 @@ export default function stateChanges(curState: State, prevState: State): Changes
       //res.props[key] = { old: prevState[key], new: curState[key] };
       res.props = {
         ...res.props,
-        [key]: {old: prevState[key], new: curState[key]},
+        [key]: { old: prevState[key], new: curState[key] },
       }
     }
   }
