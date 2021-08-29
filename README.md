@@ -88,7 +88,7 @@ In order to run on debian I find it easy to run as a service. Steps to setup are
 1. Create a start script to configure the bot
 ```bash
 #!/bin/sh
-node --max-old-space-size=300 --title "discord-gamestatus" ./index.js --prefix "_" --owner "293482190031945739"
+node --max-old-space-size=300 --title "discord-gamestatus" ./bin/discord-gamestatus --prefix "_" --owner "293482190031945739"
 ```
 2. Allow yourself to run the script `chmod +x start.sh` (or other script filename)
 3. Create an environment file for API keys [See here](#Configuring)

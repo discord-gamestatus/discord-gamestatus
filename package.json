@@ -20,7 +20,8 @@
     "test": "npm run lint",
     "lint": "npx eslint src --ext .ts,.js",
     "build": "rm -rf dist && npx tsc",
-    "format": "npx tsfmt -r"
+    "format": "npx tsfmt -r",
+    "start": "npm run build && node ./bin/discord-gamestatus"
   },
   "license": "GPL-3.0",
   "bugs": {
