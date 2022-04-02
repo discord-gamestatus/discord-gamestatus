@@ -1,15 +1,25 @@
-export default function LimitedNumber(min: number, max: number) {
+/*export default function LimitedNumber(min: number, max: number): unknown {
   class LN extends Number {
-    constructor(from: any) {
-      from = Number(from);
-      if (from > max) {
-        from = max;
+    constructor(from: unknown) {
+      let f = Number(from);
+      if (f > max) {
+        f = max;
       }
-      if (from < min) {
-        from = min;
+      if (f < min) {
+        f = min;
       }
-      super(from);
+      super(f);
     }
   }
   return LN;
+}*/
+
+export type LimitedNumber = (value: unknown) => number;
+export default function limitedNumber(min: number, max: number): LimitedNumber {
+  return (value: unknown): number => {
+    let f = Number(value);
+    if (f > max) f = max;
+    if (f < min) f = min;
+    return f;
+  };
 }

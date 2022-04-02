@@ -18,7 +18,8 @@ import {
   TextChannel,
   Guild,
   Message,
-  MessageEmbed
+  MessageEmbed,
+  HTTPError
 } from "discord.js-light";
 import { performance } from "perf_hooks";
 import { Type } from "gamedig";
@@ -36,6 +37,8 @@ import {
 import { generateEmbed } from "./Update/UpdateEmbed";
 import stateChanges, { Changes, PlayerChange } from "../stateChanges";
 import { query, State } from "../query";
+import { assign } from "../utils";
+
 
 export interface UpdateConstructorOptions {
   guild?: Snowflake;
@@ -66,7 +69,7 @@ export default class Update extends Serializable {
   public message: Snowflake | undefined;
   private _message: Message | undefined;
 
-  public state: any;
+  public state: Partial<State>;
 
   public type: string;
   public ip: string;
@@ -259,21 +262,22 @@ export default class Update extends Serializable {
     return res;
   }
 
-  setOption<P extends UpdateOption>(
+  setOption(
     client: Client | undefined,
-    optionName: P,
-    value: UpdateOptions[P],
+    optionName: UpdateOption,
+    value: UpdateOptions[UpdateOption],
     dontSave = false
   ): Promise<boolean> | boolean | void {
     if (!isOfBaseType(this.options, Object)) this.options = {};
     /* Use DEFAULT_OPTIONS constructors to typecast new value */
     // TODO: Add better support for setting arrays
-    let newValue: any = value;
+    let newValue: unknown = value;
     if (newValue !== null && newValue !== undefined) {
-      newValue = new (DEFAULT_OPTIONS[optionName] as any).__proto__.constructor(
+
+      newValue = Object.getPrototypeOf(DEFAULT_OPTIONS[optionName] as unknown).constructor(
         value
       );
-      if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue))
+      if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue as number))
         newValue = null;
       if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) {
         if (isOfBaseType(value, String)) {
@@ -295,15 +299,15 @@ export default class Update extends Serializable {
       if (
         !isOfBaseType(
           newValue,
-          (DEFAULT_OPTIONS[optionName] as any).__proto__.constructor
+          Object.getPrototypeOf(DEFAULT_OPTIONS[optionName] as unknown).constructor
         )
       )
         newValue = null;
     }
-    if ([DEFAULT_OPTIONS[optionName], null, undefined].includes(newValue)) {
+    if (newValue === DEFAULT_OPTIONS[optionName] || newValue === null || newValue === undefined) {
       delete this.options[optionName];
     } else {
-      this.options[optionName] = newValue;
+      assign(this.options, { [optionName]: newValue });
     }
     if (client && !dontSave && !this._dontAutoSave)
       return client.updateCache.update(this);
@@ -346,11 +350,11 @@ export default class Update extends Serializable {
     const prevState = this.state;
     const boundQuery = query.bind(client);
     const state = await boundQuery(this.type as Type, this.ip);
-    this.state = {
+    assign(this.state, {
       players: state.realPlayers ? state.realPlayers.map(v => v.name) : null,
       offline: state.offline,
       map: state.map
-    };
+    });
     if (!state.offline) this.name = state.name;
 
     const changes = stateChanges(this.state, prevState);
@@ -358,7 +362,8 @@ export default class Update extends Serializable {
     try {
       await this.sendUpdate(client, tick, state, changes);
     } catch (e) {
-      warnLog("Error sending update", e, e.stack);
+      if (e instanceof Error)
+        warnLog("Error sending update", e, e.stack);
     }
 
     const _end = performance.now();
@@ -397,19 +402,21 @@ export default class Update extends Serializable {
       try {
         await message.edit.call(message, ...args);
       } catch (e) {
-        /* Unknown channel, Missing access, Lack permission */
-        if ([10003, 50001, 50013].includes(e.code)) {
-          infoLog(`Removing ${this.ID()} for ${e.code}`);
-          await client.updateCache.delete(this); // Delete status
-          try {
-            await message.delete();
-          } catch (e) {
-            // DO NOTHING
+        if (e instanceof HTTPError) {
+          /* Unknown channel, Missing access, Lack permission */
+          if ([10003, 50001, 50013].includes(e.code)) {
+            infoLog(`Removing ${this.ID()} for ${e.code}`);
+            await client.updateCache.delete(this); // Delete status
+            try {
+              await message.delete();
+            } catch (e) {
+              // DO NOTHING
+            }
+          } else if (e.code === 10008) {
+            needsNewMessage = true;
+          } else {
+            verboseLog(`Error editing message ${message.id}`, e.code);
           }
-        } else if (e.code === 10008) {
-          needsNewMessage = true;
-        } else {
-          verboseLog(`Error editing message ${message.id}`, e.code);
         }
       }
     }
@@ -422,12 +429,14 @@ export default class Update extends Serializable {
           // Ignore Message[] here as we know will only ever send 1 message
           newMessage = (await channel.send.call(channel, ...args)) as Message;
         } catch (e) {
-          /* Unknown channel, Missing access, Lack permission */
-          if ([10003, 50001, 50013].includes(e.code)) {
-            infoLog(`Removing ${this.ID()} for ${e.code}`);
-            await client.updateCache.delete(this); // delete status
-          } else {
-            debugLog("Unable to send new update", e.code);
+          if (e instanceof HTTPError) {
+            /* Unknown channel, Missing access, Lack permission */
+            if ([10003, 50001, 50013].includes(e.code)) {
+              infoLog(`Removing ${this.ID()} for ${e.code}`);
+              await client.updateCache.delete(this); // delete status
+            } else {
+              debugLog("Unable to send new update", e.code);
+            }
           }
         }
         await this.setMessage(client, newMessage);
@@ -441,9 +450,9 @@ export default class Update extends Serializable {
     try {
       await message.delete();
     } catch (e) {
-      let code = e;
-      if ("code" in e) code = e.code;
-      verboseLog(`Unable to delete message ${message.id}`, code);
+      if (e instanceof HTTPError) {
+        verboseLog(`Unable to delete message ${message.id}`, e.code);
+      }
     }
     return message;
   }

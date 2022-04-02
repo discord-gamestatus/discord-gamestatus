@@ -17,7 +17,6 @@ import Client from "./Client";
 
 import { infoLog, warnLog, verboseLog } from "../debug";
 import SaveInterface, { GetOpts, DeleteOpts } from "./save/SaveInterface";
-import SaveJSON from "./save/SaveJSON";
 let SavePSQL: typeof import("./save/SavePSQL").default | undefined;
 import("./save/SavePSQL")
   .then(r => {
@@ -46,12 +45,6 @@ export default class UpdateCache {
     if (opts.database && SavePSQL) {
       saveInterface = new SavePSQL(opts.database);
       infoLog(`[UpdateCache] Using PSQL`);
-    } else if (opts.filename) {
-      saveInterface = new SaveJSON(opts.filename);
-      infoLog(`[UpdateCache] Using JSON "${opts.filename}"`);
-    } else {
-      saveInterface = new SaveJSON();
-      infoLog(`[UpdateCache] using JSON "./_save.json"`);
     }
     this.saveInterface = <SaveInterface>saveInterface;
   }

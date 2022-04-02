@@ -60,3 +60,12 @@ export async function asyncArray<T>(
   }
   return res;
 }
+
+
+/**
+ * Assign a property to an object
+ * https://codeutility.org/how-do-i-dynamically-assign-properties-to-an-object-in-typescript-stack-overflow/
+ */
+export function assign<T, U>(target: T, source: U): asserts target is T & U {
+  Object.assign(target, source);
+}

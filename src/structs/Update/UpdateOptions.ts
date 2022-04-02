@@ -44,18 +44,18 @@ export type UpdateOption = keyof UpdateOptions;
 
 export const DEFAULT_OPTIONS: UpdateOptions = {
   dots: ["⚪", "⚫"],
-  title: new TitleLimit("{name} server status") as string,
-  offlineTitle: new TitleLimit(`server **{name}**`) as string,
-  description: new DescriptionLimit(
+  title: TitleLimit("{name} server status"),
+  offlineTitle: TitleLimit(`server **{name}**`),
+  description: DescriptionLimit(
     "Playing {map} with {numplayers}/{maxplayers} players\nConnect with {connect}"
-  ) as string,
-  offlineDescription: new DescriptionLimit("Server is offline") as string,
-  color: new ColorLimit(0x2894c2) as number,
-  offlineColor: new ColorLimit(0xff0000) as number,
-  image: new ImageLimit("") as string,
-  offlineImage: new ImageLimit("") as string,
-  columns: new ColumnLimit(3) as number,
-  maxEdits: new EditLimit(900000) as number,
+  ),
+  offlineDescription: DescriptionLimit("Server is offline"),
+  color: ColorLimit(0x2894c2),
+  offlineColor: ColorLimit(0xff0000),
+  image: ImageLimit(""),
+  offlineImage: ImageLimit(""),
+  columns: ColumnLimit(3),
+  maxEdits: EditLimit(900000),
   connectUpdate: false,
   disconnectUpdate: false
 };

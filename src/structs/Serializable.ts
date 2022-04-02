@@ -19,7 +19,7 @@ interface JSONObject {
 }
 
 export default class Serializable {
-  serialize() {
+  serialize(): JSONObject {
     const object: JSONObject = {};
     const descriptors = Object.getOwnPropertyDescriptors(this);
     for (const name in descriptors) {
@@ -31,7 +31,7 @@ export default class Serializable {
     return object;
   }
 
-  static parse(object: any) {
+  static parse(object: unknown): Serializable {
     const result = new this();
     return Object.defineProperties(result, Object.getOwnPropertyDescriptors(object));
   }

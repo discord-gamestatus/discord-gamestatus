@@ -16,6 +16,7 @@ GNU General Public License for more details.
 import { Player } from "gamedig";
 
 import { State } from "./query";
+import { assign } from "./utils";
 
 export interface PlayerChange {
   name?: string,
@@ -59,15 +60,11 @@ export interface Changes {
 }
 
 const KEYS: (keyof Changes["props"])[] = ['offline', 'map'];
-export default function stateChanges(curState: State, prevState: State): Changes {
-  const res: Changes = { players: playerChanges(curState.players, prevState.players), props: {} };
+export default function stateChanges(curState: State | { [key: string]: unknown }, prevState: State | { [key: string]: unknown }): Changes {
+  const res: Changes = { players: playerChanges(curState.players as Player[], prevState.players as Player[]), props: {} };
   for (const key of KEYS) {
     if (curState[key] !== prevState[key]) {
-      //res.props[key] = { old: prevState[key], new: curState[key] };
-      res.props = {
-        ...res.props,
-        [key]: { old: prevState[key], new: curState[key] },
-      }
+      assign(res.props, { [key]: { old: prevState[key], new: curState[key] } });
     }
   }
   return res;
