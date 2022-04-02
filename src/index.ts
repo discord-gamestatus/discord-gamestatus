@@ -24,6 +24,7 @@ import Message from "./structs/Message";
 import Update from "./structs/Update";
 import { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } from "./debug";
 import { getLimits, Limit } from "./limits";
+import { startDBLApiHook } from "./dblapi";
 
 let TICK_GENERATOR: AsyncGenerator<Update[]> | undefined = undefined;
 let TICK_LIMITS: Counters | undefined = undefined;
@@ -397,7 +398,7 @@ export default async function start(config: StartupConfig): Promise<Client> {
   });
 
   if (config.dblKey && config.dblKey.length > 0) {
-    require("./dblapi.js")(client, config.dblKey);
+    startDBLApiHook(client, config.dblKey);
   }
   await client.login(config.key);
   return client;
