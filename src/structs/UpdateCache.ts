@@ -17,14 +17,7 @@ import Client from "./Client";
 
 import { infoLog, warnLog, verboseLog } from "../debug";
 import SaveInterface, { GetOpts, DeleteOpts } from "./save/SaveInterface";
-let SavePSQL: typeof import("./save/SavePSQL").default | undefined;
-import("./save/SavePSQL")
-  .then(r => {
-    SavePSQL = r.default;
-  })
-  .catch(() => {
-    infoLog('[UpdateCache] "pg" is not installed, databases are not enabled');
-  });
+import SavePSQL from "./save/SavePSQL";
 
 import Update from "./Update";
 import { getLimits } from "../limits";
@@ -50,6 +43,7 @@ export default class UpdateCache {
   }
 
   async load(): Promise<void> {
+    if (!this.saveInterface) throw new Error('No Save interface has been initialized');
     await this.saveInterface.load();
   }
 
