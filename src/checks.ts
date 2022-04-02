@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,14 +21,14 @@ export type Check = (message: Message) => boolean;
 
 export function isAdmin(message: Message): boolean {
   if (!message.member) return false;
-  return message.member.hasPermission(
+  return message.member.permissions.has(
     message.client.config.adminFlag as PermissionResolvable
   );
 }
 
 export function isOwner(message: Message): boolean {
   if (!message.guild) return false;
-  return message.guild.ownerID === message.author.id;
+  return message.guild.ownerId === message.author.id;
 }
 
 export function isBotOwner(message: Message): boolean {
@@ -36,7 +36,7 @@ export function isBotOwner(message: Message): boolean {
 }
 
 export function isDMChannel(message: Message): boolean {
-  return message.channel.type === "dm";
+  return message.channel.type === "DM";
 }
 
 export function combineAll(...checks: Check[]): Check {

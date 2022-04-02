@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,15 +24,15 @@ export const help = "View your guild/channel limits";
 
 export async function call(message: Message): Promise<void> {
   let user;
-  if (message.channel.type === "dm" || !message.guild) {
+  if (message.channel.type === "DM" || !message.guild) {
     user = message.author;
   } else {
-    const guild = await message.client.guilds.fetch(message.guild);
-    user = await message.client.users.fetch(guild.ownerID);
+    const guild = await message.client.guilds.fetch(message.guild.id);
+    user = await message.client.users.fetch(guild.ownerId);
   }
   const limits = await getLimits(message.client, user.id, true);
-  await message.channel.send(
-    new MessageEmbed({
+  await message.channel.send({
+    embeds: [new MessageEmbed({
       author: {
         name: user.username,
         iconURL: user.displayAvatarURL()
@@ -43,6 +43,6 @@ export async function call(message: Message): Promise<void> {
         })
         : [],
       color: EMBED_COLOR
-    })
-  );
+    })],
+  });
 }

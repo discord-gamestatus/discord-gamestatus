@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,8 +14,6 @@ GNU General Public License for more details.
 */
 
 import { MessageEmbed } from "discord.js-light";
-
-import { isOfBaseType } from "@douile/bot-utilities";
 
 import Message from "../structs/Message";
 import { EMBED_COLOR } from "../constants";
@@ -31,8 +29,8 @@ export const name = "help";
 export async function call(message: Message, parts: string[]): Promise<void> {
   const search = parts.map(s => new RegExp(s, "gi"));
   if (search.length === 0) {
-    await message.channel.send(
-      new MessageEmbed({
+    await message.channel.send({
+      embeds: [new MessageEmbed({
         title: "Help",
         color: EMBED_COLOR,
         description: Array.from(message.client.commands.entries())
@@ -44,11 +42,11 @@ export async function call(message: Message, parts: string[]): Promise<void> {
         footer: {
           text: `Use "${message.client.config.prefix}help commandName" for detailed help`
         }
-      })
-    );
+      })],
+    });
   } else {
-    await message.channel.send(
-      new MessageEmbed({
+    await message.channel.send({
+      embeds: [new MessageEmbed({
         title: "Help",
         color: EMBED_COLOR,
         fields: Array.from(message.client.commands.entries())
@@ -61,13 +59,13 @@ export async function call(message: Message, parts: string[]): Promise<void> {
           .map(cmd => {
             return {
               name: `${message.client.config.prefix}${cmd[0]}`,
-              value: isOfBaseType(cmd[1].help, String)
+              value: typeof cmd[1].help === "string"
                 ? cmd[1].help
                 : "No help message provided",
               inline: false
             };
           })
-      })
-    );
+      })],
+    });
   }
 }

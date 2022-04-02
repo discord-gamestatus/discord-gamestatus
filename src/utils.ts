@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,9 +15,9 @@ GNU General Public License for more details.
 
 import { is } from "@douile/bot-utilities";
 
-import { Channel, Message } from "discord.js-light";
+import { Message, TextBasedChannel } from "discord.js-light";
 
-export async function channelFirstArg(message: Message, args: string[]): Promise<Channel | undefined> {
+export async function channelFirstArg(message: Message, args: string[]): Promise<TextBasedChannel | undefined> {
   if (args.length > 0) {
     const channelArg = is.discordChannel(args[0]);
     if (channelArg) {
@@ -30,14 +30,14 @@ export async function channelFirstArg(message: Message, args: string[]): Promise
       }
       if (channelFetch) {
         args.splice(0, 1);
-        return channelFetch;
+        return channelFetch as TextBasedChannel;
       } else {
         await message.channel.send({
-          embed: {
+          embeds: [{
             title: "Could not find specified channel",
             description: `Couldn't find <#${channelArg}>`,
             color: 0xff0000
-          }
+          }],
         });
         return undefined;
       }

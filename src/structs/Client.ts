@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2021 Douile
+Copyright (C) 2021-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ export default class Client extends Discord.Client {
     updateCache: UpdateCache,
     commands: Map<string, Command>,
     config: ClientConfig,
-    options?: Discord.ClientOptions
+    options: Discord.ClientOptions
   ) {
     super(options);
     this.updateCache = updateCache;

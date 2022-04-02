@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,25 +36,25 @@ export async function call(message: Message, parts: string[]): Promise<void> {
 
   let channel, deleteMessage;
   if (
-    message.reference?.channelID &&
-    message.reference?.guildID &&
-    message.reference?.messageID
+    message.reference?.channelId &&
+    message.reference?.guildId &&
+    message.reference?.messageId
   ) {
-    channel = message.reference.channelID;
-    deleteMessage = message.reference.messageID;
+    channel = message.reference.channelId;
+    deleteMessage = message.reference.messageId;
   } else {
     if (parts.length < 2) {
-      return void await message.channel.send({ embed: unknownError });
+      return void await message.channel.send({ embeds: [unknownError] });
     }
     channel = is.discordChannel(parts[0]);
     deleteMessage = parts[1];
   }
   if (channel === undefined || deleteMessage === undefined) {
-    return void await message.channel.send({ embed: unknownError });
+    return void await message.channel.send({ embeds: [unknownError] });
   }
 
   const response = await message.channel.send({
-    embed: { title: "Removing status message", color: EMBED_COLOR }
+    embeds: [{ title: "Removing status message", color: EMBED_COLOR }],
   });
 
   const success = await message.client.updateCache.delete({
@@ -71,19 +71,19 @@ export async function call(message: Message, parts: string[]): Promise<void> {
       // DO NOTHING
     }
     await response.edit({
-      embed: {
+      embeds: [{
         title: "Done",
         description: "The status message has been removed",
         color: EMBED_COLOR
-      }
+      }],
     });
   } else {
     await response.edit({
-      embed: {
+      embeds: [{
         title: "Error",
         description: "Unable to remove the status message",
         color: 0xff0000
-      }
+      }],
     });
   }
 }

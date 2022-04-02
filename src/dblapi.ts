@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,6 +26,11 @@ interface DBLInfo {
   currentTimeout: NodeJS.Timeout | null,
 }
 
+interface DBLError {
+  error: string,
+  'retry-after': number | undefined,
+}
+
 const DBL_INFO: DBLInfo = {
   lastUpdate: 0,
   currentTimeout: null,
@@ -46,8 +51,8 @@ async function sendDBLUpdateRequest(client: Client, key: string) {
     })
   });
   if (res.status === 429) {
-    const data = await res.json();
-    DBL_INFO.lastUpdate = Date.now() + data['retry-after'];
+    const data = await res.json() as DBLError;
+    DBL_INFO.lastUpdate = Date.now() + Number(data['retry-after']);
     if (isNaN(DBL_INFO.lastUpdate)) DBL_INFO.lastUpdate = Date.now() + 0x36ee80;
     return sendDBLUpdate(client, key)();
   } else if (!res.ok) {

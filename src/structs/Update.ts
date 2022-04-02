@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@ GNU General Public License for more details.
 import {
   Snowflake,
   TextChannel,
-  Guild,
   Message,
-  MessageEmbed,
-  HTTPError
+  HTTPError,
 } from "discord.js-light";
+import { Guild } from "discord.js";
 import { performance } from "perf_hooks";
 import { Type } from "gamedig";
 
@@ -148,7 +147,7 @@ export default class Update extends Serializable {
       return this._channel;
     }
     return guild && this.channel
-      ? guild.channels.forge(this.channel)
+      ? guild.channels.forge(this.channel, "GUILD_TEXT")
       : undefined;
   }
 
@@ -385,22 +384,24 @@ export default class Update extends Serializable {
     if (this.getOption("disconnectUpdate"))
       changesToSend = changesToSend.concat(changes.players.disconnect);
 
-    const args: [string, MessageEmbed] = [
-      changesToSend.length > 0
-        ? changesToSend
-          .map(v => v.msg)
-          .join("\n")
-          .substring(0, 500)
-        : "",
-      embed
-    ];
+    const messageData = {
+      content: "",
+      embeds: [embed],
+    };
+    if (changesToSend.length > 0) {
+      messageData.content = changesToSend
+        .map(v => v.msg)
+        .join("\n")
+        .substring(0, 500);
+
+    }
 
     const message = await this.getMessage(client);
     let needsNewMessage = true;
     if (message) {
       needsNewMessage = false;
       try {
-        await message.edit.call(message, ...args);
+        await message.edit(messageData);
       } catch (e) {
         if (e instanceof HTTPError) {
           /* Unknown channel, Missing access, Lack permission */
@@ -427,7 +428,7 @@ export default class Update extends Serializable {
         let newMessage: Message | undefined = undefined;
         try {
           // Ignore Message[] here as we know will only ever send 1 message
-          newMessage = (await channel.send.call(channel, ...args)) as Message;
+          newMessage = (await channel.send(messageData)) as Message;
         } catch (e) {
           if (e instanceof HTTPError) {
             /* Unknown channel, Missing access, Lack permission */

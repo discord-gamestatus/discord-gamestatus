@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   const embeds = [];
   let embedI = 0;
 
-  embed.setFooter(++embedI);
+  embed.setFooter((++embedI).toString());
   let field = "",
     key = gameIterator.next(),
     count = 0;
@@ -61,7 +61,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
         if (embedSize + field.length + 3 > 6000) {
           embeds.push(embed);
           embed = new MessageEmbed({ color: EMBED_COLOR });
-          embed.setFooter(++embedI);
+          embed.setFooter((++embedI).toString());
           embedSize = 100;
         }
         embed.addField("_ _", field, false);
@@ -76,6 +76,6 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   if (field.length > 0) embed.addField("_ _", field);
   for (const e of embeds.concat(embed)) {
     e.setTitle(`${count} Available games`);
-    await message.channel.send(e);
+    await message.channel.send({ embeds: [e] });
   }
 }

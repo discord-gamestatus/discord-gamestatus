@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2020-2021 Douile
+Copyright (C) 2020-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,12 +35,12 @@ export async function call(message: Message): Promise<void> {
     })
     .join("\n");
   await message.channel.send({
-    embed: {
+    embeds: [{
       title: `Ticks: ${message.client.config.tickCount}`,
       description: `Total updates: ${total}\nAverage updates per tick: ${Math.round(
         (total / i) * 1e3
       ) / 1e3}\n\`\`\`\n${tickList}\`\`\``,
       color: EMBED_COLOR
-    }
+    }],
   });
 }

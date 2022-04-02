@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -74,7 +74,8 @@ export async function generateEmbed(
     switch (image.type) {
       case "buffer": {
         const name = `image.${image.dataType}`;
-        embed.attachFiles([new MessageAttachment(image.buffer, name)]);
+        // FIXME: Actually add files
+        // embed.attachFiles([new MessageAttachment(image.buffer, name)]);
         embedImage = `attachment://${name}`;
         break;
       }

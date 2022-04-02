@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ export async function getLimits(
     const guild = await nullError(client.guilds.fetch(guildID), warnLog);
     if (guild === null) continue;
     const member = await nullError(
-      guild.members.fetch(user, { rest: true, cache: false, force: true }),
+      guild.members.fetch({ user, cache: false, force: true }),
       verboseLog
     );
     if (member === null) continue;

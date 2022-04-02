@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2021 Douile
+Copyright (C) 2021-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,20 +47,20 @@ export async function call(message: Message): Promise<void> {
 
   if (statuses.length === 0) {
     return void await message.channel.send({
-      embed: {
+      embeds: [{
         title: "Error",
         description: `No statuses in the channel <#${channel.id}>`,
         color: 0xff0000
-      }
+      }],
     });
   }
 
   const res = await message.channel.send({
-    embed: {
+    embeds: [{
       title: "Working...",
       description: `Refreshing ${statuses.length} updates`,
       color: EMBED_COLOR
-    }
+    }],
   });
 
   for (const status of statuses) {
@@ -69,10 +69,10 @@ export async function call(message: Message): Promise<void> {
   }
 
   await res.edit({
-    embed: {
+    embeds: [{
       title: "Done",
       description: `Refreshed ${statuses.length} updates`,
       color: EMBED_COLOR
-    }
+    }],
   });
 }

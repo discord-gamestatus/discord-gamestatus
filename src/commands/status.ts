@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
 
   // Check channel permissions
   const channel: TextChannel = (await message.client.channels.fetch(
-    message.channel
+    message.channel.id
   )) as TextChannel;
   const updateCache = message.client.updateCache;
 

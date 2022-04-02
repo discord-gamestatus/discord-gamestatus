@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -97,29 +97,29 @@ export async function call(message: Message): Promise<void> {
           }
         }
 
-        await message.channel.send(
-          new MessageEmbed({
+        await message.channel.send({
+          embeds: [new MessageEmbed({
             title: `#${index}`,
             description: statusIdentity(status),
             fields: options,
             timestamp: Date.now(),
             color: EMBED_COLOR
-          })
-        );
+          })],
+        });
       } else if (args.length === 2) {
         await status.deleteOption(
           message.client,
           args[1] as keyof UpdateOptions
         );
-        await message.channel.send(
-          new MessageEmbed({
+        await message.channel.send({
+          embeds: [new MessageEmbed({
             title: `#${index}`,
             description: `${statusIdentity(status)}\nReset: \`${args[1]
               }\`\n${WARNING}`,
             timestamp: Date.now(),
             color: EMBED_COLOR
-          })
-        );
+          })],
+        });
       } else {
         const value = args.splice(2).join(" ");
         let error;
@@ -134,8 +134,8 @@ export async function call(message: Message): Promise<void> {
           console.error("Error setting option", error);
         }
 
-        await message.channel.send(
-          new MessageEmbed({
+        await message.channel.send({
+          embeds: [new MessageEmbed({
             title: `#${index}`,
             description: `${statusIdentity(status)}\nSet: \`${args[1]
               }=${status.getOption(
@@ -143,8 +143,8 @@ export async function call(message: Message): Promise<void> {
               )}\`\n${WARNING}`,
             timestamp: Date.now(),
             color: EMBED_COLOR
-          })
-        );
+          })],
+        });
       }
     } else {
       if (statuses.length === 0) {
@@ -166,13 +166,13 @@ export async function call(message: Message): Promise<void> {
         inline: false
       };
     });
-    await message.channel.send(
-      new MessageEmbed({
+    await message.channel.send({
+      embeds: [new MessageEmbed({
         title: `${fields.length} Active statuses`,
         fields: fields,
         timestamp: Date.now(),
         color: EMBED_COLOR
-      })
-    );
+      })],
+    });
   }
 }

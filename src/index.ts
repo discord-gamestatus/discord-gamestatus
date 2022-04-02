@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,22 +47,38 @@ const INVITE_FLAGS = [
 const UPDATE_INTERVALS: { [key: string]: NodeJS.Timeout } = {};
 
 const CLIENT_OPTIONS: Discord.ClientOptions = {
-  cacheGuilds: true,
-  cacheChannels: false,
-  cacheOverwrites: false,
-  cacheRoles: true,
-  cacheEmojis: false,
-  cachePresences: false,
-  messageCacheMaxSize: 0,
-  disableMentions: "everyone",
+  makeCache: Discord.Options.cacheWithLimits({
+    ApplicationCommandManager: 0,
+    BaseGuildEmojiManager: 0,
+    ChannelManager: 0,
+    GuildChannelManager: 0,
+    GuildBanManager: 0,
+    GuildInviteManager: 0,
+    GuildManager: Infinity,
+    GuildMemberManager: 0,
+    GuildStickerManager: 0,
+    GuildScheduledEventManager: 0,
+    MessageManager: 0,
+    PermissionOverwriteManager: 0,
+    PresenceManager: 0,
+    ReactionManager: 0,
+    ReactionUserManager: 0,
+    RoleManager: Infinity,
+    StageInstanceManager: 0,
+    ThreadManager: 0,
+    ThreadMemberManager: 0,
+    UserManager: 0,
+    VoiceStateManager: 0,
+  }),
   restTimeOffset: 1000,
   presence: {
     status: "online",
-    activity: {
+    activities: [{
       type: "WATCHING",
       name: "always 👀",
-    }
-  }
+    }],
+  },
+  intents: Discord.Intents.FLAGS.GUILDS | Discord.Intents.FLAGS.GUILD_MESSAGES | Discord.Intents.FLAGS.GUILD_MEMBERS,
 };
 
 const DEFAULT_CONFIG: ClientConfig = {
@@ -120,16 +136,16 @@ async function loadAdditionalConfigs(config: ClientConfig) {
 }
 
 function startIntervals(client: Client) {
-  stopIntervals(client);
+  stopIntervals();
 
-  UPDATE_INTERVALS.tick = client.setInterval(() => {
+  UPDATE_INTERVALS.tick = setInterval(() => {
     client.emit(TICK_EVENT);
   }, client.config.tickTime);
 }
 
-function stopIntervals(client: Client) {
+function stopIntervals() {
   for (const key in UPDATE_INTERVALS) {
-    client.clearInterval(UPDATE_INTERVALS[key]);
+    clearInterval(UPDATE_INTERVALS[key]);
     delete UPDATE_INTERVALS[key];
   }
 }
@@ -254,7 +270,7 @@ async function checkTickLimits(
     counter = {
       guildCount: 0,
       channelCount: {},
-      limits: (await getLimits(client, guild.ownerID)) as Limit
+      limits: (await getLimits(client, guild.ownerId)) as Limit
     };
   } else {
     counter = counters.get(update.guild);
@@ -332,27 +348,30 @@ export default async function start(config: StartupConfig): Promise<Client> {
     Discord.Constants.Events.CLIENT_READY,
     errorWrap(async function() {
       infoLog(`Logged in ${client.user?.username} [${client.user?.id}]...`);
-      const invite = await client.generateInvite({
+      const invite = client.generateInvite({
+        scopes: ["bot"],
         permissions: <Discord.PermissionString[]>INVITE_FLAGS
       });
       infoLog(`Invite link ${invite}`);
       startIntervals(client);
       if (client.config.owner === undefined) {
-        const application = await client.fetchApplication();
-        if (application.owner instanceof Discord.User) {
-          client.config.owner = application.owner.id;
-        } else if (application.owner instanceof Discord.Team) {
-          client.config.owner =
-            application.owner.ownerID || application.owner.id;
+        const application = await client.application?.fetch();
+        if (application) {
+          if (application.owner instanceof Discord.User) {
+            client.config.owner = application.owner.id;
+          } else if (application.owner instanceof Discord.Team) {
+            client.config.owner =
+              application.owner.ownerId || application.owner.id;
+          }
         }
         infoLog("No owner override set, bot owner is", client.config.owner);
       }
-      await client.user?.setPresence({
+      client.user?.setPresence({
         status: "online",
-        activity: {
+        activities: [{
           type: "WATCHING",
           name: `always 👀 | ${client.config.prefix}help`,
-        }
+        }],
       });
     })
   );
@@ -363,15 +382,15 @@ export default async function start(config: StartupConfig): Promise<Client> {
   client.on(Discord.Constants.Events.DEBUG, verboseLog);
   client.on(Discord.Constants.Events.WARN, verboseLog);
   client.on(Discord.Constants.Events.ERROR, debugLog);
-  client.on(Discord.Constants.Events.DISCONNECT, closeEvent => {
-    stopIntervals(client);
+  client.on(Discord.Constants.Events.SHARD_DISCONNECT, closeEvent => {
+    // stopIntervals();
     verboseLog("[NETWORK] Disconnected from discord API", closeEvent);
   });
-  client.on(Discord.Constants.Events.RECONNECTING, () => {
+  client.on(Discord.Constants.Events.SHARD_RECONNECTING, () => {
     verboseLog("[NETWORK] Attempting to reconnect to discord API");
   });
-  client.on(Discord.Constants.Events.RESUMED, replayed => {
-    startIntervals(client);
+  client.on(Discord.Constants.Events.SHARD_RESUME, replayed => {
+    // startIntervals(client);
     verboseLog(
       `[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`
     );
