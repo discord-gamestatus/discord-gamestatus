@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Discord, {Collection} from "discord.js-light";
+import Discord, {Collection, DiscordAPIError} from "discord.js-light";
 import { promises as fs } from "fs";
 import { allSettled, errorWrap } from "@douile/bot-utilities";
 
@@ -252,7 +252,16 @@ async function doUpdate(
         await u.deleteMessage(client);
         debugLog(`Deleted obselete update ${u.ID()}`);
       } else {
-        if (await checkTickLimits(client, u, counters)) {
+        let passesLimits = true;
+        try {
+          passesLimits = await checkTickLimits(client, u, counters);
+        } catch(e) {
+          if (e instanceof DiscordAPIError) {
+            // If not allowed to access guild
+            if (e.code === 50001) passesLimits = false;
+          }
+        }
+        if (passesLimits) {
           await u.send(client, tick);
         } else {
           await client.updateCache.delete(u);
