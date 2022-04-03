@@ -393,7 +393,7 @@ export default class Update extends Serializable {
       changesToSend = changesToSend.concat(changes.players.disconnect);
 
     const messageData = {
-      content: "",
+      content: "_ _",
       embeds: [embed],
     };
     if (changesToSend.length > 0) {
