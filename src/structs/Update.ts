@@ -459,7 +459,7 @@ export default class Update extends Serializable {
     try {
       await message.delete();
     } catch (e) {
-      if (e instanceof HTTPError) {
+      if (e instanceof DiscordAPIError) {
         verboseLog(`Unable to delete message ${message.id}`, e.code);
       }
     }
