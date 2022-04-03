@@ -38,8 +38,8 @@ export async function call(message: Message): Promise<void> {
         iconURL: user.displayAvatarURL()
       },
       fields: limits
-        ? Object.entries(limits).map(e => {
-          return { name: e[0], value: e[1], inline: true };
+        ? Object.entries(limits).map(([name, value]) => {
+          return { name, value: String(value), inline: true };
         })
         : [],
       color: EMBED_COLOR
