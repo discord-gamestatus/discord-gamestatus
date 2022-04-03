@@ -58,7 +58,7 @@ async function sendDBLUpdateRequest(client: Client, key: string) {
   } else if (!res.ok) {
     throw new Error(`DBL api returned error code ${res.status} ${res.statusText}`);
   }
-  verboseLog(`Successfully update DBL (server count: ${servers})`);
+  verboseLog(`[DBL] Successfully update DBL (server count: ${servers})`);
 }
 
 const sendDBLUpdate = function(client: Client, key: string) {
@@ -85,5 +85,5 @@ export function startDBLApiHook(client: Client, key: string): void {
   client.on('guildCreate', sendUpdate);
   client.on('guildDelete', sendUpdate);
 
-  debugLog('Successfully setup DBL API hook');
+  debugLog('[DBL] Successfully setup DBL API hook');
 }

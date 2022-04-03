@@ -70,5 +70,5 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   }
   await updateCache.create(update);
   update._dontAutoSave = false;
-  verboseLog(`Created update ${update.ID()}`);
+  verboseLog(`[C/status] Created update ${update.ID()}`);
 }

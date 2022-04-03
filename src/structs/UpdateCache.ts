@@ -34,7 +34,7 @@ export default class UpdateCache {
   constructor(opts: UpdateCacheOptions) {
     let saveInterface: SaveInterface | undefined;
     if (opts.database && !SavePSQL)
-      warnLog(`Not using database "${opts.database}" as "pg" is not installed`);
+      warnLog(`[UpdateCache] Not using database "${opts.database}" as "pg" is not installed`);
     if (opts.database && SavePSQL) {
       saveInterface = new SavePSQL(opts.database);
       infoLog(`[UpdateCache] Using PSQL`);

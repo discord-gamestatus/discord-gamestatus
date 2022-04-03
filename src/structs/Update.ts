@@ -169,7 +169,6 @@ export default class Update extends Serializable {
             ? await channel.messages.fetch(this.message)
             : undefined;
       } catch (e) {
-        verboseLog(e);
         return undefined;
       }
       return this._message;
@@ -367,9 +366,9 @@ export default class Update extends Serializable {
       await this.sendUpdate(client, tick, state, changes);
     } catch (e) {
       if (e instanceof Error)
-        warnLog("Error sending update", e, e.stack);
+        warnLog("[Update] Error sending update", e, e.stack);
       else
-        warnLog("Error sending update", e);
+        warnLog("[Update] Error sending update", e);
     }
 
     const _end = performance.now();
@@ -413,7 +412,7 @@ export default class Update extends Serializable {
         if (e instanceof DiscordAPIError) {
           /* Unknown channel, Missing access, Lack permission */
           if ([10003, 50001, 50013].includes(e.code)) {
-            infoLog(`Removing ${this.ID()} for ${e.code}`);
+            infoLog(`[Update] Removing ${this.ID()} for ${e.code}`);
             await client.updateCache.delete(this); // Delete status
             try {
               await message.delete();
@@ -423,7 +422,7 @@ export default class Update extends Serializable {
           } else if (e.code === 10008) {
             needsNewMessage = true;
           } else {
-            verboseLog(`Error editing message ${message.id}`, e.code);
+            verboseLog(`[Update] Error editing message ${message.id} ${e.code}`, e);
           }
         }
       }
@@ -439,13 +438,13 @@ export default class Update extends Serializable {
           if (e instanceof DiscordAPIError) {
             /* Unknown channel, Missing access, Lack permission */
             if ([10003, 50001, 50013].includes(e.code)) {
-              infoLog(`Removing ${this.ID()} for ${e.code}`);
+              infoLog(`[Update] Removing ${this.ID()} for ${e.code}`);
               await client.updateCache.delete(this); // delete status
             } else {
-              debugLog("Unable to send new update", e.code);
+              debugLog("[Update] Unable to send new update", e.code);
             }
           } else {
-            debugLog("Unable to send new update", e);
+            debugLog("[Update] Unable to send new update", e);
           }
         }
         await this.setMessage(client, newMessage);
@@ -460,7 +459,7 @@ export default class Update extends Serializable {
       await message.delete();
     } catch (e) {
       if (e instanceof DiscordAPIError) {
-        verboseLog(`Unable to delete message ${message.id}`, e.code);
+        verboseLog(`[Update] Unable to delete message ${message.id}`, e.code);
       }
     }
     return message;
