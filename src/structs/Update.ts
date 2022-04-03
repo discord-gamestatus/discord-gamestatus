@@ -127,7 +127,11 @@ export default class Update extends Serializable {
     if (this._guild) return this._guild;
     if (dontForge) {
       this._guild = this.guild
-        ? await client.guilds.fetch(this.guild)
+        ? await client.guilds.fetch({ 
+          cache: true,
+          guild: this.guild,
+          withCounts: false,
+        })
         : undefined;
       return this._guild;
     }
