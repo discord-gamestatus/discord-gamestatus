@@ -45,6 +45,7 @@ export interface UpdateConstructorOptions {
   message?: Snowflake;
   type: string;
   ip: string;
+  name: string;
   options?: UpdateOptions;
 }
 
@@ -75,7 +76,7 @@ export default class Update extends Serializable {
   public name: string;
   public options: UpdateOptions = {};
 
-  constructor(opts: UpdateConstructorOptions, objs?: UpdateConstructorObjects) {
+  constructor(opts?: UpdateConstructorOptions, objs?: UpdateConstructorObjects) {
     super();
 
     this._deleted = false;
@@ -83,14 +84,14 @@ export default class Update extends Serializable {
     this._dontAutoSave = false;
 
     /* Serializable.parse will not provide opts */
-    this.guild = opts.guild;
-    this.channel = opts.channel;
-    this.message = opts.message;
+    this.guild = opts?.guild;
+    this.channel = opts?.channel;
+    this.message = opts?.message;
     this.state = {};
-    this.type = opts.type;
-    this.ip = opts.ip;
-    this.name = opts.ip;
-    this.options = opts.options || {};
+    this.type = opts?.type || 'Error';
+    this.ip = opts?.ip || 'Error';
+    this.name = opts?.name || 'Error';
+    this.options = opts?.options || {};
 
     if (objs) {
       this._guild = objs.guild;
