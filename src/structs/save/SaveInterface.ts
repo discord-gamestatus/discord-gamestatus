@@ -29,14 +29,14 @@ export interface DeleteOpts {
 }
 
 export interface Selector {
-  key: "ip" | "message";
+  key: "ip" | "message_id";
   value: string;
 }
 
 export function eitherSelector(update: Update | DeleteOpts): Selector {
   if (update.ip !== undefined) return { key: "ip", value: update.ip };
   if (update.message !== undefined)
-    return { key: "message", value: update.message };
+    return { key: "message_id", value: update.message };
   throw new Error(`Not enough identifiers for ${update}`);
 }
 
