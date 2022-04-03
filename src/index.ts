@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Discord, {Collection, DiscordAPIError} from "discord.js-light";
+import Discord, { Collection, DiscordAPIError } from "discord.js-light";
 import { promises as fs } from "fs";
 import { allSettled, errorWrap } from "@douile/bot-utilities";
 
@@ -255,7 +255,7 @@ async function doUpdate(
         let passesLimits = true;
         try {
           passesLimits = await checkTickLimits(client, u, counters);
-        } catch(e) {
+        } catch (e) {
           verboseLog(e);
           if (e instanceof DiscordAPIError) {
             // If not allowed to access guild
