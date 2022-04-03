@@ -368,6 +368,8 @@ export default class Update extends Serializable {
     } catch (e) {
       if (e instanceof Error)
         warnLog("Error sending update", e, e.stack);
+      else
+        warnLog("Error sending update", e);
     }
 
     const _end = performance.now();
