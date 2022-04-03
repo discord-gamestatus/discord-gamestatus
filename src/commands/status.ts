@@ -19,6 +19,7 @@ import Message from "../structs/Message";
 import Update from "../structs/Update";
 import { isAdmin } from "../checks";
 import { isValidGame } from "../query";
+import { verboseLog } from "../debug";
 
 export const name = "status";
 export const check = isAdmin;
@@ -38,9 +39,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
     );
 
   // Check channel permissions
-  const channel: TextChannel = (await message.client.channels.fetch(
-    message.channel.id
-  )) as TextChannel;
+  const channel = message.channel;
   const updateCache = message.client.updateCache;
 
   const update = new Update(
@@ -71,4 +70,5 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   }
   await updateCache.create(update);
   update._dontAutoSave = false;
+  verboseLog(`Created update ${update.ID()}`);
 }
