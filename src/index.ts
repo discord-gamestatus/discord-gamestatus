@@ -377,7 +377,9 @@ export default async function start(config: StartupConfig): Promise<Client> {
     })
   );
 
-  client.on(TICK_EVENT, errorWrap(onTick(client)));
+  client.on(TICK_EVENT, errorWrap(onTick(client), (e: Error) => {
+    verboseLog('Encountered error during tick handler', e.stack);
+  }));
 
   client.on(Discord.Constants.Events.RATE_LIMIT, verboseLog);
   client.on(Discord.Constants.Events.DEBUG, verboseLog);
