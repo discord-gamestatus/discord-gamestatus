@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -141,7 +141,6 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
     state.connect = parseConnect(state.connect, protocol);
     state.map = parseMap(state.map, protocol);
   } catch (e) {
-    verboseLog(e);
     state = {
       name: 'OFFLINE',
       map: 'OFFLINE',
