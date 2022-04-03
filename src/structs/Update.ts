@@ -18,6 +18,7 @@ import {
   TextChannel,
   Message,
   HTTPError,
+  DiscordAPIError,
 } from "discord.js-light";
 import { Guild } from "discord.js";
 import { performance } from "perf_hooks";
@@ -434,10 +435,9 @@ export default class Update extends Serializable {
       if (channel) {
         let newMessage: Message | undefined = undefined;
         try {
-          // Ignore Message[] here as we know will only ever send 1 message
-          newMessage = (await channel.send(messageData)) as Message;
+          newMessage = await channel.send(messageData);
         } catch (e) {
-          if (e instanceof HTTPError) {
+          if (e instanceof DiscordAPIError) {
             /* Unknown channel, Missing access, Lack permission */
             if ([10003, 50001, 50013].includes(e.code)) {
               infoLog(`Removing ${this.ID()} for ${e.code}`);
@@ -445,6 +445,8 @@ export default class Update extends Serializable {
             } else {
               debugLog("Unable to send new update", e.code);
             }
+          } else {
+            debugLog("Unable to send new update", e);
           }
         }
         await this.setMessage(client, newMessage);
