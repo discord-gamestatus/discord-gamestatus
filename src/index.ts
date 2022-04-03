@@ -58,7 +58,7 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
     GuildManager: Infinity,
     GuildMemberManager: {
       maxSize: 0,
-      keepOverLimit: (value) => (value.client as Client).config.limitRules.hasOwnProperty(value.guild.id),
+      keepOverLimit: (value) => Object.prototype.hasOwnProperty.call((value.client as Client).config.limitRules, value.guild.id),
     },
     GuildStickerManager: 0,
     GuildScheduledEventManager: 0,
