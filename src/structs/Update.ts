@@ -17,7 +17,6 @@ import {
   Snowflake,
   TextChannel,
   Message,
-  HTTPError,
   DiscordAPIError,
 } from "discord.js-light";
 import { Guild } from "discord.js";
@@ -411,7 +410,7 @@ export default class Update extends Serializable {
       try {
         await message.edit(messageData);
       } catch (e) {
-        if (e instanceof HTTPError) {
+        if (e instanceof DiscordAPIError) {
           /* Unknown channel, Missing access, Lack permission */
           if ([10003, 50001, 50013].includes(e.code)) {
             infoLog(`Removing ${this.ID()} for ${e.code}`);
