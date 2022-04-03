@@ -18,7 +18,6 @@ const GameResolver = require('gamedig/lib/GameResolver.js');
 
 import { markdownEscape } from '@douile/bot-utilities';
 
-import { verboseLog } from './debug';
 import Client from './structs/Client';
 
 export type Game = {
@@ -50,18 +49,18 @@ function getResolver() {
   return resolver;
 }
 
-type ImageResolver = (this: Client, state: State) => Promise<Image | undefined>;
+type ImageResolver = (client: Client, state: State) => Promise<Image | undefined>;
 type ImageResolvers = {
   [name: string]: ImageResolver,
 }
 
 const IMAGE: ImageResolvers = {
-  fivem: async function(this: Client, state: State): Promise<ImageBuffer | undefined> {
-    const info = (state?.raw as { info?: { icon: string | undefined } }).info;
+  fivem: async function(client: Client, state: State): Promise<ImageBuffer | undefined> {
+    const info = (state?.raw as { info?: { icon: string | undefined } })?.info;
     return info?.icon ? { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' } || undefined : undefined;
   },
-  discord: async function(this: Client, state: State): Promise<ImageUrl | undefined> {
-    const guild = this.guilds.resolve(state.gameHost);
+  discord: async function(client: Client, state: State): Promise<ImageUrl | undefined> {
+    const guild = client.guilds.resolve(state.gameHost);
     if (!guild) return;
     const iconURL = guild.iconURL();
     return iconURL ? { url: iconURL, type: 'url' } : undefined;
@@ -159,7 +158,7 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
   }
 
   if (queryType in IMAGE) {
-    state.image = await IMAGE[queryType].call(this, state);
+    state.image = await IMAGE[queryType](this, state);
   }
 
   return state;
