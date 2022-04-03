@@ -45,7 +45,7 @@ export interface UpdateConstructorOptions {
   message?: Snowflake;
   type: string;
   ip: string;
-  name: string;
+  name?: string;
   options?: UpdateOptions;
 }
 
