@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Discord from "discord.js-light";
+import Discord, {Collection} from "discord.js-light";
 import { promises as fs } from "fs";
 import { allSettled, errorWrap } from "@douile/bot-utilities";
 
@@ -51,16 +51,19 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
   makeCache: Discord.Options.cacheWithLimits({
     ApplicationCommandManager: 0,
     BaseGuildEmojiManager: 0,
-    ChannelManager: 0,
-    GuildChannelManager: 0,
+    ChannelManager: Infinity,
+    GuildChannelManager: Infinity,
     GuildBanManager: 0,
     GuildInviteManager: 0,
     GuildManager: Infinity,
-    GuildMemberManager: 0,
+    GuildMemberManager: {
+      maxSize: 0,
+      keepOverLimit: (value) => (value.client as Client).config.limitRules.hasOwnProperty(value.guild.id),
+    },
     GuildStickerManager: 0,
     GuildScheduledEventManager: 0,
     MessageManager: 0,
-    PermissionOverwriteManager: 0,
+    PermissionOverwriteManager: Infinity,
     PresenceManager: 0,
     ReactionManager: 0,
     ReactionUserManager: 0,
@@ -80,6 +83,10 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
     }],
   },
   intents: Discord.Intents.FLAGS.GUILDS | Discord.Intents.FLAGS.GUILD_MESSAGES,
+  invalidRequestWarningInterval: 1,
+  partials: ["USER", "GUILD_MEMBER", "MESSAGE"],
+  restGlobalRateLimit: 50, // Don't exceed discord's current rate limit
+  retryLimit: 5,
 };
 
 const DEFAULT_CONFIG: ClientConfig = {
