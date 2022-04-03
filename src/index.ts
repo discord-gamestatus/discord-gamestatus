@@ -259,7 +259,7 @@ async function doUpdate(
           verboseLog(e);
           if (e instanceof DiscordAPIError) {
             // If not allowed to access guild
-            if (e.code === 50001) passesLimits = false;
+            if (e.code === 50001 || e.code === 10004) passesLimits = false;
           }
         }
         if (passesLimits) {
