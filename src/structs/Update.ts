@@ -373,7 +373,7 @@ export default class Update extends Serializable {
     }
 
     const _end = performance.now();
-    verboseLog(`Update completed in ${_end - _start}ms`);
+    verboseLog(`[Update] Completed "${this.ID()}" in ${_end - _start}ms`);
     return state;
   }
 
