@@ -82,9 +82,8 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
       name: "always 👀",
     }],
   },
-  intents: Discord.Intents.FLAGS.GUILDS | Discord.Intents.FLAGS.GUILD_MESSAGES,
+  intents: Discord.Intents.FLAGS.GUILDS | Discord.Intents.FLAGS.GUILD_MESSAGES | Discord.Intents.FLAGS.DIRECT_MESSAGES,
   invalidRequestWarningInterval: 1,
-  partials: ["USER", "GUILD_MEMBER", "MESSAGE"],
   restGlobalRateLimit: 50, // Don't exceed discord's current rate limit
   retryLimit: 5,
 };
