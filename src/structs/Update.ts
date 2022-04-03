@@ -395,11 +395,12 @@ export default class Update extends Serializable {
       embeds: [embed],
     };
     if (changesToSend.length > 0) {
-      messageData.content = changesToSend
+      const changeString = changesToSend
         .map(v => v.msg)
         .join("\n")
         .substring(0, 500);
-
+      if (changeString.length > 0)
+        messageData.content = changeString;
     }
 
     const message = await this.getMessage(client);
