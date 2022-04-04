@@ -57,7 +57,7 @@ type ImageResolvers = {
 
 const IMAGE: ImageResolvers = {
   fivem: async function(_: Client, state: State): Promise<ImageBuffer | undefined> {
-    const info = (state?.raw as { info?: )?.info as { icon?: string } | undefined;
+    const info = (state?.raw as { info?: unknown })?.info as { icon?: string } | undefined;
     if (info && info.icon) {
       return { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' };
     }
