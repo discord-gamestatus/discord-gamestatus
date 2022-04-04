@@ -32,17 +32,19 @@ export async function call(message: Message): Promise<void> {
   }
   const limits = await getLimits(message.client, user.id, true);
   await message.channel.send({
-    embeds: [new MessageEmbed({
-      author: {
-        name: user.username,
-        iconURL: user.displayAvatarURL()
-      },
-      fields: limits
-        ? Object.entries(limits).map(([name, value]) => {
-          return { name, value: String(value), inline: true };
-        })
-        : [],
-      color: EMBED_COLOR
-    })],
+    embeds: [
+      new MessageEmbed({
+        author: {
+          name: user.username,
+          iconURL: user.displayAvatarURL(),
+        },
+        fields: limits
+          ? Object.entries(limits).map(([name, value]) => {
+              return { name, value: String(value), inline: true };
+            })
+          : [],
+        color: EMBED_COLOR,
+      }),
+    ],
   });
 }

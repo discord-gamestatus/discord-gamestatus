@@ -13,10 +13,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Discord from 'discord.js-light';
+import Discord from "discord.js-light";
 
-import Client from './Client';
+import Client from "./Client";
 
 export default interface Message extends Discord.Message {
-  client: Client,
+  client: Client;
 }

@@ -58,7 +58,11 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
     GuildManager: Infinity,
     GuildMemberManager: {
       maxSize: 0,
-      keepOverLimit: (value) => Object.prototype.hasOwnProperty.call((value.client as Client).config.limitRules, value.guild.id),
+      keepOverLimit: (value) =>
+        Object.prototype.hasOwnProperty.call(
+          (value.client as Client).config.limitRules,
+          value.guild.id
+        ),
     },
     GuildStickerManager: 0,
     GuildScheduledEventManager: 0,
@@ -77,12 +81,17 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
   restTimeOffset: 1000,
   presence: {
     status: "online",
-    activities: [{
-      type: "WATCHING",
-      name: "always 👀",
-    }],
+    activities: [
+      {
+        type: "WATCHING",
+        name: "always 👀",
+      },
+    ],
   },
-  intents: Discord.Intents.FLAGS.GUILDS | Discord.Intents.FLAGS.GUILD_MESSAGES | Discord.Intents.FLAGS.DIRECT_MESSAGES,
+  intents:
+    Discord.Intents.FLAGS.GUILDS |
+    Discord.Intents.FLAGS.GUILD_MESSAGES |
+    Discord.Intents.FLAGS.DIRECT_MESSAGES,
   invalidRequestWarningInterval: 1,
   restGlobalRateLimit: 50, // Don't exceed discord's current rate limit
   retryLimit: 5,
@@ -98,7 +107,7 @@ const DEFAULT_CONFIG: ClientConfig = {
   guildLimit: undefined,
   allowDuplicates: false,
   supportServer: undefined,
-  limitRules: {}
+  limitRules: {},
 };
 
 interface Counter {
@@ -120,9 +129,9 @@ async function loadCommands(commands: Map<string, Command>) {
 }
 
 function readJSONOrEmpty(fileName: string) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     fs.readFile(fileName, { encoding: "utf-8" })
-      .then(content => {
+      .then((content) => {
         let data = {};
         try {
           data = JSON.parse(content);
@@ -138,7 +147,9 @@ function readJSONOrEmpty(fileName: string) {
 }
 
 async function loadAdditionalConfigs(config: ClientConfig) {
-  config.limitRules = await readJSONOrEmpty(`${__dirname}/../limit-rules.json`) as ClientConfig["limitRules"];
+  config.limitRules = (await readJSONOrEmpty(
+    `${__dirname}/../limit-rules.json`
+  )) as ClientConfig["limitRules"];
   verboseLog("Limit rules", config.limitRules);
 }
 
@@ -170,17 +181,14 @@ async function onMessage(oMessage: Discord.Message) {
     .substr(message.client.config.prefix.length)
     .split(" ");
   if (parts.length === 0) return;
-  const command = parts
-    .splice(0, 1)[0]
-    .trim()
-    .toLowerCase();
+  const command = parts.splice(0, 1)[0].trim().toLowerCase();
 
   const cmd = message.client.commands.get(command);
   if (cmd) {
     debugLog(
-      `[Command] ${message.author.username} [${message.author.id}] :: ${command} / ${parts
-        .map(v => `"${v}"`)
-        .join(", ")}`
+      `[Command] ${message.author.username} [${
+        message.author.id
+      }] :: ${command} / ${parts.map((v) => `"${v}"`).join(", ")}`
     );
 
     if (!(cmd.check instanceof Function) || cmd.check(message)) {
@@ -203,7 +211,7 @@ async function onMessage(oMessage: Discord.Message) {
   verboseLog(`Unkown command ${command}`);
 }
 function onTick(client: Client) {
-  return async function() {
+  return async function () {
     if (TICK_GENERATOR === undefined)
       TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
     if (TICK_LIMITS === undefined) TICK_LIMITS = new Map();
@@ -242,7 +250,7 @@ async function doUpdate(
 ) {
   if (!Array.isArray(update)) update = [update];
   await Promise.all(
-    update.map(async u => {
+    update.map(async (u) => {
       if (u._deleted) {
         verboseLog(`Skipping updating [${u.ID()}]: already deleted`);
         return;
@@ -287,7 +295,7 @@ async function checkTickLimits(
     counter = {
       guildCount: 0,
       channelCount: {},
-      limits: (await getLimits(client, guild.ownerId)) as Limit
+      limits: (await getLimits(client, guild.ownerId)) as Limit,
     };
   } else {
     counter = counters.get(update.guild);
@@ -303,21 +311,25 @@ async function checkTickLimits(
   }
 
   counters.set(update.guild, counter);
-  if (counter.guildCount > (counter.limits.guildLimit || Infinity)) return false;
-  if (counter.channelCount[update.channel] > (counter.limits.channelLimit || Infinity))
+  if (counter.guildCount > (counter.limits.guildLimit || Infinity))
+    return false;
+  if (
+    counter.channelCount[update.channel] >
+    (counter.limits.channelLimit || Infinity)
+  )
     return false;
   return true;
 }
 
 export interface StartupConfig extends ClientConfig {
-  error: boolean,
-  warn: boolean,
-  info: boolean,
-  debug: boolean,
-  verbose: boolean,
-  database?: string,
-  key: string,
-  dblKey?: string,
+  error: boolean;
+  warn: boolean;
+  info: boolean;
+  debug: boolean;
+  verbose: boolean;
+  database?: string;
+  key: string;
+  dblKey?: string;
 }
 
 export default async function start(config: StartupConfig): Promise<Client> {
@@ -360,14 +372,17 @@ export default async function start(config: StartupConfig): Promise<Client> {
     CLIENT_OPTIONS
   );
 
-  client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap<[messsage: Discord.Message], unknown, unknown, void>(onMessage));
+  client.on(
+    Discord.Constants.Events.MESSAGE_CREATE,
+    errorWrap<[messsage: Discord.Message], unknown, unknown, void>(onMessage)
+  );
   client.on(
     Discord.Constants.Events.CLIENT_READY,
-    errorWrap(async function() {
+    errorWrap(async function () {
       infoLog(`Logged in ${client.user?.username} [${client.user?.id}]...`);
       const invite = client.generateInvite({
         scopes: ["bot"],
-        permissions: <Discord.PermissionString[]>INVITE_FLAGS
+        permissions: <Discord.PermissionString[]>INVITE_FLAGS,
       });
       infoLog(`Invite link ${invite}`);
       startIntervals(client);
@@ -385,30 +400,35 @@ export default async function start(config: StartupConfig): Promise<Client> {
       }
       client.user?.setPresence({
         status: "online",
-        activities: [{
-          type: "WATCHING",
-          name: `always 👀 | ${client.config.prefix}help`,
-        }],
+        activities: [
+          {
+            type: "WATCHING",
+            name: `always 👀 | ${client.config.prefix}help`,
+          },
+        ],
       });
     })
   );
 
-  client.on(TICK_EVENT, errorWrap(onTick(client), (e: Error) => {
-    verboseLog('Encountered error during tick handler', e.stack);
-  }));
+  client.on(
+    TICK_EVENT,
+    errorWrap(onTick(client), (e: Error) => {
+      verboseLog("Encountered error during tick handler", e.stack);
+    })
+  );
 
   client.on(Discord.Constants.Events.RATE_LIMIT, verboseLog);
   client.on(Discord.Constants.Events.DEBUG, verboseLog);
   client.on(Discord.Constants.Events.WARN, verboseLog);
   client.on(Discord.Constants.Events.ERROR, debugLog);
-  client.on(Discord.Constants.Events.SHARD_DISCONNECT, closeEvent => {
+  client.on(Discord.Constants.Events.SHARD_DISCONNECT, (closeEvent) => {
     // stopIntervals();
     verboseLog("[NETWORK] Disconnected from discord API", closeEvent);
   });
   client.on(Discord.Constants.Events.SHARD_RECONNECTING, () => {
     verboseLog("[NETWORK] Attempting to reconnect to discord API");
   });
-  client.on(Discord.Constants.Events.SHARD_RESUME, replayed => {
+  client.on(Discord.Constants.Events.SHARD_RESUME, (replayed) => {
     // startIntervals(client);
     verboseLog(
       `[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`

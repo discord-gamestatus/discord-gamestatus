@@ -17,7 +17,10 @@ import { is } from "@douile/bot-utilities";
 
 import { Message, TextBasedChannel } from "discord.js-light";
 
-export async function channelFirstArg(message: Message, args: string[]): Promise<TextBasedChannel | undefined> {
+export async function channelFirstArg(
+  message: Message,
+  args: string[]
+): Promise<TextBasedChannel | undefined> {
   if (args.length > 0) {
     const channelArg = is.discordChannel(args[0]);
     if (channelArg) {
@@ -33,11 +36,13 @@ export async function channelFirstArg(message: Message, args: string[]): Promise
         return channelFetch as TextBasedChannel;
       } else {
         await message.channel.send({
-          embeds: [{
-            title: "Could not find specified channel",
-            description: `Couldn't find <#${channelArg}>`,
-            color: 0xff0000
-          }],
+          embeds: [
+            {
+              title: "Could not find specified channel",
+              description: `Couldn't find <#${channelArg}>`,
+              color: 0xff0000,
+            },
+          ],
         });
         return undefined;
       }
@@ -60,7 +65,6 @@ export async function asyncArray<T>(
   }
   return res;
 }
-
 
 /**
  * Assign a property to an object

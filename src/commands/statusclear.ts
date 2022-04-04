@@ -36,7 +36,7 @@ export async function call(message: Message, args: string[]): Promise<void> {
 
   const updates = await message.client.updateCache.get({
     channel: channel.id,
-    guild: channel.guild.id
+    guild: channel.guild.id,
   });
   for (const update of updates) {
     const msg = await update.getMessage(message.client);
@@ -51,7 +51,7 @@ export async function call(message: Message, args: string[]): Promise<void> {
 
   const count = await message.client.updateCache.delete({
     guild: channel?.guild?.id,
-    channel: channel?.id
+    channel: channel?.id,
   });
   await response.edit(`${count} Status updates have been cleared`);
 }

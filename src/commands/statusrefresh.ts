@@ -37,7 +37,7 @@ export async function call(message: Message): Promise<void> {
 
   let statuses = await message.client.updateCache.get({
     channel: channel.id,
-    guild: channel.guild.id
+    guild: channel.guild.id,
   });
   if (statuses === undefined) {
     statuses = [];
@@ -46,21 +46,25 @@ export async function call(message: Message): Promise<void> {
   }
 
   if (statuses.length === 0) {
-    return void await message.channel.send({
-      embeds: [{
-        title: "Error",
-        description: `No statuses in the channel <#${channel.id}>`,
-        color: 0xff0000
-      }],
-    });
+    return void (await message.channel.send({
+      embeds: [
+        {
+          title: "Error",
+          description: `No statuses in the channel <#${channel.id}>`,
+          color: 0xff0000,
+        },
+      ],
+    }));
   }
 
   const res = await message.channel.send({
-    embeds: [{
-      title: "Working...",
-      description: `Refreshing ${statuses.length} updates`,
-      color: EMBED_COLOR
-    }],
+    embeds: [
+      {
+        title: "Working...",
+        description: `Refreshing ${statuses.length} updates`,
+        color: EMBED_COLOR,
+      },
+    ],
   });
 
   for (const status of statuses) {
@@ -69,10 +73,12 @@ export async function call(message: Message): Promise<void> {
   }
 
   await res.edit({
-    embeds: [{
-      title: "Done",
-      description: `Refreshed ${statuses.length} updates`,
-      color: EMBED_COLOR
-    }],
+    embeds: [
+      {
+        title: "Done",
+        description: `Refreshed ${statuses.length} updates`,
+        color: EMBED_COLOR,
+      },
+    ],
   });
 }

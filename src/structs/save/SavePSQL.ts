@@ -19,7 +19,7 @@ import SaveInterface, {
   GetOpts,
   DeleteOpts,
   eitherSelector,
-  Selector
+  Selector,
 } from "./SaveInterface";
 import Update from "../Update";
 import { errorLog } from "../../debug";
@@ -68,7 +68,7 @@ export default class SavePSQL implements SaveInterface {
     );
     client.release();
 
-    return query.rows.map(item => SavePSQL.rowToUpdate(item));
+    return query.rows.map((item) => SavePSQL.rowToUpdate(item));
   }
 
   async create(status: Update): Promise<boolean> {
@@ -102,7 +102,7 @@ export default class SavePSQL implements SaveInterface {
           status.options?.columns,
           status.options?.maxEdits,
           status.options?.connectUpdate,
-          status.options?.disconnectUpdate
+          status.options?.disconnectUpdate,
         ]
       );
       await client.query("COMMIT");
@@ -147,7 +147,7 @@ export default class SavePSQL implements SaveInterface {
           status.options?.columns,
           status.options?.maxEdits,
           status.options?.connectUpdate,
-          status.options?.disconnectUpdate
+          status.options?.disconnectUpdate,
         ]
       );
       if (r.rowCount !== 1)
@@ -240,7 +240,7 @@ export default class SavePSQL implements SaveInterface {
 
     const res: { [id: string]: Update[] } = {};
 
-    query.rows.forEach(item => {
+    query.rows.forEach((item) => {
       let channel: Update[] = [];
       if (item.channel in res) {
         channel = res[item.channel];
@@ -274,8 +274,8 @@ export default class SavePSQL implements SaveInterface {
         columns: row.columns,
         maxEdits: row.max_edits,
         connectUpdate: row.connect_update,
-        disconnectUpdate: row.disconnect_update
-      }
+        disconnectUpdate: row.disconnect_update,
+      },
     }) as Update;
   }
 }

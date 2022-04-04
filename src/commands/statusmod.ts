@@ -23,29 +23,27 @@ import { EMBED_COLOR, FORMAT_PROPERTIES } from "../constants";
 
 const WARNING =
   "_Changes will not take effect until after the status has updated_";
-const OPTION_LAYOUT: readonly (
-  | keyof UpdateOptions
-  | "spacer"
-)[] = Object.freeze([
-  "title",
-  "offlineTitle",
-  "spacer",
-  "description",
-  "offlineDescription",
-  "spacer",
-  "color",
-  "offlineColor",
-  "spacer",
-  "image",
-  "offlineImage",
-  "spacer",
-  "connectUpdate",
-  "disconnectUpdate",
-  "spacer",
-  "columns",
-  "maxEdits",
-  "dots"
-]);
+const OPTION_LAYOUT: readonly (keyof UpdateOptions | "spacer")[] =
+  Object.freeze([
+    "title",
+    "offlineTitle",
+    "spacer",
+    "description",
+    "offlineDescription",
+    "spacer",
+    "color",
+    "offlineColor",
+    "spacer",
+    "image",
+    "offlineImage",
+    "spacer",
+    "connectUpdate",
+    "disconnectUpdate",
+    "spacer",
+    "columns",
+    "maxEdits",
+    "dots",
+  ]);
 
 function statusIdentity(status: Update) {
   return `${status.name} [\`${status.ip}\`] <${status.messageLink()}>`;
@@ -60,9 +58,9 @@ export const help = `Modify status messages in the guild.\nUse cases:\n\
   - Set config option \`statusmod ID option value\` (e.g. \`!statusmod 0 title Playing {map}\`)\n\
   Options will automatically be converted to the same type as seen when getting status options, this means for numbers you can do things like \`0xffe\` or \`2e3\`\n\
   When changing the title or description of an embed you can include formattable options that will be replaced with a value e.g. \`{validplayers}\` will be replaced with the number of players displayed in the embed\n\
-  Full list of formattables: ${FORMAT_PROPERTIES.map(p => `\`{${p}}\``).join(
-  ", "
-)}`;
+  Full list of formattables: ${FORMAT_PROPERTIES.map((p) => `\`{${p}}\``).join(
+    ", "
+  )}`;
 
 export async function call(message: Message): Promise<void> {
   const args = message.content.split(" ").splice(1);
@@ -70,7 +68,7 @@ export async function call(message: Message): Promise<void> {
   if (!message.guild) return;
 
   let statuses = await message.client.updateCache.get({
-    guild: message.guild.id
+    guild: message.guild.id,
   });
   if (statuses === undefined) {
     statuses = [];
@@ -92,19 +90,21 @@ export async function call(message: Message): Promise<void> {
             options.push({
               name: fieldName,
               value: `\`\`\`json\n${JSON.stringify(opts[fieldName])}\n\`\`\``,
-              inline: true
+              inline: true,
             });
           }
         }
 
         await message.channel.send({
-          embeds: [new MessageEmbed({
-            title: `#${index}`,
-            description: statusIdentity(status),
-            fields: options,
-            timestamp: Date.now(),
-            color: EMBED_COLOR
-          })],
+          embeds: [
+            new MessageEmbed({
+              title: `#${index}`,
+              description: statusIdentity(status),
+              fields: options,
+              timestamp: Date.now(),
+              color: EMBED_COLOR,
+            }),
+          ],
         });
       } else if (args.length === 2) {
         await status.deleteOption(
@@ -112,13 +112,16 @@ export async function call(message: Message): Promise<void> {
           args[1] as keyof UpdateOptions
         );
         await message.channel.send({
-          embeds: [new MessageEmbed({
-            title: `#${index}`,
-            description: `${statusIdentity(status)}\nReset: \`${args[1]
+          embeds: [
+            new MessageEmbed({
+              title: `#${index}`,
+              description: `${statusIdentity(status)}\nReset: \`${
+                args[1]
               }\`\n${WARNING}`,
-            timestamp: Date.now(),
-            color: EMBED_COLOR
-          })],
+              timestamp: Date.now(),
+              color: EMBED_COLOR,
+            }),
+          ],
         });
       } else {
         const value = args.splice(2).join(" ");
@@ -135,15 +138,18 @@ export async function call(message: Message): Promise<void> {
         }
 
         await message.channel.send({
-          embeds: [new MessageEmbed({
-            title: `#${index}`,
-            description: `${statusIdentity(status)}\nSet: \`${args[1]
+          embeds: [
+            new MessageEmbed({
+              title: `#${index}`,
+              description: `${statusIdentity(status)}\nSet: \`${
+                args[1]
               }=${status.getOption(
                 args[1] as keyof UpdateOptions
               )}\`\n${WARNING}`,
-            timestamp: Date.now(),
-            color: EMBED_COLOR
-          })],
+              timestamp: Date.now(),
+              color: EMBED_COLOR,
+            }),
+          ],
         });
       }
     } else {
@@ -153,8 +159,9 @@ export async function call(message: Message): Promise<void> {
         );
       } else {
         await message.channel.send(
-          `Please enter a valid status ID (between 0 and ${statuses.length -
-          1})`
+          `Please enter a valid status ID (between 0 and ${
+            statuses.length - 1
+          })`
         );
       }
     }
@@ -163,16 +170,18 @@ export async function call(message: Message): Promise<void> {
       return {
         name: `#${i}`,
         value: statusIdentity(status),
-        inline: false
+        inline: false,
       };
     });
     await message.channel.send({
-      embeds: [new MessageEmbed({
-        title: `${fields.length} Active statuses`,
-        fields: fields,
-        timestamp: Date.now(),
-        color: EMBED_COLOR
-      })],
+      embeds: [
+        new MessageEmbed({
+          title: `${fields.length} Active statuses`,
+          fields: fields,
+          timestamp: Date.now(),
+          color: EMBED_COLOR,
+        }),
+      ],
     });
   }
 }

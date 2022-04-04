@@ -23,8 +23,15 @@ export enum DEBUG_FLAGS {
   VERBOSE = 1 << 4,
 }
 
-export function setDebugFlag(error: boolean, warn: boolean, info: boolean, debug: boolean, verbose: boolean): void {
-  DEBUG_FLAG = (error ? DEBUG_FLAGS.ERROR : 0) |
+export function setDebugFlag(
+  error: boolean,
+  warn: boolean,
+  info: boolean,
+  debug: boolean,
+  verbose: boolean
+): void {
+  DEBUG_FLAG =
+    (error ? DEBUG_FLAGS.ERROR : 0) |
     (warn ? DEBUG_FLAGS.WARN : 0) |
     (info ? DEBUG_FLAGS.INFO : 0) |
     (debug ? DEBUG_FLAGS.DEBUG : 0) |
@@ -32,9 +39,9 @@ export function setDebugFlag(error: boolean, warn: boolean, info: boolean, debug
 }
 
 function isFlag(flag: number) {
-  return function() {
+  return function () {
     return (DEBUG_FLAG & flag) === flag;
-  }
+  };
 }
 
 export const isError = isFlag(DEBUG_FLAGS.ERROR);
@@ -47,7 +54,7 @@ function logFlag(check: () => boolean, logger?: () => void) {
   const logF = logger ? logger : console.log;
   return function <T>(this: T, ...args: unknown[]) {
     if (check()) logF.call(this, ...args);
-  }
+  };
 }
 
 export const errorLog = logFlag(isError, console.error);

@@ -29,18 +29,20 @@ export async function call(message: Message): Promise<void> {
     message.client.updateCache.tickIterable(message.client.config.tickCount)
   );
   const tickList = Array.from(ticks)
-    .map(tick => {
+    .map((tick) => {
       total += tick.length;
       return `${i++}: ${tick.length}`;
     })
     .join("\n");
   await message.channel.send({
-    embeds: [{
-      title: `Ticks: ${message.client.config.tickCount}`,
-      description: `Total updates: ${total}\nAverage updates per tick: ${Math.round(
-        (total / i) * 1e3
-      ) / 1e3}\n\`\`\`\n${tickList}\`\`\``,
-      color: EMBED_COLOR
-    }],
+    embeds: [
+      {
+        title: `Ticks: ${message.client.config.tickCount}`,
+        description: `Total updates: ${total}\nAverage updates per tick: ${
+          Math.round((total / i) * 1e3) / 1e3
+        }\n\`\`\`\n${tickList}\`\`\``,
+        color: EMBED_COLOR,
+      },
+    ],
   });
 }

@@ -1,15 +1,17 @@
-import { isOfBaseType, truncateString } from '@douile/bot-utilities';
-
+import { isOfBaseType, truncateString } from "@douile/bot-utilities";
 
 export type LimitedString = (value: unknown) => string;
 
-export default function limitedString(maxLength: number, ending?: string): LimitedString {
-  return function(value: unknown) {
+export default function limitedString(
+  maxLength: number,
+  ending?: string
+): LimitedString {
+  return function (value: unknown) {
     if (isOfBaseType(value, String)) {
       return truncateString(value as string, maxLength, ending);
     }
     return truncateString(String(value), maxLength, ending);
-  }
+  };
 }
 
 /*

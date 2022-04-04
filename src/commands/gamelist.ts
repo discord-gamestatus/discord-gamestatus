@@ -37,7 +37,8 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   let field = "",
     key = gameIterator.next(),
     count = 0;
-  const regex = parts.length > 0 ? parts.map(s => new RegExp(s, "i")) : undefined;
+  const regex =
+    parts.length > 0 ? parts.map((s) => new RegExp(s, "i")) : undefined;
 
   while (!key.done) {
     const game = key.value;
@@ -55,7 +56,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
     }
     if (match) {
       const value = `${game.pretty} = ${game.keys
-        .map(v => `\`${v}\``)
+        .map((v) => `\`${v}\``)
         .join(", ")}\n`;
       if (field.length + value.length > 1024) {
         if (embedSize + field.length + 3 > 6000) {

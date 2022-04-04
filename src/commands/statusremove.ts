@@ -23,7 +23,7 @@ const unknownError = Object.freeze({
   title: "Error",
   description:
     "You must provide a channel ID and message ID, or reply to a status\ne.g. `!statusremove #channel 788958200251299504`",
-  color: 0xff0000
+  color: 0xff0000,
 });
 
 export const name = "statusremove";
@@ -44,13 +44,13 @@ export async function call(message: Message, parts: string[]): Promise<void> {
     deleteMessage = message.reference.messageId;
   } else {
     if (parts.length < 2) {
-      return void await message.channel.send({ embeds: [unknownError] });
+      return void (await message.channel.send({ embeds: [unknownError] }));
     }
     channel = is.discordChannel(parts[0]);
     deleteMessage = parts[1];
   }
   if (channel === undefined || deleteMessage === undefined) {
-    return void await message.channel.send({ embeds: [unknownError] });
+    return void (await message.channel.send({ embeds: [unknownError] }));
   }
 
   const response = await message.channel.send({
@@ -60,7 +60,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   const success = await message.client.updateCache.delete({
     guild: message.guild.id,
     channel,
-    message: deleteMessage
+    message: deleteMessage,
   });
 
   if (success > 0) {
@@ -71,19 +71,23 @@ export async function call(message: Message, parts: string[]): Promise<void> {
       // DO NOTHING
     }
     await response.edit({
-      embeds: [{
-        title: "Done",
-        description: "The status message has been removed",
-        color: EMBED_COLOR
-      }],
+      embeds: [
+        {
+          title: "Done",
+          description: "The status message has been removed",
+          color: EMBED_COLOR,
+        },
+      ],
     });
   } else {
     await response.edit({
-      embeds: [{
-        title: "Error",
-        description: "Unable to remove the status message",
-        color: 0xff0000
-      }],
+      embeds: [
+        {
+          title: "Error",
+          description: "Unable to remove the status message",
+          color: 0xff0000,
+        },
+      ],
     });
   }
 }

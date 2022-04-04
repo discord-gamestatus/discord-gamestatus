@@ -27,16 +27,17 @@ export const help =
   "Create a status message, you must provide game and IP\ne.g. `!status csgo 192.168.0.1`";
 
 export async function call(message: Message, parts: string[]): Promise<void> {
-  parts = parts.filter(s => s.length > 0);
+  parts = parts.filter((s) => s.length > 0);
   if (parts.length < 2)
-    return void await message.channel.send(
-      `You must provide a game type (view and search the gamelist with \`${message.client.config.prefix
+    return void (await message.channel.send(
+      `You must provide a game type (view and search the gamelist with \`${
+        message.client.config.prefix
       }gamelist\`) and IP instead of \`${parts.join(" ")}\``
-    );
+    ));
   if (!isValidGame(parts[0]))
-    return void await message.channel.send(
+    return void (await message.channel.send(
       `\`${parts[0]}\` is not a valid game please check \`${message.client.config.prefix}gamelist\``
-    );
+    ));
 
   // Check channel permissions
   const channel = message.channel;
@@ -45,7 +46,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   const update = new Update(
     {
       type: parts[0],
-      ip: parts[1]
+      ip: parts[1],
     },
     { channel: channel as TextChannel }
   );

@@ -57,5 +57,5 @@ export const DEFAULT_OPTIONS: UpdateOptions = {
   columns: ColumnLimit(3),
   maxEdits: EditLimit(900000),
   connectUpdate: false,
-  disconnectUpdate: false
+  disconnectUpdate: false,
 };

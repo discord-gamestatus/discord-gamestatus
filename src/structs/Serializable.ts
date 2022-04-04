@@ -23,8 +23,14 @@ export default class Serializable {
     const object: JSONObject = {};
     const descriptors = Object.getOwnPropertyDescriptors(this);
     for (const name in descriptors) {
-      const descriptor = descriptors[name], type = typeof descriptor.value;
-      if (descriptor.enumerable && type !== 'function' && type !== 'undefined' && !name.startsWith('_')) {
+      const descriptor = descriptors[name],
+        type = typeof descriptor.value;
+      if (
+        descriptor.enumerable &&
+        type !== "function" &&
+        type !== "undefined" &&
+        !name.startsWith("_")
+      ) {
         object[name] = descriptor.value;
       }
     }
@@ -33,7 +39,10 @@ export default class Serializable {
 
   static parse(object: unknown): Serializable {
     const result = new this();
-    return Object.defineProperties(result, Object.getOwnPropertyDescriptors(object));
+    return Object.defineProperties(
+      result,
+      Object.getOwnPropertyDescriptors(object)
+    );
   }
 
   serializeJson(): string {

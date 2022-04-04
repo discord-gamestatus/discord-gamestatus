@@ -16,7 +16,7 @@ GNU General Public License for more details.
 import { MessageEmbed } from "discord.js-light";
 
 // import * as Package from '../../package.json';
-const Package = require('../../package.json');
+const Package = require("../../package.json");
 import { humanDuration } from "@douile/bot-utilities";
 
 import Message from "../structs/Message";
@@ -33,14 +33,15 @@ export async function call(message: Message): Promise<void> {
     supportLink = `[Join the support server](${client.config.supportServer})\n`;
   }
 
-  const description = `[${Package.name} v${Package.version}](${Package.homepage
-    }) [Report bugs here](${Package.bugs.url})\n${supportLink}\
+  const description = `[${Package.name} v${Package.version}](${
+    Package.homepage
+  }) [Report bugs here](${Package.bugs.url})\n${supportLink}\
 Average ping: ${Math.round(client.ws.ping * 10) / 10}ms\n\
 Uptime: ${humanDuration(client.uptime || 0, 1000)}\n\
 Working in ${client.guilds.cache.size} guilds\n\
 Memory usage: ${Math.round(memoryUsage.heapUsed / 1024)}kb/${Math.round(
-      memoryUsage.heapTotal / 1024
-    )}kb\n\
+    memoryUsage.heapTotal / 1024
+  )}kb\n\
 **Dependencies**\n\
 [NodeJS ${process.version}](https://nodejs.org)\n\
 [discord.js-light](https://github.com/timotejroiko/discord.js-light)\n\
@@ -48,11 +49,13 @@ Memory usage: ${Math.round(memoryUsage.heapUsed / 1024)}kb/${Math.round(
 [gamedig](https://github.com/gamedig/node-gamedig)`;
 
   await message.channel.send({
-    embeds: [new MessageEmbed({
-      title: `${Package.name} info`,
-      description,
-      timestamp: Date.now(),
-      color: EMBED_COLOR
-    })],
+    embeds: [
+      new MessageEmbed({
+        title: `${Package.name} info`,
+        description,
+        timestamp: Date.now(),
+        color: EMBED_COLOR,
+      }),
+    ],
   });
 }

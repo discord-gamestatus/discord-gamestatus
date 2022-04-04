@@ -13,34 +13,34 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import GameDig from 'gamedig';
-const GameResolver = require('gamedig/lib/GameResolver.js');
+import GameDig from "gamedig";
+const GameResolver = require("gamedig/lib/GameResolver.js");
 
-import { markdownEscape } from '@douile/bot-utilities';
+import { markdownEscape } from "@douile/bot-utilities";
 
-import Client from './structs/Client';
-import { verboseLog } from './debug';
+import Client from "./structs/Client";
+import { verboseLog } from "./debug";
 
 export type Game = {
-  keys: string[],
-  pretty: string,
+  keys: string[];
+  pretty: string;
   options: {
-    protocol: string,
-    port?: number,
-    port_query?: number,
-    port_query_offset?: number,
-  },
+    protocol: string;
+    port?: number;
+    port_query?: number;
+    port_query_offset?: number;
+  };
   extra?: {
-    doc_notes?: string,
-  },
-  protocol?: string,
-}
+    doc_notes?: string;
+  };
+  protocol?: string;
+};
 
 interface GameResolver {
-  lookup: (type: string) => Game,
+  lookup: (type: string) => Game;
 
-  gamesByKey: Map<string, Game>,
-  games: Game[],
+  gamesByKey: Map<string, Game>;
+  games: Game[];
 }
 
 let resolver: GameResolver;
@@ -50,103 +50,131 @@ function getResolver() {
   return resolver;
 }
 
-type ImageResolver = (client: Client, state: State) => Promise<Image | undefined>;
+type ImageResolver = (
+  client: Client,
+  state: State
+) => Promise<Image | undefined>;
 type ImageResolvers = {
-  [name: string]: ImageResolver,
-}
+  [name: string]: ImageResolver;
+};
 
 const IMAGE: ImageResolvers = {
-  fivem: async function(_: Client, state: State): Promise<ImageBuffer | undefined> {
-    const info = (state?.raw as { info?: unknown })?.info as { icon?: string } | undefined;
+  fivem: async function (
+    _: Client,
+    state: State
+  ): Promise<ImageBuffer | undefined> {
+    const info = (state?.raw as { info?: unknown })?.info as
+      | { icon?: string }
+      | undefined;
     if (info && info.icon) {
-      return { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' };
+      return {
+        buffer: Buffer.from(info.icon, "base64"),
+        dataType: "png",
+        type: "buffer",
+      };
     }
     return undefined;
   },
-  discord: async function(client: Client, state: State): Promise<ImageUrl | undefined> {
+  discord: async function (
+    client: Client,
+    state: State
+  ): Promise<ImageUrl | undefined> {
     const guild = client.guilds.resolve(state.gameHost);
     if (!guild) return;
     const iconURL = guild.iconURL();
-    return iconURL ? { url: iconURL, type: 'url' } : undefined;
-  }
-}
+    return iconURL ? { url: iconURL, type: "url" } : undefined;
+  },
+};
 
-const parseConnect = function(connect: string, protocol: string) {
+const parseConnect = function (connect: string, protocol: string) {
   switch (protocol) {
-    case 'valve':
+    case "valve":
       return `<steam://connect/${connect}>`;
-    case 'fivem':
+    case "fivem":
       return `<fivem://connect/${connect}>`;
     default:
       return connect;
   }
-}
+};
 
-const parseMap = function(map: string, protocol: string) {
+const parseMap = function (map: string, protocol: string) {
   switch (protocol) {
-    case 'minecraft':
-      return 'Minecraft world';
+    case "minecraft":
+      return "Minecraft world";
     default:
       return map;
   }
-}
+};
 
 export interface State extends GameDig.QueryResult {
-  offline: boolean,
-  numplayers: number,
-  realPlayers: GameDig.Player[] | null,
-  validPlayers: number,
-  players: GameDig.Player[],
-  gameHost: string,
-  image?: Image,
-  raw?: object,
+  offline: boolean;
+  numplayers: number;
+  realPlayers: GameDig.Player[] | null;
+  validPlayers: number;
+  players: GameDig.Player[];
+  gameHost: string;
+  image?: Image;
+  raw?: object;
 }
 
 export interface ImageUrl {
-  type: 'url',
-  url: string,
+  type: "url";
+  url: string;
 }
 
 export interface ImageBuffer {
-  type: 'buffer',
-  dataType: string,
-  buffer: Buffer,
+  type: "buffer";
+  dataType: string;
+  buffer: Buffer;
 }
 
 export type Image = ImageUrl | ImageBuffer;
 
-export async function query(this: Client, queryType: GameDig.Type, ip: string): Promise<State> {
-  const ip_parts = ip.split(':');
+export async function query(
+  this: Client,
+  queryType: GameDig.Type,
+  ip: string
+): Promise<State> {
+  const ip_parts = ip.split(":");
   const game = getResolver().lookup(queryType);
   const protocol = game.protocol || game.options.protocol;
-  const isDiscord = protocol === 'discord';
+  const isDiscord = protocol === "discord";
   let state: State;
 
   try {
     const rawState = await GameDig.query({
       type: queryType,
-      host: isDiscord ? 'localhost' : ip_parts[0],
+      host: isDiscord ? "localhost" : ip_parts[0],
       port: ip_parts.length > 1 ? parseInt(ip_parts[1]) : undefined,
     });
-    const realPlayers = rawState.players.filter(v => typeof v.name === 'string')
-      .map(v => { v.name = markdownEscape(v.name?.trim() || ''); return v })
-      .filter(v => v.name?.length || 0 > 0);
+    const realPlayers = rawState.players
+      .filter((v) => typeof v.name === "string")
+      .map((v) => {
+        v.name = markdownEscape(v.name?.trim() || "");
+        return v;
+      })
+      .filter((v) => v.name?.length || 0 > 0);
     state = {
       offline: false,
-      numplayers: (rawState.raw as { [key: string]: number })['numplayers'] || rawState.players.length,
+      numplayers:
+        (rawState.raw as { [key: string]: number })["numplayers"] ||
+        rawState.players.length,
       realPlayers,
       validPlayers: realPlayers.length,
       gameHost: ip_parts[0],
-      ...rawState
+      ...rawState,
     };
     state.players = Array.from(state.players || []);
     state.connect = parseConnect(state.connect, protocol);
     state.map = parseMap(state.map, protocol);
   } catch (e) {
-    verboseLog('[query] Error getting game status', e instanceof Error ? e.message : e);
+    verboseLog(
+      "[query] Error getting game status",
+      e instanceof Error ? e.message : e
+    );
     state = {
-      name: 'OFFLINE',
-      map: 'OFFLINE',
+      name: "OFFLINE",
+      map: "OFFLINE",
       password: false,
       numplayers: 0,
       maxplayers: 0,
@@ -164,8 +192,8 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
   if (queryType in IMAGE) {
     try {
       state.image = await IMAGE[queryType](this, state);
-    } catch(e) {
-      verboseLog('[query] Error fetching image', e);
+    } catch (e) {
+      verboseLog("[query] Error fetching image", e);
     }
   }
 

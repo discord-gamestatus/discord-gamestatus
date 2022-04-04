@@ -20,11 +20,11 @@ import { warnLog, debugLog, verboseLog } from "./debug";
 
 function nullError<T, E>(
   promise: Promise<T>,
-  onError?: (reason: E) => unknown,
+  onError?: (reason: E) => unknown
 ): Promise<T | null> {
   const reject = onError || debugLog;
-  return new Promise(resolve => {
-    promise.then(resolve).catch(err => {
+  return new Promise((resolve) => {
+    promise.then(resolve).catch((err) => {
       reject(err);
       resolve(null);
     });
@@ -55,7 +55,7 @@ export async function getLimits(
   }
   const limits: Limit = {
     channelLimit: client.config.channelLimit,
-    guildLimit: client.config.guildLimit
+    guildLimit: client.config.guildLimit,
   };
   for (const guildID in client.config.limitRules) {
     const guild = await nullError(client.guilds.fetch(guildID), warnLog);
@@ -72,10 +72,7 @@ export async function getLimits(
       if (member.roles.cache.has(roleID)) {
         let key: keyof Limit;
         for (key in limits) {
-          limits[key] = max(
-            limits[key],
-            guildRules[roleID][key]
-          );
+          limits[key] = max(limits[key], guildRules[roleID][key]);
         }
       }
     }

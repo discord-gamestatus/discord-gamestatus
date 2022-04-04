@@ -40,7 +40,7 @@ export function isDMChannel(message: Message): boolean {
 }
 
 export function combineAll(...checks: Check[]): Check {
-  return function(message: Message) {
+  return function (message: Message) {
     for (const check of checks) {
       if (!check(message)) return false;
     }
@@ -49,7 +49,7 @@ export function combineAll(...checks: Check[]): Check {
 }
 
 export function combineAny(...checks: Check[]): Check {
-  return function(message: Message) {
+  return function (message: Message) {
     for (const check of checks) {
       if (check(message)) return true;
     }

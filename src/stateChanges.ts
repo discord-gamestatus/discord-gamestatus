@@ -19,26 +19,40 @@ import { State } from "./query";
 import { assign } from "./utils";
 
 export interface PlayerChange {
-  name?: string,
-  connect: boolean,
-  msg: string,
+  name?: string;
+  connect: boolean;
+  msg: string;
 }
 export interface PlayerChanges {
-  connect: PlayerChange[],
-  disconnect: PlayerChange[],
-  all: PlayerChange[],
+  connect: PlayerChange[];
+  disconnect: PlayerChange[];
+  all: PlayerChange[];
 }
 
-function playerChanges(curPlayers?: Player[], prevPlayers?: Player[]): PlayerChanges {
-  if (!(prevPlayers instanceof Array) || !(curPlayers instanceof Array)) return { connect: [], disconnect: [], all: [] };
+function playerChanges(
+  curPlayers?: Player[],
+  prevPlayers?: Player[]
+): PlayerChanges {
+  if (!(prevPlayers instanceof Array) || !(curPlayers instanceof Array))
+    return { connect: [], disconnect: [], all: [] };
 
   const connect: PlayerChange[] = [];
   const disconnect: PlayerChange[] = [];
   for (const player of curPlayers) {
-    if (!prevPlayers.includes(player)) connect.push({ name: player.name, connect: true, msg: `**${player}** connected` });
+    if (!prevPlayers.includes(player))
+      connect.push({
+        name: player.name,
+        connect: true,
+        msg: `**${player}** connected`,
+      });
   }
   for (const player of prevPlayers) {
-    if (!curPlayers.includes(player)) disconnect.push({ name: player.name, connect: false, msg: `**${player}** disconnected` });
+    if (!curPlayers.includes(player))
+      disconnect.push({
+        name: player.name,
+        connect: false,
+        msg: `**${player}** disconnected`,
+      });
   }
   return {
     connect,
@@ -48,20 +62,29 @@ function playerChanges(curPlayers?: Player[], prevPlayers?: Player[]): PlayerCha
 }
 
 export interface Change<T extends keyof State> {
-  old: State[T],
-  new: State[T],
+  old: State[T];
+  new: State[T];
 }
 
 export interface Changes {
-  players: PlayerChanges,
+  players: PlayerChanges;
   props: {
     [key in "offline" | "map"]?: Change<key>;
-  },
+  };
 }
 
-const KEYS: (keyof Changes["props"])[] = ['offline', 'map'];
-export default function stateChanges(curState: State | { [key: string]: unknown }, prevState: State | { [key: string]: unknown }): Changes {
-  const res: Changes = { players: playerChanges(curState.players as Player[], prevState.players as Player[]), props: {} };
+const KEYS: (keyof Changes["props"])[] = ["offline", "map"];
+export default function stateChanges(
+  curState: State | { [key: string]: unknown },
+  prevState: State | { [key: string]: unknown }
+): Changes {
+  const res: Changes = {
+    players: playerChanges(
+      curState.players as Player[],
+      prevState.players as Player[]
+    ),
+    props: {},
+  };
   for (const key of KEYS) {
     if (curState[key] !== prevState[key]) {
       assign(res.props, { [key]: { old: prevState[key], new: curState[key] } });

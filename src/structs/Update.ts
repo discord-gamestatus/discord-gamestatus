@@ -31,13 +31,12 @@ import { debugLog, infoLog, warnLog, verboseLog } from "../debug";
 import {
   UpdateOptions,
   UpdateOption,
-  DEFAULT_OPTIONS
+  DEFAULT_OPTIONS,
 } from "./Update/UpdateOptions";
 import { generateEmbed } from "./Update/UpdateEmbed";
 import stateChanges, { Changes, PlayerChange } from "../stateChanges";
 import { query, State } from "../query";
 import { assign } from "../utils";
-
 
 export interface UpdateConstructorOptions {
   guild?: Snowflake;
@@ -76,7 +75,10 @@ export default class Update extends Serializable {
   public name: string;
   public options: UpdateOptions = {};
 
-  constructor(opts?: UpdateConstructorOptions, objs?: UpdateConstructorObjects) {
+  constructor(
+    opts?: UpdateConstructorOptions,
+    objs?: UpdateConstructorObjects
+  ) {
     super();
 
     this._deleted = false;
@@ -88,9 +90,9 @@ export default class Update extends Serializable {
     this.channel = opts?.channel;
     this.message = opts?.message;
     this.state = {};
-    this.type = opts?.type || 'Error';
-    this.ip = opts?.ip || 'Error';
-    this.name = opts?.name || 'Error';
+    this.type = opts?.type || "Error";
+    this.ip = opts?.ip || "Error";
+    this.name = opts?.name || "Error";
     this.options = opts?.options || {};
 
     if (objs) {
@@ -123,15 +125,18 @@ export default class Update extends Serializable {
    *** Properties
    *******************************************************************************/
 
-  async getGuild(client: Client, dontForge = false): Promise<Guild | undefined> {
+  async getGuild(
+    client: Client,
+    dontForge = false
+  ): Promise<Guild | undefined> {
     if (this._guild) return this._guild;
     if (dontForge) {
       this._guild = this.guild
         ? await client.guilds.fetch({
-          cache: true,
-          guild: this.guild,
-          withCounts: false,
-        })
+            cache: true,
+            guild: this.guild,
+            withCounts: false,
+          })
         : undefined;
       return this._guild;
     }
@@ -280,19 +285,18 @@ export default class Update extends Serializable {
     // TODO: Add better support for setting arrays
     let newValue: unknown = value;
     if (newValue !== null && newValue !== undefined) {
-
-      newValue = Object.getPrototypeOf(DEFAULT_OPTIONS[optionName] as unknown).constructor(
-        value
-      );
-      if (isOfBaseType(DEFAULT_OPTIONS[optionName], Number) && isNaN(newValue as number))
+      newValue = Object.getPrototypeOf(
+        DEFAULT_OPTIONS[optionName] as unknown
+      ).constructor(value);
+      if (
+        isOfBaseType(DEFAULT_OPTIONS[optionName], Number) &&
+        isNaN(newValue as number)
+      )
         newValue = null;
       if (isOfBaseType(DEFAULT_OPTIONS[optionName], Boolean)) {
         if (isOfBaseType(value, String)) {
           newValue = ["1", "true", "t", "yes", "y"].includes(
-            (value as string)
-              .toLowerCase()
-              .trim()
-              .split(" ")[0]
+            (value as string).toLowerCase().trim().split(" ")[0]
           );
         }
       }
@@ -306,12 +310,17 @@ export default class Update extends Serializable {
       if (
         !isOfBaseType(
           newValue,
-          Object.getPrototypeOf(DEFAULT_OPTIONS[optionName] as unknown).constructor
+          Object.getPrototypeOf(DEFAULT_OPTIONS[optionName] as unknown)
+            .constructor
         )
       )
         newValue = null;
     }
-    if (newValue === DEFAULT_OPTIONS[optionName] || newValue === null || newValue === undefined) {
+    if (
+      newValue === DEFAULT_OPTIONS[optionName] ||
+      newValue === null ||
+      newValue === undefined
+    ) {
       delete this.options[optionName];
     } else {
       assign(this.options, { [optionName]: newValue });
@@ -333,7 +342,12 @@ export default class Update extends Serializable {
     delete object["options"];
     for (const key in options) {
       if (key in DEFAULT_OPTIONS) {
-        result.setOption(undefined, key as keyof UpdateOptions, options[key], true);
+        result.setOption(
+          undefined,
+          key as keyof UpdateOptions,
+          options[key],
+          true
+        );
       }
     }
 
@@ -358,9 +372,9 @@ export default class Update extends Serializable {
     const boundQuery = query.bind(client);
     const state = await boundQuery(this.type as Type, this.ip);
     assign(this.state, {
-      players: state.realPlayers ? state.realPlayers.map(v => v.name) : null,
+      players: state.realPlayers ? state.realPlayers.map((v) => v.name) : null,
       offline: state.offline,
-      map: state.map
+      map: state.map,
     });
     if (!state.offline) this.name = state.name;
 
@@ -371,8 +385,7 @@ export default class Update extends Serializable {
     } catch (e) {
       if (e instanceof Error)
         warnLog("[Update] Error sending update", e, e.stack);
-      else
-        warnLog("[Update] Error sending update", e);
+      else warnLog("[Update] Error sending update", e);
     }
 
     const _end = performance.now();
@@ -400,11 +413,10 @@ export default class Update extends Serializable {
     };
     if (changesToSend.length > 0) {
       const changeString = changesToSend
-        .map(v => v.msg)
+        .map((v) => v.msg)
         .join("\n")
         .substring(0, 500);
-      if (changeString.length > 0)
-        messageData.content = changeString;
+      if (changeString.length > 0) messageData.content = changeString;
     }
 
     const message = await this.getMessage(client);
@@ -427,7 +439,10 @@ export default class Update extends Serializable {
           } else if (e.code === 10008) {
             needsNewMessage = true;
           } else {
-            verboseLog(`[Update] Error editing message ${message.id} ${e.code}`, e);
+            verboseLog(
+              `[Update] Error editing message ${message.id} ${e.code}`,
+              e
+            );
           }
         }
       }
@@ -457,7 +472,10 @@ export default class Update extends Serializable {
     }
   }
 
-  async deleteMessage(client: Client, message?: Message): Promise<Message | undefined> {
+  async deleteMessage(
+    client: Client,
+    message?: Message
+  ): Promise<Message | undefined> {
     if (!message) message = await this.getMessage(client);
     if (!message) return;
     try {

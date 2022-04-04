@@ -26,7 +26,7 @@ function serverFormat(str: string, server: State) {
   for (const prop of <[keyof State]>FORMAT_PROPERTIES) {
     str = str.replace(
       new RegExp(`\\{${prop}\\}`, "gi"),
-      server[prop]?.toString() || ''
+      server[prop]?.toString() || ""
     );
   }
   return str;
@@ -35,7 +35,7 @@ function serverFormat(str: string, server: State) {
 const OPT_TITLE: (keyof UpdateOptions)[] = ["title", "offlineTitle"];
 const OPT_DESCRIPTION: (keyof UpdateOptions)[] = [
   "description",
-  "offlineDescription"
+  "offlineDescription",
 ];
 const OPT_COLOR: (keyof UpdateOptions)[] = ["color", "offlineColor"];
 const OPT_IMAGE: (keyof UpdateOptions)[] = ["image", "offlineImage"];
@@ -59,7 +59,7 @@ export async function generateEmbed(
       server
     ),
     color: update.getOption(OPT_COLOR[isOffline]) as number,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 
   const dots = update.getOption("dots") as string[];

@@ -27,45 +27,50 @@ function matchAny(text: string, search: RegExp[]) {
 
 export const name = "help";
 export async function call(message: Message, parts: string[]): Promise<void> {
-  const search = parts.map(s => new RegExp(s, "gi"));
+  const search = parts.map((s) => new RegExp(s, "gi"));
   if (search.length === 0) {
     await message.channel.send({
-      embeds: [new MessageEmbed({
-        title: "Help",
-        color: EMBED_COLOR,
-        description: Array.from(message.client.commands.entries())
-          .filter(cmd =>
-            cmd[0] !== "help" && cmd[1].check ? cmd[1].check(message) : true
-          )
-          .map(cmd => `\`${message.client.config.prefix}${cmd[0]}\``)
-          .join("\n"),
-        footer: {
-          text: `Use "${message.client.config.prefix}help commandName" for detailed help`
-        }
-      })],
+      embeds: [
+        new MessageEmbed({
+          title: "Help",
+          color: EMBED_COLOR,
+          description: Array.from(message.client.commands.entries())
+            .filter((cmd) =>
+              cmd[0] !== "help" && cmd[1].check ? cmd[1].check(message) : true
+            )
+            .map((cmd) => `\`${message.client.config.prefix}${cmd[0]}\``)
+            .join("\n"),
+          footer: {
+            text: `Use "${message.client.config.prefix}help commandName" for detailed help`,
+          },
+        }),
+      ],
     });
   } else {
     await message.channel.send({
-      embeds: [new MessageEmbed({
-        title: "Help",
-        color: EMBED_COLOR,
-        fields: Array.from(message.client.commands.entries())
-          .filter(cmd =>
-            matchAny(`${message.client.config.prefix}${cmd[0]}`, search) &&
+      embeds: [
+        new MessageEmbed({
+          title: "Help",
+          color: EMBED_COLOR,
+          fields: Array.from(message.client.commands.entries())
+            .filter((cmd) =>
+              matchAny(`${message.client.config.prefix}${cmd[0]}`, search) &&
               cmd[1].check
-              ? cmd[1].check(message)
-              : true
-          )
-          .map(cmd => {
-            return {
-              name: `${message.client.config.prefix}${cmd[0]}`,
-              value: typeof cmd[1].help === "string"
-                ? cmd[1].help
-                : "No help message provided",
-              inline: false
-            };
-          })
-      })],
+                ? cmd[1].check(message)
+                : true
+            )
+            .map((cmd) => {
+              return {
+                name: `${message.client.config.prefix}${cmd[0]}`,
+                value:
+                  typeof cmd[1].help === "string"
+                    ? cmd[1].help
+                    : "No help message provided",
+                inline: false,
+              };
+            }),
+        }),
+      ],
     });
   }
 }
