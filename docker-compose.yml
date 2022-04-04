@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  postgres:
+    image: "postgres"
+    volumes:
+      - "./database/:/var/lib/postgresql/data"
+    environment:
+      POSTGRES_USER: "discord-gamestatus"
+      POSTGRES_PASSWORD: "${DATABASE_PASS}"
+      PGDATA: "/var/lib/postgresql/data/12"
+  bot:
+    build: "."
+    depends_on:
+      - "postgres"
+    volumes:
+      - "./limit-rules.json:/home/discord-bots/limit-rules.json"
+    environment:
+      - DISCORD_API_KEY
+      - TOPGG_API_KEY
+      PG_DATABASE: "discord-gamestatus"
+      PGHOST: "postgres"
+      PGUSER: "discord-gamestatus"
+      PGPASSWORD: "${DATABASE_PASS}"
+    command: [ "--debug", "--support", "https://discord.gg/CUefWnZ", "--tick-count", "120", "--tick-time", "2000"]
+

@@ -11,4 +11,5 @@
 !package*.json
 !README.md
 !tsconfig.json
-!tsfmt.json
+!Dockerfile
+!docker-compose.yml
