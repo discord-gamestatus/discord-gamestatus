@@ -173,9 +173,13 @@ export default class Update extends Serializable {
       }
       return this._message;
     }
-    return channel && this.message
-      ? channel.messages.forge(this.message)
-      : undefined;
+    if (channel && this.message) {
+      const message = channel.messages.forge(this.message);
+      message.channelId = channel.id;
+      message.guildId = channel.guildId;
+      return message;
+    }
+    return undefined;
   }
 
   async setGuild(client: Client, guild: Guild | Snowflake): Promise<void> {
