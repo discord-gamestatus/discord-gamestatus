@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [15.x, 16.x]
+        node-version: [17.x]
       fail-fast: true
       max-parallel: 2
 
