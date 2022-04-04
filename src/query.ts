@@ -19,6 +19,7 @@ const GameResolver = require('gamedig/lib/GameResolver.js');
 import { markdownEscape } from '@douile/bot-utilities';
 
 import Client from './structs/Client';
+import { verboseLog } from './debug';
 
 export type Game = {
   keys: string[],
@@ -55,9 +56,12 @@ type ImageResolvers = {
 }
 
 const IMAGE: ImageResolvers = {
-  fivem: async function(client: Client, state: State): Promise<ImageBuffer | undefined> {
-    const info = (state?.raw as { info?: { icon: string | undefined } })?.info;
-    return info?.icon ? { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' } || undefined : undefined;
+  fivem: async function(_: Client, state: State): Promise<ImageBuffer | undefined> {
+    const info = (state?.raw as { info?: )?.info as { icon?: string } | undefined;
+    if (info && info.icon) {
+      return { buffer: Buffer.from(info.icon, 'base64'), dataType: 'png', type: 'buffer' };
+    }
+    return undefined;
   },
   discord: async function(client: Client, state: State): Promise<ImageUrl | undefined> {
     const guild = client.guilds.resolve(state.gameHost);
@@ -95,6 +99,7 @@ export interface State extends GameDig.QueryResult {
   players: GameDig.Player[],
   gameHost: string,
   image?: Image,
+  raw?: object,
 }
 
 export interface ImageUrl {
@@ -122,8 +127,6 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
       type: queryType,
       host: isDiscord ? 'localhost' : ip_parts[0],
       port: ip_parts.length > 1 ? parseInt(ip_parts[1]) : undefined,
-      // realPlayers: [],
-      // guildId: isDiscord ? ip_parts[0] : undefined,
     });
     const realPlayers = rawState.players.filter(v => typeof v.name === 'string')
       .map(v => { v.name = markdownEscape(v.name?.trim() || ''); return v })
@@ -140,6 +143,7 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
     state.connect = parseConnect(state.connect, protocol);
     state.map = parseMap(state.map, protocol);
   } catch (e) {
+    verboseLog('[query] Error getting game status', e instanceof Error ? e.message : e);
     state = {
       name: 'OFFLINE',
       map: 'OFFLINE',
@@ -158,7 +162,11 @@ export async function query(this: Client, queryType: GameDig.Type, ip: string): 
   }
 
   if (queryType in IMAGE) {
-    state.image = await IMAGE[queryType](this, state);
+    try {
+      state.image = await IMAGE[queryType](this, state);
+    } catch(e) {
+      verboseLog('[query] Error fetching image', e);
+    }
   }
 
   return state;
