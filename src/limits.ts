@@ -61,15 +61,16 @@ export async function getLimits(
     const guild = await nullError(client.guilds.fetch(guildID), warnLog);
     if (guild === null) continue;
     const member = await nullError(
-      guild.members.fetch({ user, cache: false, force: true }),
+      guild.members.fetch({ user, cache: true, force: true }),
       verboseLog
     );
     if (member === null) continue;
     const guildRules = client.config.limitRules[guildID];
     for (const roleID in guildRules) {
-      /*const role = await nullError(guild.roles.fetch(roleID), warnLog);
-      if (role === null) continue;*/
-      if (member.roles.cache.has(roleID)) {
+      const role = await nullError(guild.roles.fetch(roleID), warnLog);
+      if (role === null) continue;
+      if (role.members.has(member.id) || member.roles.cache.has(roleID)) {
+        verboseLog(`[limit] "${member.id}" matched rule`, limits);
         let key: keyof Limit;
         for (key in limits) {
           limits[key] = max(limits[key], guildRules[roleID][key]);

@@ -59,10 +59,7 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
     GuildMemberManager: {
       maxSize: 0,
       keepOverLimit: (value) =>
-        Object.prototype.hasOwnProperty.call(
-          (value.client as Client).config.limitRules,
-          value.guild.id
-        ),
+        value.guild.id in (value.client as Client).config.limitRules,
     },
     GuildStickerManager: 0,
     GuildScheduledEventManager: 0,
