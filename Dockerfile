@@ -2,18 +2,15 @@ FROM node:17
 
 ENV NODE_ENV=production
 
-RUN useradd -m discord-gamestatus
-WORKDIR /home/discord-gamestatus
+WORKDIR /home/node
 
-COPY ./package.json ./package-lock.json /home/discord-gamestatus/
-COPY ./dist/ /home/discord-gamestatus/dist/
-COPY ./bin/ /home/discord-gamestatus/bin/
-
+COPY ./package.json ./package-lock.json /home/node/
 RUN npm install
 
-RUN chown -R root:discord-gamestatus /home/discord-gamestatus && \
-  chmod -R 550 /home/discord-gamestatus
+COPY ./dist/ /home/node/dist/
+COPY ./bin/ /home/node/bin/
 
-USER discord-gamestatus
+RUN chown -R root:node /home/node
+
 CMD ["--guild-limit", "3", "--channel-limit", "3", "--support", "https://discord.gg/CUefWnZ", "--tick-count", "120", "--tick-time", "2000"]
-ENTRYPOINT [ "node", "--title", "discord-gamestatus", "/home/discord-gamestatus/bin/discord-gamestatus", "--" ]
+ENTRYPOINT [ "node", "--title", "discord-gamestatus", "/home/node/bin/discord-gamestatus", "--" ]

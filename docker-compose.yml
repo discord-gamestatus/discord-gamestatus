@@ -13,13 +13,13 @@ services:
     depends_on:
       - "postgres"
     volumes:
-      - "./limit-rules.json:/home/discord-bots/limit-rules.json"
+      - "./limit-rules.json:/home/node/limit-rules.json"
     environment:
-      - DISCORD_API_KEY
-      - TOPGG_API_KEY
+      DISCORD_API_KEY: "${DISCORD_API_KEY}"
+      TOPGG_API_KEY: "${TOPGG_API_KEY}"
       PG_DATABASE: "discord-gamestatus"
       PGHOST: "postgres"
       PGUSER: "discord-gamestatus"
       PGPASSWORD: "${DATABASE_PASS}"
-    command: [ "--debug", "--support", "https://discord.gg/CUefWnZ", "--tick-count", "120", "--tick-time", "2000"]
+    command: [ "--support", "https://discord.gg/CUefWnZ", "--tick-count", "120", "--tick-time", "2000", "--guild-limit", "3", "--channel-limit", "3"]
 
