@@ -13,3 +13,4 @@
 !tsconfig.json
 !Dockerfile
 !docker-compose.yml
+!.env.example

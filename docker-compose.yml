@@ -21,5 +21,12 @@ services:
       PGHOST: "postgres"
       PGUSER: "discord-gamestatus"
       PGPASSWORD: "${DATABASE_PASS}"
-    command: [ "--support", "https://discord.gg/CUefWnZ", "--tick-count", "120", "--tick-time", "2000", "--guild-limit", "3", "--channel-limit", "3"]
+      GS_PREFIX: "${GS_PREFIX}"
+      GS_ADMIN_FLAG: "${GS_ADMIN_FLAG}"
+      GS_TICK_COUNT: "${GS_TICK_COUNT}"
+      GS_TICK_TIME: "${GS_TICK_TIME}"
+      GS_CHANNEL_LIMIT: "${GS_CHANNEL_LIMIT}"
+      GS_GUILD_LIMIT: "${GS_GUILD_LIMIT}"
+      GS_SUPPORT_LINK: "${GS_SUPPORT_LINK}"
+#    command: [ "--debug", "--verbose" ]
 

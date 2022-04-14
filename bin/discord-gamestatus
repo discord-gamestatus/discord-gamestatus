@@ -4,7 +4,7 @@
 
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,6 +43,14 @@ Usage:\n\
 
 const start = require('..').default;
 
+function asNumberOrUndefined(value) {
+  if (value) {
+    const n = Number(n);
+    if (!Number.isNaN(n)) return n;
+  }
+  return undefined;
+}
+
 const setupAndStart = function(env, args) {
   let dev = false;
   let config = {
@@ -53,7 +61,14 @@ const setupAndStart = function(env, args) {
     debug: false,
     verbose: false,
     dblKey: env.TOPGG_API_KEY,
-    database: env.PG_DATABASE
+    database: env.PG_DATABASE,
+    prefix: env.GS_PREFIX,
+    adminFlag: env.GS_ADMIN_FLAG,
+    tickCount: asNumberOrUndefined(env.GS_TICK_COUNT),
+    tickTime: asNumberOrUndefined(env.GS_TICK_TIME),
+    channelLimit: asNumberOrUndefined(env.GS_CHANNEL_LIMIT),
+    guildLimit: asNumberOrUndefined(env.GS_GUILD_LIMIT),
+    supportServer: env.GS_SUPPORT_LINK,
   };
 
   for (let i=0;i<args.length;i++) {
@@ -98,16 +113,16 @@ const setupAndStart = function(env, args) {
       config.dblKey = args[++i];
       break;
       case '--tick-count':
-      config.tickCount = Number(args[++i]);
+      config.tickCount = asNumberOrUndefined(args[++i]);
       break;
       case '--tick-time':
-      config.tickTime = Number(args[++i]);
+      config.tickTime = asNumberOrUndefined(args[++i]);
       break;
       case '--channel-limit':
-      config.channelLimit = Number(args[++i]);
+      config.channelLimit = asNumberOrUndefined(args[++i]);
       break;
       case '--guild-limit':
-      config.guildLimit = Number(args[++i]);
+      config.guildLimit = asNumberOrUndefined(args[++i]);
       break;
       case '--allow-duplicate-updates':
       config.allowDuplicates = true;
