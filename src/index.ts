@@ -88,7 +88,8 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
   intents:
     Discord.Intents.FLAGS.GUILDS |
     Discord.Intents.FLAGS.GUILD_MESSAGES |
-    Discord.Intents.FLAGS.DIRECT_MESSAGES,
+    Discord.Intents.FLAGS.DIRECT_MESSAGES |
+    Discord.Intents.FLAGS.GUILD_MEMBERS,
   invalidRequestWarningInterval: 1,
   restGlobalRateLimit: 50, // Don't exceed discord's current rate limit
   retryLimit: 5,
