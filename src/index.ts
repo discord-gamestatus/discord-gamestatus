@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Discord, { Collection, DiscordAPIError } from "discord.js-light";
+import Discord, { DiscordAPIError } from "discord.js-light";
 import { promises as fs } from "fs";
 import { allSettled, errorWrap } from "@douile/bot-utilities";
 

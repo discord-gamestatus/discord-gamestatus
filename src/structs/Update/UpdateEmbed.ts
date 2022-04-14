@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import { MessageEmbed, MessageAttachment } from "discord.js-light";
+import { MessageEmbed } from "discord.js-light";
 import { truncateEmbed } from "@douile/bot-utilities";
 import { Player } from "gamedig";
 
@@ -63,7 +63,7 @@ export async function generateEmbed(
   });
 
   const dots = update.getOption("dots") as string[];
-  embed.setFooter(dots[tick % dots.length]);
+  embed.setFooter({ text: dots[tick % dots.length] });
 
   let image = server.image;
   const selectedImage = update.getOption(OPT_IMAGE[isOffline]) as string;

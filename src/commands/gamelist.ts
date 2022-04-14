@@ -33,7 +33,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   const embeds = [];
   let embedI = 0;
 
-  embed.setFooter((++embedI).toString());
+  embed.setFooter({ text: (++embedI).toString() });
   let field = "",
     key = gameIterator.next(),
     count = 0;
@@ -62,7 +62,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
         if (embedSize + field.length + 3 > 6000) {
           embeds.push(embed);
           embed = new MessageEmbed({ color: EMBED_COLOR });
-          embed.setFooter((++embedI).toString());
+          embed.setFooter({ text: (++embedI).toString() });
           embedSize = 100;
         }
         embed.addField("_ _", field, false);
