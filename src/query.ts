@@ -50,42 +50,6 @@ function getResolver() {
   return resolver;
 }
 
-type ImageResolver = (
-  client: Client,
-  state: State
-) => Promise<Image | undefined>;
-type ImageResolvers = {
-  [name: string]: ImageResolver;
-};
-
-const IMAGE: ImageResolvers = {
-  fivem: async function (
-    _: Client,
-    state: State
-  ): Promise<ImageBuffer | undefined> {
-    const info = (state?.raw as { info?: unknown })?.info as
-      | { icon?: string }
-      | undefined;
-    if (info && info.icon) {
-      return {
-        buffer: Buffer.from(info.icon, "base64"),
-        dataType: "png",
-        type: "buffer",
-      };
-    }
-    return undefined;
-  },
-  discord: async function (
-    client: Client,
-    state: State
-  ): Promise<ImageUrl | undefined> {
-    const guild = client.guilds.resolve(state.gameHost);
-    if (!guild) return;
-    const iconURL = guild.iconURL();
-    return iconURL ? { url: iconURL, type: "url" } : undefined;
-  },
-};
-
 const parseConnect = function (connect: string, protocol: string) {
   switch (protocol) {
     case "valve":
@@ -113,22 +77,8 @@ export interface State extends GameDig.QueryResult {
   validPlayers: number;
   players: GameDig.Player[];
   gameHost: string;
-  image?: Image;
   raw?: object;
 }
-
-export interface ImageUrl {
-  type: "url";
-  url: string;
-}
-
-export interface ImageBuffer {
-  type: "buffer";
-  dataType: string;
-  buffer: Buffer;
-}
-
-export type Image = ImageUrl | ImageBuffer;
 
 export async function query(
   this: Client,
@@ -187,14 +137,6 @@ export async function query(
       connect: ip,
       gameHost: ip_parts[0],
     };
-  }
-
-  if (queryType in IMAGE) {
-    try {
-      state.image = await IMAGE[queryType](this, state);
-    } catch (e) {
-      verboseLog("[query] Error fetching image", e);
-    }
   }
 
   return state;

@@ -65,27 +65,8 @@ export async function generateEmbed(
   const dots = update.getOption("dots") as string[];
   embed.setFooter({ text: dots[tick % dots.length] });
 
-  let image = server.image;
-  const selectedImage = update.getOption(OPT_IMAGE[isOffline]) as string;
-  if (selectedImage.length > 0) image = { type: "url", url: selectedImage };
-
-  if (image) {
-    let embedImage = undefined;
-    switch (image.type) {
-      case "buffer": {
-        const name = `image.${image.dataType}`;
-        // FIXME: Actually add files
-        // embed.attachFiles([new MessageAttachment(image.buffer, name)]);
-        embedImage = `attachment://${name}`;
-        break;
-      }
-      case "url": {
-        embedImage = image.url;
-        break;
-      }
-    }
-    embed.setThumbnail(embedImage);
-  }
+  const image = update.getOption(OPT_IMAGE[isOffline]) as string;
+  if (image.length > 0) embed.setThumbnail(image);
 
   const columns = update.getOption("columns") as number;
   const rows = Math.ceil(players.length / columns);
