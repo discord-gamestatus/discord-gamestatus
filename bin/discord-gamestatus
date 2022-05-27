@@ -45,8 +45,15 @@ const start = require('..').default;
 
 function asNumberOrUndefined(value) {
   if (value) {
-    const n = Number(n);
+    const n = Number(value);
     if (!Number.isNaN(n)) return n;
+  }
+  return undefined;
+}
+
+function nonEmptyStringOrUndefined(value) {
+  if (typeof value === 'string' && value.length > 0) {
+    return value;
   }
   return undefined;
 }
@@ -54,21 +61,21 @@ function asNumberOrUndefined(value) {
 const setupAndStart = function(env, args) {
   let dev = false;
   let config = {
-    key: env.DISCORD_API_KEY,
+    key: nonEmptyStringOrUndefined(env.DISCORD_API_KEY),
     error: true,
     warn: true,
     info: true,
     debug: false,
     verbose: false,
-    dblKey: env.TOPGG_API_KEY,
-    database: env.PG_DATABASE,
-    prefix: env.GS_PREFIX,
-    adminFlag: env.GS_ADMIN_FLAG,
+    dblKey: nonEmptyStringOrUndefined(env.TOPGG_API_KEY),
+    database: nonEmptyStringOrUndefined(env.PG_DATABASE),
+    prefix: nonEmptyStringOrUndefined(env.GS_PREFIX),
+    adminFlag: nonEmptyStringOrUndefined(env.GS_ADMIN_FLAG),
     tickCount: asNumberOrUndefined(env.GS_TICK_COUNT),
     tickTime: asNumberOrUndefined(env.GS_TICK_TIME),
     channelLimit: asNumberOrUndefined(env.GS_CHANNEL_LIMIT),
     guildLimit: asNumberOrUndefined(env.GS_GUILD_LIMIT),
-    supportServer: env.GS_SUPPORT_LINK,
+    supportServer: nonEmptyStringOrUndefined(env.GS_SUPPORT_LINK),
   };
 
   for (let i=0;i<args.length;i++) {
@@ -134,7 +141,6 @@ const setupAndStart = function(env, args) {
       case '--help':
       USAGE();
       process.exit();
-      break;
     }
   }
 

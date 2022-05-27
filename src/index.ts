@@ -341,8 +341,12 @@ export default async function start(config: StartupConfig): Promise<Client> {
   /* Override owner, prefix, tickCount, tickTime */
   const clientConfig: ClientConfig = {
     ...DEFAULT_CONFIG,
-    ...config,
   };
+  for (const [key, value] of Object.entries(config)) {
+    if (value) {
+      Object.assign(clientConfig, { [key]: value });
+    }
+  }
 
   let updateCache;
   if (config.database) {
