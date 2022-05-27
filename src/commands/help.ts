@@ -18,9 +18,11 @@ import { MessageEmbed } from "discord.js-light";
 import Message from "../structs/Message";
 import { EMBED_COLOR } from "../constants";
 
-function matchAny(text: string, search: RegExp[]) {
+function matchAny(text: string, search: RegExp[]): boolean {
   for (const s of search) {
-    if (text.match(s) !== null) return true;
+    if (text.match(s) !== null) {
+      return true;
+    }
   }
   return false;
 }
@@ -34,12 +36,14 @@ export async function call(message: Message, parts: string[]): Promise<void> {
         new MessageEmbed({
           title: "Help",
           color: EMBED_COLOR,
-          description: Array.from(message.client.commands.entries())
-            .filter((cmd) =>
-              cmd[0] !== "help" && cmd[1].check ? cmd[1].check(message) : true
-            )
-            .map((cmd) => `\`${message.client.config.prefix}${cmd[0]}\``)
-            .join("\n"),
+          description:
+            "[More detailed documentation here](https://gamestatus.douile.com/docs/user)\n" +
+            Array.from(message.client.commands.entries())
+              .filter((cmd) =>
+                cmd[0] !== "help" && cmd[1].check ? cmd[1].check(message) : true
+              )
+              .map((cmd) => `\`${message.client.config.prefix}${cmd[0]}\``)
+              .join("\n"),
           footer: {
             text: `Use "${message.client.config.prefix}help commandName" for detailed help`,
           },
@@ -52,12 +56,13 @@ export async function call(message: Message, parts: string[]): Promise<void> {
         new MessageEmbed({
           title: "Help",
           color: EMBED_COLOR,
+          description:
+            "[More detailed documentation here](https://gamestatus.douile.com/docs/user)",
           fields: Array.from(message.client.commands.entries())
-            .filter((cmd) =>
-              matchAny(`${message.client.config.prefix}${cmd[0]}`, search) &&
-              cmd[1].check
-                ? cmd[1].check(message)
-                : true
+            .filter(
+              (cmd) =>
+                matchAny(`${message.client.config.prefix}${cmd[0]}`, search) &&
+                (cmd[1].check ? cmd[1].check(message) : true)
             )
             .map((cmd) => {
               return {
