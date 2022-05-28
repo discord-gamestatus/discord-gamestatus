@@ -21,6 +21,7 @@ import { EMBED_COLOR } from "../constants";
 import { channelFirstArg } from "../utils";
 
 export const name = "statusrefresh";
+export const help = "Force bot to resend all status messages (next update).";
 export const check = isAdmin;
 
 export async function call(message: Message): Promise<void> {

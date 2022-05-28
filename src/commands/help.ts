@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import { MessageEmbed } from "discord.js-light";
+import { ApplicationCommandOptionData, MessageEmbed } from "discord.js-light";
 
 import Message from "../structs/Message";
 import { EMBED_COLOR } from "../constants";
@@ -28,6 +28,14 @@ function matchAny(text: string, search: RegExp[]): boolean {
 }
 
 export const name = "help";
+export const help = "Get help with how to use commands";
+export const options: ApplicationCommandOptionData[] = [
+  {
+    type: "STRING",
+    name: "command",
+    description: "Command to retrieve help for",
+  },
+];
 export async function call(message: Message, parts: string[]): Promise<void> {
   const search = parts.map((s) => new RegExp(s, "gi"));
   if (search.length === 0) {

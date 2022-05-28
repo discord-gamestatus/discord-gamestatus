@@ -13,7 +13,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import { MessageEmbed } from "discord.js-light";
+import {
+  ApplicationCommandOptionChoiceData,
+  ApplicationCommandOptionData,
+  MessageEmbed,
+} from "discord.js-light";
 
 import Message from "../structs/Message";
 import Update from "../structs/Update";
@@ -61,6 +65,79 @@ export const help = `Modify status messages in the guild.\nUse cases:\n\
   Full list of formattables: ${FORMAT_PROPERTIES.map((p) => `\`{${p}}\``).join(
     ", "
   )}`;
+const OPTION_CHOICES: ApplicationCommandOptionChoiceData[] =
+  OPTION_LAYOUT.filter((o) => o !== "spacer").map((o) => {
+    return { name: o, value: o };
+  });
+export const options: ApplicationCommandOptionData[] = [
+  {
+    type: "SUB_COMMAND",
+    name: "list",
+    description: "List active statuses",
+  },
+  {
+    type: "SUB_COMMAND",
+    name: "get",
+    description: "Get setting(s) values for a status",
+    options: [
+      {
+        type: "INTEGER",
+        name: "status-id",
+        description: "ID of the status message",
+        required: true,
+        minValue: 0,
+      },
+    ],
+  },
+  {
+    type: "SUB_COMMAND",
+    name: "reset",
+    description: "Reset a setting value",
+    options: [
+      {
+        type: "INTEGER",
+        name: "status-id",
+        description: "ID of the status message",
+        required: true,
+        minValue: 0,
+      },
+      {
+        type: "STRING",
+        name: "setting",
+        description: "Setting to reset",
+        required: true,
+        choices: OPTION_CHOICES,
+      },
+    ],
+  },
+  {
+    type: "SUB_COMMAND",
+    name: "set",
+    description: "Set the value of a setting",
+    options: [
+      {
+        type: "INTEGER",
+        name: "status-id",
+        description: "ID of the status message",
+        required: true,
+        minValue: 0,
+      },
+      {
+        type: "STRING",
+        name: "setting",
+        description: "Setting to set",
+        required: true,
+        choices: OPTION_CHOICES,
+      },
+      {
+        type: "STRING",
+        name: "value",
+        description: "New value of the setting",
+        required: true,
+      },
+    ],
+  },
+];
 
 export async function call(message: Message): Promise<void> {
   const args = message.content.split(" ").splice(1);

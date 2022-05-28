@@ -13,18 +13,33 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import { TextChannel } from "discord.js-light";
+import { ApplicationCommandOptionData, TextChannel } from "discord.js-light";
 
 import Message from "../structs/Message";
 import Update from "../structs/Update";
 import { isAdmin } from "../checks";
-import { isValidGame } from "../query";
+import { gameList, isValidGame } from "../query";
 import { verboseLog } from "../debug";
 
 export const name = "status";
 export const check = isAdmin;
 export const help =
   "Create a status message, you must provide game and IP\ne.g. `!status csgo 192.168.0.1`";
+export const options: ApplicationCommandOptionData[] = [
+  {
+    type: "STRING",
+    name: "game",
+    description: "Game type for query",
+    //    choices: gameList().map(g => { return { name: g.keys[0], value: g.keys[0] }}),
+    required: true,
+  },
+  {
+    type: "STRING",
+    name: "ip",
+    description: "Server IP (and port)",
+    required: true,
+  },
+];
 
 export async function call(message: Message, parts: string[]): Promise<void> {
   parts = parts.filter((s) => s.length > 0);

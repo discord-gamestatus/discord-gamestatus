@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import { MessageEmbed } from "discord.js-light";
+import { ApplicationCommandOptionData, MessageEmbed } from "discord.js-light";
 
 import { gameList } from "../query";
 import { isAdmin, isDMChannel, combineAny } from "../checks";
@@ -23,7 +23,14 @@ import Message from "../structs/Message";
 export const name = "gamelist";
 export const check = combineAny(isAdmin, isDMChannel);
 export const help =
-  "Output the list of games availabe, searchable with any text";
+  "Output the list of games available, searchable with any text";
+export const options: ApplicationCommandOptionData[] = [
+  {
+    type: "STRING",
+    name: "query",
+    description: "Game to search for",
+  },
+];
 
 export async function call(message: Message, parts: string[]): Promise<void> {
   const games = await gameList(),

@@ -142,7 +142,7 @@ export async function query(
   return state;
 }
 
-export async function gameList(): Promise<Game[]> {
+export function gameList(): Game[] {
   const resolver = getResolver();
   return resolver.games;
 }
