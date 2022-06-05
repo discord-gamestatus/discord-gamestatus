@@ -293,7 +293,7 @@ async function checkTickLimits(
     counter = {
       guildCount: 0,
       channelCount: {},
-      limits: (await getLimits(client, guild.ownerId)) as Limit,
+      limits: (await getLimits(client, guild)).limits,
     };
   } else {
     counter = counters.get(update.guild);
