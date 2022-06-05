@@ -14,6 +14,7 @@ GNU General Public License for more details.
 */
 
 import { Pool, QueryResult, QueryResultRow } from "pg";
+import { Snowflake } from "discord.js-light";
 
 import SaveInterface, {
   GetOpts,
@@ -225,6 +226,64 @@ export default class SavePSQL implements SaveInterface {
   async entries(): Promise<[string, Update[]][]> {
     const all = await this.getAll();
     return Object.entries(all);
+  }
+
+  async getGuildActivation(guild: Snowflake): Promise<Snowflake | undefined> {
+    const client = await this.pool.connect();
+    const query = await client.query(
+      "SELECT user_id FROM activated_guilds WHERE guild_id=$1 LIMIT 1",
+      [guild]
+    );
+    client.release();
+    return query.rowCount === 0 ? undefined : query.rows[0].user_id;
+  }
+
+  async getUserActivationCount(user: Snowflake): Promise<number> {
+    const client = await this.pool.connect();
+    const query = await client.query(
+      "SELECT COUNT(guild_id) AS count FROM activated_guilds WHERE user_id=$1",
+      [user]
+    );
+    client.release();
+    return query.rowCount === 0 ? 0 : query.rows[0].count;
+  }
+
+  async addUserActivation(user: Snowflake, guild: Snowflake): Promise<boolean> {
+    let didError = false;
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query(
+        "INSERT INTO activated_guilds (guild_id, user_id) VALUES ($1, $2)",
+        [guild, user]
+      );
+      await client.query("COMMIT");
+    } catch (e) {
+      await client.query("ROLLBACK");
+      didError = true;
+    } finally {
+      client.release();
+    }
+    return !didError;
+  }
+
+  async removeUserActivation(guild: Snowflake): Promise<boolean> {
+    let didError = false;
+    let r = { rowCount: 0 };
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      r = await client.query("DELETE FROM activated_guilds WHERE guild_id=$1", [
+        guild,
+      ]);
+      await client.query("COMMIT");
+    } catch (e) {
+      await client.query("ROLLBACK");
+      didError = true;
+    } finally {
+      client.release();
+    }
+    return !didError && r.rowCount > 0;
   }
 
   /*****************************************************************************

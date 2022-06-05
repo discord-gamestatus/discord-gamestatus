@@ -14,6 +14,7 @@ GNU General Public License for more details.
 */
 
 import Update from "../Update";
+import { Snowflake } from "discord.js-light";
 
 export interface GetOpts {
   message?: string;
@@ -93,4 +94,24 @@ export default interface SaveInterface {
   entries():
     | Promise<Array<[string, Array<Update>]>>
     | IterableIterator<[string, Array<Update>]>;
+
+  /**
+   * Get the user who activated there limits in a guild
+   */
+  getGuildActivation(guild: Snowflake): Promise<undefined | Snowflake>;
+
+  /**
+   * Get the number of guilds a user has activated
+   */
+  getUserActivationCount(user: Snowflake): Promise<number>;
+
+  /**
+   * Add a guild activation
+   */
+  addUserActivation(user: Snowflake, guild: Snowflake): Promise<boolean>;
+
+  /**
+   * Remove a user activation
+   */
+  removeUserActivation(guild: Snowflake): Promise<boolean>;
 }

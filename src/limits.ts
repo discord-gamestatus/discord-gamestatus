@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 import Client from "./structs/Client";
-import { Snowflake } from "discord.js-light";
+import { Guild, Snowflake } from "discord.js-light";
 
 import { warnLog, debugLog, verboseLog } from "./debug";
 
@@ -38,25 +38,35 @@ function max(a?: number, b?: number): number | undefined {
   return b;
 }
 
+export interface LimitResponse {
+  limits: Limit;
+  user: Snowflake;
+  isDefault: boolean;
+}
+
 export interface Limit {
   channelLimit?: number;
   guildLimit?: number;
+  activationLimit?: number;
 }
 
 // Cache used here as guild member endpoint can be very slow (RIP memory usage)
 const limitCache: Map<string, Limit> = new Map();
-export async function getLimits(
+export async function getUserLimits(
   client: Client,
   user: Snowflake,
   noCache = false
-): Promise<Limit | undefined> {
+): Promise<LimitResponse> {
+  // FIXME: Set activationLimit
   if (limitCache.has(user) && !noCache) {
-    return limitCache.get(user);
+    return { limits: limitCache.get(user) as Limit, user, isDefault: false };
   }
   const limits: Limit = {
     channelLimit: client.config.channelLimit,
     guildLimit: client.config.guildLimit,
+    activationLimit: 0, // TODO: Maybe allow overriding this although it doesn't seem necessary
   };
+  let isDefault = true;
   for (const guildID in client.config.limitRules) {
     const guild = await nullError(client.guilds.fetch(guildID), warnLog);
     if (guild === null) continue;
@@ -75,9 +85,32 @@ export async function getLimits(
         for (key in limits) {
           limits[key] = max(limits[key], guildRules[roleID][key]);
         }
+        isDefault = false;
       }
     }
   }
   limitCache.set(user, limits);
+  return { limits, user, isDefault };
+}
+
+/**
+ * Get the limits for a guild
+ */
+export async function getLimits(
+  client: Client,
+  guild: Guild,
+  noCache = false
+): Promise<LimitResponse> {
+  const user = await client.updateCache.saveInterface.getGuildActivation(
+    guild.id
+  );
+  if (user) return await getUserLimits(client, user, noCache);
+  // FIXME: Temporary back up to guild owner
+  const limits = await getUserLimits(client, guild.ownerId, noCache);
+  if (!limits.isDefault)
+    await client.updateCache.saveInterface.addUserActivation(
+      guild.ownerId,
+      guild.id
+    );
   return limits;
 }

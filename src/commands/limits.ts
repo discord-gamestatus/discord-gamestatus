@@ -16,21 +16,18 @@ GNU General Public License for more details.
 import { MessageEmbed } from "discord.js-light";
 
 import Message from "../structs/Message";
-import { getLimits } from "../limits";
+import { getLimits, getUserLimits } from "../limits";
 import { EMBED_COLOR } from "../constants";
 
 export const name = "limits";
 export const help = "View your guild/channel limits";
 
 export async function call(message: Message): Promise<void> {
-  let user;
-  if (message.channel.type === "DM" || !message.guild) {
-    user = message.author;
-  } else {
-    const guild = await message.client.guilds.fetch(message.guild.id);
-    user = await message.client.users.fetch(guild.ownerId);
-  }
-  const limits = await getLimits(message.client, user.id, true);
+  const limits = message.guild
+    ? await getLimits(message.client, message.guild, true)
+    : await getUserLimits(message.client, message.author.id, true);
+  console.log(limits);
+  const user = await message.client.users.fetch(limits.user);
   await message.channel.send({
     embeds: [
       new MessageEmbed({
@@ -38,11 +35,9 @@ export async function call(message: Message): Promise<void> {
           name: user.username,
           iconURL: user.displayAvatarURL(),
         },
-        fields: limits
-          ? Object.entries(limits).map(([name, value]) => {
-              return { name, value: String(value), inline: true };
-            })
-          : [],
+        fields: Object.entries(limits.limits).map(([name, value]) => {
+          return { name, value: String(value), inline: true };
+        }),
         color: EMBED_COLOR,
       }),
     ],

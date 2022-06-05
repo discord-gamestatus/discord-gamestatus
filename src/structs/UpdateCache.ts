@@ -116,7 +116,7 @@ export default class UpdateCache {
       if (u.channel === update.channel) channelUpdateCount++;
     }
 
-    const limits = await getLimits(client, guild?.ownerId);
+    const { limits } = await getLimits(client, guild);
 
     if (
       !(
