@@ -17,10 +17,12 @@ import { ApplicationCommandOptionData } from "discord.js-light";
 
 import Message from "../structs/Message";
 import { isAdmin } from "../checks";
+import { getUserLimits } from "../limits";
 
 export const name = "activateguild";
 export const check = isAdmin;
-export const help = "Set/remove the user who's limits are used for the current guild";
+export const help =
+  "Set/remove the user who's limits are used for the current guild";
 export const options: ApplicationCommandOptionData[] = [
   {
     name: "mode",
@@ -49,7 +51,27 @@ export async function call(message: Message, parts: string[]): Promise<void> {
 }
 
 async function addActivation(message: Message): Promise<void> {
-  // FIXME: Check they're not exceeding limit
+  const limits = await getUserLimits(message.client, message.author.id, true);
+
+  if (limits.isDefault) {
+    await message.reply("You must have custom limit rules to activate a guild");
+    return;
+  }
+
+  const activationCount =
+    await message.client.updateCache.saveInterface.getUserActivationCount(
+      message.author.id
+    );
+
+  if (
+    !limits.limits.activationLimit ||
+    activationCount >= limits.limits.activationLimit
+  ) {
+    await message.reply(
+      `You have reached your limit of ${activationCount} activated servers`
+    );
+    return;
+  }
 
   const success =
     await message.client.updateCache.saveInterface.addUserActivation(

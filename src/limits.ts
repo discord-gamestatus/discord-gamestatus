@@ -64,6 +64,7 @@ export async function getUserLimits(
   const limits: Limit = {
     channelLimit: client.config.channelLimit,
     guildLimit: client.config.guildLimit,
+    activationLimit: 0, // TODO: Maybe allow overriding this although it doesn't seem necessary
   };
   let isDefault = true;
   for (const guildID in client.config.limitRules) {
