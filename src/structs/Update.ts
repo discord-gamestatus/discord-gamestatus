@@ -438,6 +438,11 @@ export default class Update extends Serializable {
             }
           } else if (e.code === 10008) {
             needsNewMessage = true;
+          } else if ([50035].includes(e.code)) {
+            warnLog(
+              `[Update] Error editing message ${message.id} ${e.code}`,
+              e
+            );
           } else {
             verboseLog(
               `[Update] Error editing message ${message.id} ${e.code}`,
@@ -460,6 +465,8 @@ export default class Update extends Serializable {
             if ([10003, 50001, 50013].includes(e.code)) {
               infoLog(`[Update] Removing ${this.ID()} for ${e.code}`);
               await client.updateCache.delete(this); // delete status
+            } else if ([50035].includes(e.code)) {
+              warnLog("[Update] Unable to send new update", e.code, e);
             } else {
               debugLog("[Update] Unable to send new update", e.code);
             }
