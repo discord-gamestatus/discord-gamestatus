@@ -18,6 +18,13 @@ import { ApplicationCommandOptionData } from "discord.js-light";
 import Message from "../structs/Message";
 import { isAdmin } from "../checks";
 import { getUserLimits } from "../limits";
+import { EMBED_COLOR } from "../constants";
+
+enum Mode {
+  View,
+  Set,
+  Remove,
+}
 
 export const name = "activateguild";
 export const check = isAdmin;
@@ -31,7 +38,9 @@ export const options: ApplicationCommandOptionData[] = [
     choices: [
       { name: "Set", value: "set" },
       { name: "Remove", value: "remove" },
+      { name: "View", value: "view" },
     ],
+    required: false,
   },
 ];
 export async function call(message: Message, parts: string[]): Promise<void> {
@@ -40,14 +49,47 @@ export async function call(message: Message, parts: string[]): Promise<void> {
     return;
   }
 
-  let isSetting = true;
+  let mode = Mode.View;
   if (parts.length > 0) {
-    if (parts[0].match(/remove/i) !== null) isSetting = false;
+    if (parts[0].match(/set/i) !== null) mode = Mode.Set;
+    if (parts[0].match(/rem/i) !== null) mode = Mode.Remove;
   }
 
-  return isSetting
-    ? await addActivation(message)
-    : await removeActivation(message);
+  switch (mode) {
+    case Mode.Set:
+      return addActivation(message);
+    case Mode.Remove:
+      return removeActivation(message);
+    default:
+    case Mode.View:
+      return viewActivations(message);
+  }
+}
+
+async function viewActivations(message: Message): Promise<void> {
+  const guildActivation =
+    await message.client.updateCache.saveInterface.getGuildActivation(
+      message.guildId as string
+    );
+  const userLimits = await getUserLimits(message.client, message.author.id);
+  const userActivations =
+    await message.client.updateCache.saveInterface.getUserActivationCount(
+      message.author.id
+    );
+
+  await message.reply({
+    embeds: [
+      {
+        title: "Activations",
+        description: `This guild is currently activated by ${
+          guildActivation ? `<@!${guildActivation}>` : "no-one"
+        }\nYou have used ${userActivations}/${
+          userLimits.limits?.activationLimit || 0
+        } activations`,
+        color: EMBED_COLOR,
+      },
+    ],
+  });
 }
 
 async function addActivation(message: Message): Promise<void> {

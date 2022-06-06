@@ -26,7 +26,6 @@ export async function call(message: Message): Promise<void> {
   const limits = message.guild
     ? await getLimits(message.client, message.guild, true)
     : await getUserLimits(message.client, message.author.id, true);
-  console.log(limits);
   const user = await message.client.users.fetch(limits.user);
   await message.channel.send({
     embeds: [
