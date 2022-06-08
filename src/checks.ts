@@ -15,43 +15,45 @@ GNU General Public License for more details.
 
 import { PermissionResolvable } from "discord.js-light";
 
-import Message from "./structs/Message";
+import { CommandContext } from "./structs/CommandContext";
 
-export type Check = (message: Message) => boolean;
+export type Check = (context: CommandContext) => boolean;
 
-export function isAdmin(message: Message): boolean {
-  if (!message.member) return false;
-  return message.member.permissions.has(
-    message.client.config.adminFlag as PermissionResolvable
+export function isAdmin(context: CommandContext): boolean {
+  const member = context.member();
+  if (!member) return false;
+  return member.permissions.has(
+    context.client().config.adminFlag as PermissionResolvable
   );
 }
 
-export function isOwner(message: Message): boolean {
-  if (!message.guild) return false;
-  return message.guild.ownerId === message.author.id;
+export function isOwner(context: CommandContext): boolean {
+  const guild = context.guild();
+  if (!guild) return false;
+  return guild.ownerId === context.user().id;
 }
 
-export function isBotOwner(message: Message): boolean {
-  return message.client.config.owner === message.author.id;
+export function isBotOwner(context: CommandContext): boolean {
+  return context.client().config.owner === context.user().id;
 }
 
-export function isDMChannel(message: Message): boolean {
-  return message.channel.type === "DM";
+export function isDMChannel(context: CommandContext): boolean {
+  return context.channel()?.type === "DM";
 }
 
 export function combineAll(...checks: Check[]): Check {
-  return function (message: Message) {
+  return function (context: CommandContext) {
     for (const check of checks) {
-      if (!check(message)) return false;
+      if (!check(context)) return false;
     }
     return true;
   };
 }
 
 export function combineAny(...checks: Check[]): Check {
-  return function (message: Message) {
+  return function (context: CommandContext) {
     for (const check of checks) {
-      if (check(message)) return true;
+      if (check(context)) return true;
     }
     return false;
   };
