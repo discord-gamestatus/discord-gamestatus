@@ -18,7 +18,7 @@ import { ApplicationCommandOptionData, MessageEmbed } from "discord.js-light";
 import { gameList } from "../query";
 import { isAdmin, isDMChannel, combineAny } from "../checks";
 import { EMBED_COLOR } from "../constants";
-import Message from "../structs/Message";
+import { CommandContext } from "../structs/CommandContext";
 
 export const name = "gamelist";
 export const check = combineAny(isAdmin, isDMChannel);
@@ -32,9 +32,9 @@ export const options: ApplicationCommandOptionData[] = [
   },
 ];
 
-export async function call(message: Message, parts: string[]): Promise<void> {
-  const games = await gameList(),
-    gameIterator = games.values();
+export async function call(context: CommandContext): Promise<void> {
+  const games = await gameList();
+  const gameIterator = games.values();
   let embed = new MessageEmbed({ color: EMBED_COLOR });
   let embedSize = 100;
   const embeds = [];
@@ -45,7 +45,9 @@ export async function call(message: Message, parts: string[]): Promise<void> {
     key = gameIterator.next(),
     count = 0;
   const regex =
-    parts.length > 0 ? parts.map((s) => new RegExp(s, "i")) : undefined;
+    context.options().length > 0
+      ? context.options().map((s) => new RegExp(s as string, "i"))
+      : undefined;
 
   while (!key.done) {
     const game = key.value;
@@ -84,6 +86,6 @@ export async function call(message: Message, parts: string[]): Promise<void> {
   if (field.length > 0) embed.addField("_ _", field);
   for (const e of embeds.concat(embed)) {
     e.setTitle(`${count} Available games`);
-    await message.channel.send({ embeds: [e] });
+    await context.reply({ embeds: [e], ephemeral: true });
   }
 }
