@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2021 Douile
+Copyright (C) 2019-2022 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,16 +15,19 @@ GNU General Public License for more details.
 
 import { TextChannel } from "discord.js-light";
 
-import Message from "../structs/Message";
 import { isAdmin } from "../checks";
+import { CommandContext } from "../structs/CommandContext";
 import { channelFirstArg } from "../utils";
 
 export const name = "statusclear";
 export const check = isAdmin;
 export const help = "Clear all status messages from the channel";
 
-export async function call(message: Message, args: string[]): Promise<void> {
-  const response = await message.channel.send("Clearing status updates...");
+export async function call(context: CommandContext): Promise<void> {
+  const response = await context.reply({
+    content: "Clearing status updates...",
+    ephemeral: true,
+  });
   let channel;
   try {
     channel = await channelFirstArg(message, args);
