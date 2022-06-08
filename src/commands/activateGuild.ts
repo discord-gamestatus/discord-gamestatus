@@ -15,10 +15,10 @@ GNU General Public License for more details.
 
 import { ApplicationCommandOptionData } from "discord.js-light";
 
-import Message from "../structs/Message";
 import { isAdmin } from "../checks";
 import { getUserLimits } from "../limits";
 import { EMBED_COLOR } from "../constants";
+import { CommandContext, GuildCommandContext } from "../structs/CommandContext";
 
 enum Mode {
   View,
@@ -43,41 +43,45 @@ export const options: ApplicationCommandOptionData[] = [
     required: false,
   },
 ];
-export async function call(message: Message, parts: string[]): Promise<void> {
-  if (!message.guild) {
-    await message.reply("You can only activate in a server");
+export async function call(context: CommandContext): Promise<void> {
+  const guildContext = context.intoGuildContext();
+  if (!guildContext) {
+    await context.reply({
+      content: "You can only activate in a server",
+      ephemeral: true,
+    });
     return;
   }
 
   let mode = Mode.View;
-  if (parts.length > 0) {
-    if (parts[0].match(/set/i) !== null) mode = Mode.Set;
-    if (parts[0].match(/rem/i) !== null) mode = Mode.Remove;
+  for (const part of context.options()) {
+    if (typeof part === "string") {
+      if (part.match(/set/i) !== null) mode = Mode.Set;
+      if (part.match(/rem/i) !== null) mode = Mode.Remove;
+    }
   }
 
   switch (mode) {
     case Mode.Set:
-      return addActivation(message);
+      return addActivation(guildContext);
     case Mode.Remove:
-      return removeActivation(message);
+      return removeActivation(guildContext);
     default:
     case Mode.View:
-      return viewActivations(message);
+      return viewActivations(guildContext);
   }
 }
 
-async function viewActivations(message: Message): Promise<void> {
-  const guildActivation =
-    await message.client.updateCache.saveInterface.getGuildActivation(
-      message.guildId as string
-    );
-  const userLimits = await getUserLimits(message.client, message.author.id);
-  const userActivations =
-    await message.client.updateCache.saveInterface.getUserActivationCount(
-      message.author.id
-    );
+async function viewActivations(context: GuildCommandContext): Promise<void> {
+  const guildActivation = await context
+    .saveInterface()
+    .getGuildActivation(context.guild().id);
+  const userLimits = await getUserLimits(context.client(), context.user().id);
+  const userActivations = await context
+    .saveInterface()
+    .getUserActivationCount(context.user().id);
 
-  await message.reply({
+  await context.reply({
     embeds: [
       {
         title: "Activations",
@@ -89,54 +93,55 @@ async function viewActivations(message: Message): Promise<void> {
         color: EMBED_COLOR,
       },
     ],
+    ephemeral: true,
   });
 }
 
-async function addActivation(message: Message): Promise<void> {
-  const limits = await getUserLimits(message.client, message.author.id, true);
+async function addActivation(context: GuildCommandContext): Promise<void> {
+  const limits = await getUserLimits(context.client(), context.user().id, true);
 
   if (limits.isDefault) {
-    await message.reply("You must have custom limit rules to activate a guild");
+    await context.reply({
+      content: "You must have custom limit rules to activate a guild",
+      ephemeral: true,
+    });
     return;
   }
 
-  const activationCount =
-    await message.client.updateCache.saveInterface.getUserActivationCount(
-      message.author.id
-    );
+  const activationCount = await context
+    .saveInterface()
+    .getUserActivationCount(context.user().id);
 
   if (
     !limits.limits.activationLimit ||
     activationCount >= limits.limits.activationLimit
   ) {
-    await message.reply(
-      `You have reached your limit of ${activationCount} activated servers`
-    );
+    await context.reply({
+      content: `You have reached your limit of ${activationCount} activated servers`,
+      ephemeral: true,
+    });
     return;
   }
 
-  const success =
-    await message.client.updateCache.saveInterface.addUserActivation(
-      message.author.id,
-      message.guild?.id as string
-    );
+  const success = await context
+    .saveInterface()
+    .addUserActivation(context.user().id, context.guild().id);
 
-  await message.reply(
-    success
+  await context.reply({
+    content: success
       ? "Successfully added activation"
-      : "Unable to add activation to this guild"
-  );
+      : "Unable to add activation to this guild",
+  });
 }
 
-async function removeActivation(message: Message): Promise<void> {
-  const success =
-    await message.client.updateCache.saveInterface.removeUserActivation(
-      message.guild?.id as string
-    );
+async function removeActivation(context: GuildCommandContext): Promise<void> {
+  const success = await context
+    .saveInterface()
+    .removeUserActivation(context.guild().id);
 
-  await message.reply(
-    success
+  await context.reply({
+    content: success
       ? "Successfully removed activation"
-      : "Unable to remove activation from this guild"
-  );
+      : "Unable to remove activation from this guild",
+  });
 }
