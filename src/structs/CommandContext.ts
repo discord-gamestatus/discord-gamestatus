@@ -96,6 +96,10 @@ export class CommandInteractionContext implements CommandContext {
       return this as GuildCommandInteractionContext;
     return null;
   }
+
+  inner(): CommandInteraction {
+    return this.data;
+  }
 }
 
 export class GuildCommandInteractionContext
