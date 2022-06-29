@@ -25,6 +25,7 @@ import Update from "./structs/Update";
 import { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } from "./debug";
 import { getLimits, Limit } from "./limits";
 import { startDBLApiHook } from "./dblapi";
+import { MessageContext } from "./structs/CommandContext";
 
 let TICK_GENERATOR: AsyncGenerator<Update[]> | undefined = undefined;
 let TICK_LIMITS: Counters | undefined = undefined;
@@ -176,7 +177,7 @@ async function onMessage(oMessage: Discord.Message) {
   if (!message.content.startsWith(message.client.config.prefix)) return;
 
   const parts = message.content
-    .substr(message.client.config.prefix.length)
+    .substring(message.client.config.prefix.length)
     .split(" ");
   if (parts.length === 0) return;
   const command = parts.splice(0, 1)[0].trim().toLowerCase();
@@ -189,9 +190,11 @@ async function onMessage(oMessage: Discord.Message) {
       }] :: ${command} / ${parts.map((v) => `"${v}"`).join(", ")}`
     );
 
-    if (!(cmd.check instanceof Function) || cmd.check(message)) {
+    const context = new MessageContext(message, command, parts);
+
+    if (!(cmd.check instanceof Function) || cmd.check(context)) {
       try {
-        await cmd.call(message, parts);
+        await cmd.call(context);
       } catch (e) {
         errorLog(`Error running command ${command}\n`, e);
         await message.channel.send(
