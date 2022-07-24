@@ -25,7 +25,10 @@ import Update from "./structs/Update";
 import { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } from "./debug";
 import { getLimits, Limit } from "./limits";
 import { startDBLApiHook } from "./dblapi";
-import { MessageContext } from "./structs/CommandContext";
+import {
+  CommandInteractionContext,
+  MessageContext,
+} from "./structs/CommandContext";
 
 let TICK_GENERATOR: AsyncGenerator<Update[]> | undefined = undefined;
 let TICK_LIMITS: Counters | undefined = undefined;
@@ -36,7 +39,6 @@ const TICK_EVENT = "updateTick";
 const MAX_TICK = Math.min(4294967296, Number.MAX_SAFE_INTEGER);
 
 const INVITE_FLAGS = [
-  "VIEW_AUDIT_LOG",
   "VIEW_CHANNEL",
   "SEND_MESSAGES",
   "MANAGE_MESSAGES",
@@ -211,6 +213,37 @@ async function onMessage(oMessage: Discord.Message) {
   }
   verboseLog(`Unkown command ${command}`);
 }
+
+async function onInteraction(interaction: Discord.Interaction) {
+  if (!interaction.isCommand()) return;
+
+  const context = new CommandInteractionContext(interaction);
+  const cmd = (interaction.client as Client).commands.get(context.command());
+  // TODO: Generalise command handling
+  if (cmd) {
+    if (!(cmd.check instanceof Function) || cmd.check(context)) {
+      try {
+        await cmd.call(context);
+      } catch (e) {
+        errorLog(`Error running interaction ${cmd.name}\n`, e);
+        await interaction.reply({
+          content: "Sorry an error occured, please try again later",
+          ephemeral: true,
+        });
+      }
+    } else {
+      await interaction.reply({
+        content: "Sorry you don't have permission to use this command",
+      });
+    }
+  } else {
+    await interaction.reply({
+      content: `Unknown command \`${context.command()}\``,
+      ephemeral: true,
+    });
+  }
+}
+
 function onTick(client: Client) {
   return async function () {
     if (TICK_GENERATOR === undefined)
@@ -380,6 +413,12 @@ export default async function start(config: StartupConfig): Promise<Client> {
   client.on(
     Discord.Constants.Events.MESSAGE_CREATE,
     errorWrap<[messsage: Discord.Message], unknown, unknown, void>(onMessage)
+  );
+  client.on(
+    Discord.Constants.Events.INTERACTION_CREATE,
+    errorWrap<[interaction: Discord.Interaction], unknown, unknown, void>(
+      onInteraction
+    )
   );
   client.on(
     Discord.Constants.Events.CLIENT_READY,
