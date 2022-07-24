@@ -21,11 +21,12 @@ import { humanDuration } from "@douile/bot-utilities";
 
 import Message from "../structs/Message";
 import { EMBED_COLOR } from "../constants";
+import { CommandContext } from "../structs/CommandContext";
 
 export const name = "botinfo";
 export const help = "Output runtime information";
-export async function call(message: Message): Promise<void> {
-  const client = message.client;
+export async function call(context: CommandContext): Promise<void> {
+  const client = context.client();
 
   const memoryUsage = process.memoryUsage();
   let supportLink = "";
@@ -48,7 +49,7 @@ Memory usage: ${Math.round(memoryUsage.heapUsed / 1024)}kb/${Math.round(
 [discord.js](https://github.com/discordjs/discord.js)\n\
 [gamedig](https://github.com/gamedig/node-gamedig)`;
 
-  await message.channel.send({
+  await context.reply({
     embeds: [
       new MessageEmbed({
         title: `${Package.name} info`,
@@ -57,5 +58,6 @@ Memory usage: ${Math.round(memoryUsage.heapUsed / 1024)}kb/${Math.round(
         color: EMBED_COLOR,
       }),
     ],
+    ephemeral: true,
   });
 }

@@ -23,28 +23,43 @@ const { ApplicationCommandManager } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v10");
 
-(async function () {
-  const rest = new REST({ version: 10 }).setToken(process.env.DISCORD_API_KEY);
-  const application = await rest.get(Routes.oauth2CurrentApplication());
-
+async function parseCommands() {
   const DIR = path.join(__dirname, "../dist/commands");
-  const commands = (await fs.readdir(DIR)).map((file) => {
-    const command = require(path.join(DIR, file));
-    const newLineIndex = command.help.indexOf("\n");
-    return ApplicationCommandManager.transformCommand({
-      name: command.name,
-      description: command.help.substring(
-        0,
-        Math.min(newLineIndex > 1 ? newLineIndex : command.help.length, 100)
-      ),
-      options: command.options,
-      defaultPermission: true,
-      type: "CHAT_INPUT",
-    });
-  });
-  console.log(commands);
+  const commands = (await fs.readdir(DIR))
+    .map((file) => {
+      const command = require(path.join(DIR, file));
+      if (command.disableSlash) return undefined;
+      const newLineIndex = command.help.indexOf("\n");
+      return ApplicationCommandManager.transformCommand({
+        name: command.name,
+        description: command.help.substring(
+          0,
+          Math.min(newLineIndex > 1 ? newLineIndex : command.help.length, 100)
+        ),
+        options: command.options,
+        defaultPermission: true,
+        type: "CHAT_INPUT",
+      });
+    })
+    .filter((command) => command !== undefined);
+  return commands;
+}
 
-  await rest.put(Routes.applicationCommands(application.id), {
-    body: commands,
-  });
+(async function () {
+  if (process.env.DISCORD_API_KEY) {
+    const rest = new REST({ version: 10 }).setToken(
+      process.env.DISCORD_API_KEY
+    );
+    const application = await rest.get(Routes.oauth2CurrentApplication());
+    const commands = await parseCommands();
+    await rest.put(Routes.applicationCommands(application.id), {
+      body: commands,
+    });
+  } else {
+    console.error(
+      "Running in dry mode, to actually modify your bot provide DISCORD_API_KEY environment variable"
+    );
+    const commands = await parseCommands();
+    console.log(JSON.stringify(commands, "  ", 2));
+  }
 })().then(null, console.error);

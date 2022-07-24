@@ -19,11 +19,17 @@ import {
   MessageEmbed,
 } from "discord.js-light";
 
-import Message from "../structs/Message";
 import Update from "../structs/Update";
 import { isAdmin } from "../checks";
 import { UpdateOptions } from "../structs/Update/UpdateOptions";
 import { EMBED_COLOR, FORMAT_PROPERTIES } from "../constants";
+import {
+  CommandContext,
+  GuildCommandContext,
+  CommandInteractionContext,
+  MessageContext,
+} from "../structs/CommandContext";
+import { warnLog } from "../debug";
 
 const WARNING =
   "_Changes will not take effect until after the status has updated_";
@@ -69,6 +75,11 @@ const OPTION_CHOICES: ApplicationCommandOptionChoiceData[] =
   OPTION_LAYOUT.filter((o) => o !== "spacer").map((o) => {
     return { name: o, value: o };
   });
+const KEYS = {
+  id: "status-id",
+  key: "setting",
+  value: "value",
+};
 export const options: ApplicationCommandOptionData[] = [
   {
     type: "SUB_COMMAND",
@@ -82,7 +93,7 @@ export const options: ApplicationCommandOptionData[] = [
     options: [
       {
         type: "INTEGER",
-        name: "status-id",
+        name: KEYS.id,
         description: "ID of the status message",
         required: true,
         minValue: 0,
@@ -96,14 +107,14 @@ export const options: ApplicationCommandOptionData[] = [
     options: [
       {
         type: "INTEGER",
-        name: "status-id",
+        name: KEYS.id,
         description: "ID of the status message",
         required: true,
         minValue: 0,
       },
       {
         type: "STRING",
-        name: "setting",
+        name: KEYS.key,
         description: "Setting to reset",
         required: true,
         choices: OPTION_CHOICES,
@@ -117,21 +128,21 @@ export const options: ApplicationCommandOptionData[] = [
     options: [
       {
         type: "INTEGER",
-        name: "status-id",
+        name: KEYS.id,
         description: "ID of the status message",
         required: true,
         minValue: 0,
       },
       {
         type: "STRING",
-        name: "setting",
+        name: KEYS.key,
         description: "Setting to set",
         required: true,
         choices: OPTION_CHOICES,
       },
       {
         type: "STRING",
-        name: "value",
+        name: KEYS.value,
         description: "New value of the setting",
         required: true,
       },
@@ -139,13 +150,119 @@ export const options: ApplicationCommandOptionData[] = [
   },
 ];
 
-export async function call(message: Message): Promise<void> {
-  const args = message.content.split(" ").splice(1);
+type Options =
+  | ListOptions
+  | ViewOptions
+  | ResetOptions
+  | SetOptions
+  | ErrorOptions;
+interface ListOptions {
+  mode: "list";
+}
+interface ViewOptions {
+  mode: "view";
+  index: number;
+}
+interface ResetOptions {
+  mode: "reset";
+  index: number;
+  key: string;
+}
+interface SetOptions {
+  mode: "set";
+  index: number;
+  key: string;
+  value: string;
+}
+interface ErrorOptions {
+  mode: "error";
+  message: string;
+}
 
-  if (!message.guild) return;
+function parseOptions(context: GuildCommandContext): Options {
+  try {
+    if (context instanceof MessageContext) {
+      return parseOptionsFromMessage(context);
+    }
 
-  let statuses = await message.client.updateCache.get({
-    guild: message.guild.id,
+    if (context instanceof CommandInteractionContext) {
+      return parseOptionsFromCommandInteraction(context);
+    }
+  } catch (e) {
+    warnLog(`Error parsing command "${name}"`, e);
+    return {
+      mode: "error",
+      message: "Unexpected error parsing command options",
+    };
+  }
+
+  throw new Error("unreachable");
+}
+
+function parseOptionsFromMessage(context: MessageContext): Options {
+  const args = context.options();
+
+  if (args.length === 0) return { mode: "list" };
+
+  const index = parseInt(args[0].replace(/^#/, ""));
+  if (isNaN(index))
+    return { mode: "error", message: "Status index must be an integer" };
+  if (args.length === 1) return { mode: "view", index };
+
+  const key = args[1].trim();
+  if (args.length === 2) return { mode: "reset", index, key };
+
+  const value = args.slice(2).join(" ");
+  return { mode: "set", index, key, value };
+}
+
+function parseOptionsFromCommandInteraction(
+  context: CommandInteractionContext
+): Options {
+  const opts = context.inner().options;
+
+  const command = opts.getSubcommand(true);
+
+  // List
+  if (command === options[0].name) return { mode: "list" };
+
+  // Get
+  const index = opts.getInteger(KEYS.id, true);
+  if (command === options[1].name) {
+    return { mode: "view", index };
+  }
+
+  // Reset
+  const key = opts.getString(KEYS.key, true);
+  if (command === options[2].name) {
+    return { mode: "reset", index, key };
+  }
+
+  // Set
+  const value = opts.getString(KEYS.value, true);
+  if (command === options[3].name) {
+    return { mode: "set", index, key, value };
+  }
+
+  throw new Error("unreachable");
+}
+
+export async function call(context: CommandContext): Promise<void> {
+  const guildContext = context.intoGuildContext();
+  if (!guildContext) return;
+
+  const options = parseOptions(guildContext);
+
+  if (options.mode === "error") {
+    await context.reply({
+      content: `Error: ${options.message}`,
+      ephemeral: true,
+    });
+    return;
+  }
+
+  let statuses = await context.client().updateCache.get({
+    guild: guildContext.guild().id,
   });
   if (statuses === undefined) {
     statuses = [];
@@ -153,96 +270,7 @@ export async function call(message: Message): Promise<void> {
     statuses = [statuses];
   }
 
-  if (args.length > 0) {
-    const index = parseInt(args[0].replace(/^#/, ""));
-    if (!isNaN(index) && index < statuses.length && index >= 0) {
-      const status = statuses[index];
-      if (args.length === 1) {
-        const opts = status.getOptions();
-        const options = [];
-        for (const fieldName of OPTION_LAYOUT) {
-          if (fieldName === "spacer") {
-            options.push({ name: "_ _", value: "_ _", inline: false });
-          } else {
-            options.push({
-              name: fieldName,
-              value: `\`\`\`json\n${JSON.stringify(opts[fieldName])}\n\`\`\``,
-              inline: true,
-            });
-          }
-        }
-
-        await message.channel.send({
-          embeds: [
-            new MessageEmbed({
-              title: `#${index}`,
-              description: statusIdentity(status),
-              fields: options,
-              timestamp: Date.now(),
-              color: EMBED_COLOR,
-            }),
-          ],
-        });
-      } else if (args.length === 2) {
-        await status.deleteOption(
-          message.client,
-          args[1] as keyof UpdateOptions
-        );
-        await message.channel.send({
-          embeds: [
-            new MessageEmbed({
-              title: `#${index}`,
-              description: `${statusIdentity(status)}\nReset: \`${
-                args[1]
-              }\`\n${WARNING}`,
-              timestamp: Date.now(),
-              color: EMBED_COLOR,
-            }),
-          ],
-        });
-      } else {
-        const value = args.splice(2).join(" ");
-        let error;
-        try {
-          await status.setOption(
-            message.client,
-            args[1] as keyof UpdateOptions,
-            value
-          );
-        } catch (e) {
-          error = e;
-          console.error("Error setting option", error);
-        }
-
-        await message.channel.send({
-          embeds: [
-            new MessageEmbed({
-              title: `#${index}`,
-              description: `${statusIdentity(status)}\nSet: \`${
-                args[1]
-              }=${status.getOption(
-                args[1] as keyof UpdateOptions
-              )}\`\n${WARNING}`,
-              timestamp: Date.now(),
-              color: EMBED_COLOR,
-            }),
-          ],
-        });
-      }
-    } else {
-      if (statuses.length === 0) {
-        await message.channel.send(
-          `There are no status messages in this guild`
-        );
-      } else {
-        await message.channel.send(
-          `Please enter a valid status ID (between 0 and ${
-            statuses.length - 1
-          })`
-        );
-      }
-    }
-  } else {
+  if (options.mode === "list") {
     const fields = statuses.map((status: Update, i: number) => {
       return {
         name: `#${i}`,
@@ -250,7 +278,8 @@ export async function call(message: Message): Promise<void> {
         inline: false,
       };
     });
-    await message.channel.send({
+
+    await context.reply({
       embeds: [
         new MessageEmbed({
           title: `${fields.length} Active statuses`,
@@ -259,6 +288,89 @@ export async function call(message: Message): Promise<void> {
           color: EMBED_COLOR,
         }),
       ],
+      ephemeral: true,
     });
+    return;
+  }
+
+  const status = statuses[options.index];
+  if (options.mode === "view") {
+    const opts = status.getOptions();
+    const outputOptions = [];
+    for (const fieldName of OPTION_LAYOUT) {
+      if (fieldName === "spacer") {
+        outputOptions.push({ name: "_ _", value: "_ _", inline: false });
+      } else {
+        outputOptions.push({
+          name: fieldName,
+          value: `\`\`\`json\n${JSON.stringify(opts[fieldName])}\n\`\`\``,
+          inline: true,
+        });
+      }
+    }
+
+    await context.reply({
+      embeds: [
+        new MessageEmbed({
+          title: `#${options.index}`,
+          description: statusIdentity(status),
+          fields: outputOptions,
+          timestamp: Date.now(),
+          color: EMBED_COLOR,
+        }),
+      ],
+      ephemeral: true,
+    });
+    return;
+  }
+
+  if (options.mode === "reset") {
+    await status.deleteOption(
+      context.client(),
+      options.key as keyof UpdateOptions
+    );
+    await context.reply({
+      embeds: [
+        new MessageEmbed({
+          title: `#${options.index}`,
+          description: `${statusIdentity(status)}\nReset: \`${
+            options.key
+          }\`\n${WARNING}`,
+          timestamp: Date.now(),
+          color: EMBED_COLOR,
+        }),
+      ],
+    });
+    return;
+  }
+
+  if (options.mode === "set") {
+    let error;
+    try {
+      await status.setOption(
+        context.client(),
+        options.key as keyof UpdateOptions,
+        options.value
+      );
+    } catch (e) {
+      error = e;
+      console.error("Error setting option", error);
+    }
+
+    await context.reply({
+      embeds: [
+        new MessageEmbed({
+          title: `#${options.index}`,
+          description: `${statusIdentity(status)}\nSet: \`${
+            options.key
+          }=${status.getOption(
+            options.key as keyof UpdateOptions
+          )}\`\n${WARNING}`,
+          timestamp: Date.now(),
+          color: EMBED_COLOR,
+        }),
+      ],
+    });
+    return;
   }
 }

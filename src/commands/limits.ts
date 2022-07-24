@@ -15,19 +15,20 @@ GNU General Public License for more details.
 
 import { MessageEmbed } from "discord.js-light";
 
-import Message from "../structs/Message";
 import { getLimits, getUserLimits } from "../limits";
 import { EMBED_COLOR } from "../constants";
+import { CommandContext } from "../structs/CommandContext";
 
 export const name = "limits";
 export const help = "View your guild/channel limits";
 
-export async function call(message: Message): Promise<void> {
-  const limits = message.guild
-    ? await getLimits(message.client, message.guild, true)
-    : await getUserLimits(message.client, message.author.id, true);
-  const user = await message.client.users.fetch(limits.user);
-  await message.channel.send({
+export async function call(context: CommandContext): Promise<void> {
+  const guild = context.guild();
+  const limits = guild
+    ? await getLimits(context.client(), guild, true)
+    : await getUserLimits(context.client(), context.user().id, true);
+  const user = await context.client().users.fetch(limits.user);
+  await context.reply({
     embeds: [
       new MessageEmbed({
         author: {
@@ -40,5 +41,6 @@ export async function call(message: Message): Promise<void> {
         color: EMBED_COLOR,
       }),
     ],
+    ephemeral: true,
   });
 }

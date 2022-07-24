@@ -13,20 +13,23 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Message from "../structs/Message";
 import { isBotOwner } from "../checks";
 import { EMBED_COLOR } from "../constants";
 import { asyncArray } from "../utils";
+import { CommandContext } from "../structs/CommandContext";
 
 export const name = "tickdebug";
 export const check = isBotOwner;
 export const help = "Debug status updates`";
+export const disableSlash = true;
 
-export async function call(message: Message): Promise<void> {
+export async function call(context: CommandContext): Promise<void> {
+  const config = context.client().config;
+
   let i = 0;
   let total = 0;
   const ticks = await asyncArray(
-    message.client.updateCache.tickIterable(message.client.config.tickCount)
+    context.updateCache().tickIterable(config.tickCount)
   );
   const tickList = Array.from(ticks)
     .map((tick) => {
@@ -34,10 +37,10 @@ export async function call(message: Message): Promise<void> {
       return `${i++}: ${tick.length}`;
     })
     .join("\n");
-  await message.channel.send({
+  await context.reply({
     embeds: [
       {
-        title: `Ticks: ${message.client.config.tickCount}`,
+        title: `Ticks: ${config.tickCount}`,
         description: `Total updates: ${total}\nAverage updates per tick: ${
           Math.round((total / i) * 1e3) / 1e3
         }\n\`\`\`\n${tickList}\`\`\``,

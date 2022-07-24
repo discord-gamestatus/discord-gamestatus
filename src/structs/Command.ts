@@ -13,12 +13,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Message from "./Message";
+import { CommandContext } from "./CommandContext";
 import { Check } from "../checks";
 
 export default interface Command {
   name: string;
   help?: string;
   check?: Check;
-  call: (message?: Message, parts?: string[]) => Promise<void>;
+  disableSlash?: boolean;
+  call: (context: CommandContext) => Promise<void>;
 }

@@ -17,6 +17,12 @@ import { is } from "@douile/bot-utilities";
 
 import { Message, TextBasedChannel } from "discord.js-light";
 
+import {
+  CommandContext,
+  MessageContext,
+  CommandInteractionContext,
+} from "./structs/CommandContext";
+
 export async function channelFirstArg(
   message: Message,
   args: string[]
@@ -72,4 +78,24 @@ export async function asyncArray<T>(
  */
 export function assign<T, U>(target: T, source: U): asserts target is T & U {
   Object.assign(target, source);
+}
+
+/**
+ * Convert a context into search fields
+ */
+export function getSearch(
+  context: CommandContext,
+  optionName: string,
+  flags = "i"
+): RegExp[] {
+  if (context instanceof MessageContext) {
+    return context.options().length > 0
+      ? context.options().map((s) => new RegExp(s, flags))
+      : [];
+  }
+  if (context instanceof CommandInteractionContext) {
+    const search = context.inner().options.getString(optionName, false);
+    return search ? search.split(" ").map((s) => new RegExp(s, "i")) : [];
+  }
+  throw new Error("unreachable");
 }
