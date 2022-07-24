@@ -78,7 +78,7 @@ const CLIENT_OPTIONS: Discord.ClientOptions = {
     UserManager: 0,
     VoiceStateManager: 0,
   }),
-  shards: 'auto',
+  shards: "auto",
   restTimeOffset: 1000,
   presence: {
     status: "online",
