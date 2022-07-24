@@ -18,6 +18,13 @@ import { is } from "@douile/bot-utilities";
 import Message from "../structs/Message";
 import { isAdmin } from "../checks";
 import { EMBED_COLOR } from "../constants";
+import {
+  CommandContext,
+  CommandInteractionContext,
+  MessageContext,
+} from "../structs/CommandContext";
+
+import { ApplicationCommandOptionData, Snowflake } from "discord.js-light";
 
 const unknownError = Object.freeze({
   title: "Error",
@@ -30,47 +37,83 @@ export const name = "statusremove";
 export const check = isAdmin;
 export const help =
   "Remove a status message by replying to it, or by giving its channel ID and message ID\nRight click status, press reply to message, and use `!statusremove`\n`!statusmod #channel messageID`";
+export const options: ApplicationCommandOptionData[] = [
+  {
+    name: "channel",
+    description: "Channel ID",
+    type: "CHANNEL",
+    required: true,
+  },
+  {
+    name: "message",
+    description: "Message ID",
+    type: "STRING",
+    required: true,
+  },
+];
 
-export async function call(message: Message, parts: string[]): Promise<void> {
-  if (!message.guild) return;
+type MessageOrReference = Message | ReferencedMessage;
+interface ReferencedMessage {
+  id: Snowflake;
+  channelId: Snowflake;
+}
 
-  let channel, deleteMessage;
-  if (
-    message.reference?.channelId &&
-    message.reference?.guildId &&
-    message.reference?.messageId
-  ) {
-    channel = message.reference.channelId;
-    deleteMessage = message.reference.messageId;
-  } else {
-    if (parts.length < 2) {
-      return void (await message.channel.send({ embeds: [unknownError] }));
+export async function call(context: CommandContext): Promise<void> {
+  const guildContext = context.intoGuildContext();
+  if (!guildContext) return;
+
+  let toDelete: MessageOrReference | null = null;
+  if (guildContext instanceof MessageContext) {
+    const message = guildContext.inner();
+    // FIXME: In future versions this will be changed to MessageType
+    if (message.type === "REPLY") {
+      toDelete = {
+        id: message.reference?.messageId as string,
+        channelId: message.reference?.channelId as string,
+      };
     }
-    channel = is.discordChannel(parts[0]);
-    deleteMessage = parts[1];
-  }
-  if (channel === undefined || deleteMessage === undefined) {
-    return void (await message.channel.send({ embeds: [unknownError] }));
+
+    const parts = guildContext.options();
+    if (parts.length > 1) {
+      const channelId = is.discordChannel(parts[0]);
+      if (channelId) toDelete = { id: parts[1], channelId };
+    }
+  } else if (guildContext instanceof CommandInteractionContext) {
+    toDelete = {
+      id: guildContext.inner().options.getString(options[1].name, true),
+      channelId: guildContext.inner().options.getString(options[0].name, true),
+    };
+  } else {
+    throw new Error("unreachable");
   }
 
-  const response = await message.channel.send({
+  if (!toDelete) {
+    await context.reply({ embeds: [unknownError], ephemeral: true });
+    return;
+  }
+
+  const response = await context.reply({
     embeds: [{ title: "Removing status message", color: EMBED_COLOR }],
+    ephemeral: true,
   });
 
-  const success = await message.client.updateCache.delete({
-    guild: message.guild.id,
-    channel,
-    message: deleteMessage,
+  const success = await guildContext.updateCache().delete({
+    guild: guildContext.guild().id,
+    channel: toDelete.channelId,
+    message: toDelete.id,
   });
 
   if (success > 0) {
-    const oldMessage = message.channel.messages.forge(deleteMessage);
+    const channel = guildContext
+      .guild()
+      .channels.forge(toDelete.channelId, "GUILD_TEXT");
+    const oldMessage = channel.messages.forge(toDelete.id);
     try {
       await oldMessage.delete();
     } catch (e) {
       // DO NOTHING
     }
-    await response.edit({
+    await response?.edit({
       embeds: [
         {
           title: "Done",
@@ -80,7 +123,7 @@ export async function call(message: Message, parts: string[]): Promise<void> {
       ],
     });
   } else {
-    await response.edit({
+    await response?.edit({
       embeds: [
         {
           title: "Error",

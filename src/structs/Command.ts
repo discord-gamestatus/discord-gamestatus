@@ -20,5 +20,6 @@ export default interface Command {
   name: string;
   help?: string;
   check?: Check;
+  disableSlash?: boolean;
   call: (context: CommandContext) => Promise<void>;
 }

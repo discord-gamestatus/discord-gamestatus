@@ -15,11 +15,16 @@ GNU General Public License for more details.
 
 import { ApplicationCommandOptionData, TextChannel } from "discord.js-light";
 
-import Message from "../structs/Message";
 import Update from "../structs/Update";
 import { isAdmin } from "../checks";
 import { gameList, isValidGame } from "../query";
 import { verboseLog } from "../debug";
+import {
+  CommandContext,
+  CommandInteractionContext,
+  GuildCommandContext,
+  MessageContext,
+} from "../structs/CommandContext";
 
 export const name = "status";
 export const check = isAdmin;
@@ -41,50 +46,105 @@ export const options: ApplicationCommandOptionData[] = [
   },
 ];
 
-export async function call(message: Message, parts: string[]): Promise<void> {
-  parts = parts.filter((s) => s.length > 0);
-  if (parts.length < 2)
-    return void (await message.channel.send(
-      `You must provide a game type (view and search the gamelist with \`${
-        message.client.config.prefix
-      }gamelist\`) and IP instead of \`${parts.join(" ")}\``
-    ));
-  if (!isValidGame(parts[0]))
-    return void (await message.channel.send(
-      `\`${parts[0]}\` is not a valid game please check \`${message.client.config.prefix}gamelist\``
-    ));
+interface StatusOptions {
+  type: "options";
+  game: string;
+  host: string;
+}
+
+interface StatusOptionsError {
+  type: "error";
+  error: string;
+}
+
+function getParameters(
+  context: GuildCommandContext
+): StatusOptions | StatusOptionsError {
+  console.log('getParams', context);
+  if (context instanceof MessageContext) {
+    const parts = context.options().filter((s) => s.length > 0);
+    if (parts.length < 2) {
+      return {
+        type: "error",
+        error: `You must provide a game type (view and search the gamelist with \`${
+          context.client().config.prefix
+        }gamelist\`) and IP instead of \`${parts.join(" ")}\``,
+      };
+    }
+    return {
+      type: "options",
+      game: parts[0],
+      host: parts[1],
+    };
+  }
+  if (context instanceof CommandInteractionContext) {
+    const opts = context.inner().options;
+    return {
+      type: "options",
+      game: opts.getString(options[0].name, true),
+      host: opts.getString(options[1].name, true),
+    };
+  }
+  throw new Error("unreachable");
+}
+
+export async function call(context: CommandContext): Promise<void> {
+  const guildContext = context.intoGuildContext();
+  if (!guildContext) return;
+
+  const parameters = getParameters(guildContext);
+  if (parameters.type === "error") {
+    await context.reply({
+      content: parameters.error,
+      ephemeral: true,
+    });
+    return;
+  }
+
+  if (!isValidGame(parameters.game)) {
+    await context.reply({
+      content: `\`${parameters.game}\` is not a valid game please check \`${context.client().config.prefix}gamelist\``,
+      ephemeral: true,
+    });
+    return;
+  }
 
   // Check channel permissions
-  const channel = message.channel;
-  const updateCache = message.client.updateCache;
+  const channel = context.channel();
+  if (!channel) throw new Error('No channel');
+  const updateCache = context.updateCache();
 
   const update = new Update(
     {
-      type: parts[0],
-      ip: parts[1],
+      type: parameters.game,
+      ip: parameters.host,
     },
     { channel: channel as TextChannel }
   );
 
   // Check if this is a valid status message to add
-  const error = await updateCache.canAddUpdate(update, message.client);
+  const error = await updateCache.canAddUpdate(update, context.client());
   if (error !== undefined) {
     await channel.send(error);
     return;
   }
 
   update._dontAutoSave = true;
-  const state = await update.send(message.client, 0);
+  const state = await update.send(context.client(), 0);
   if (state?.offline === true) {
-    const updateMessage = await update.getMessage(message.client);
+    const updateMessage = await update.getMessage(context.client());
     if (updateMessage) await updateMessage.delete();
     // No need to delete as update isn't in database yet
-    await message.channel.send(
-      `The server (\`${parts[1]}\`) was offline or unreachable`
-    );
+    await context.reply({
+      content: `The server (\`${parameters.host}\`) was offline or unreachable`
+    });
     return;
   }
   await updateCache.create(update);
   update._dontAutoSave = false;
+  await context.reply({
+    content: 'Status created',
+    ephemeral: true,
+  });
   verboseLog(`[C/status] Created update ${update.ID()}`);
 }

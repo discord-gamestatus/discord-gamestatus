@@ -20,12 +20,12 @@ export interface ReplyOptions {
   ephemeral?: boolean;
 }
 
-export type OptionType = number | string | boolean | undefined;
+//export type OptionType = number | string | boolean | undefined;
+export type OptionType = string;
 
 export interface CommandContext {
   reply: (options: ReplyOptions) => Promise<Message | void>;
   command: () => string;
-  options: () => OptionType[];
   user: () => User;
   member: () => GuildMember | null;
   guild: () => Guild | null;
@@ -169,6 +169,10 @@ export class MessageContext implements CommandContext {
   intoGuildContext(): GuildMessageContext | null {
     if (this.data.member && this.data.guild) return this as GuildMessageContext;
     return null;
+  }
+
+  inner(): Message {
+    return this.data;
   }
 }
 

@@ -18,7 +18,12 @@ import { ApplicationCommandOptionData, MessageEmbed } from "discord.js-light";
 import { gameList } from "../query";
 import { isAdmin, isDMChannel, combineAny } from "../checks";
 import { EMBED_COLOR } from "../constants";
-import { CommandContext } from "../structs/CommandContext";
+import {
+  CommandContext,
+  CommandInteractionContext,
+  MessageContext,
+} from "../structs/CommandContext";
+import { getSearch } from "../utils";
 
 export const name = "gamelist";
 export const check = combineAny(isAdmin, isDMChannel);
@@ -33,7 +38,7 @@ export const options: ApplicationCommandOptionData[] = [
 ];
 
 export async function call(context: CommandContext): Promise<void> {
-  const games = await gameList();
+  const games = gameList();
   const gameIterator = games.values();
   let embed = new MessageEmbed({ color: EMBED_COLOR });
   let embedSize = 100;
@@ -44,10 +49,7 @@ export async function call(context: CommandContext): Promise<void> {
   let field = "",
     key = gameIterator.next(),
     count = 0;
-  const regex =
-    context.options().length > 0
-      ? context.options().map((s) => new RegExp(s as string, "i"))
-      : undefined;
+  const regex = getSearch(context, options[0].name);
 
   while (!key.done) {
     const game = key.value;

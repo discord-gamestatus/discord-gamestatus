@@ -26,8 +26,8 @@ import { EMBED_COLOR, FORMAT_PROPERTIES } from "../constants";
 import {
   CommandContext,
   GuildCommandContext,
-  GuildCommandInteractionContext,
-  GuildMessageContext,
+  CommandInteractionContext,
+  MessageContext,
 } from "../structs/CommandContext";
 import { warnLog } from "../debug";
 
@@ -181,11 +181,11 @@ interface ErrorOptions {
 
 function parseOptions(context: GuildCommandContext): Options {
   try {
-    if (context instanceof GuildMessageContext) {
+    if (context instanceof MessageContext) {
       return parseOptionsFromMessage(context);
     }
 
-    if (context instanceof GuildCommandInteractionContext) {
+    if (context instanceof CommandInteractionContext) {
       return parseOptionsFromCommandInteraction(context);
     }
   } catch (e) {
@@ -199,7 +199,7 @@ function parseOptions(context: GuildCommandContext): Options {
   throw new Error("unreachable");
 }
 
-function parseOptionsFromMessage(context: GuildMessageContext): Options {
+function parseOptionsFromMessage(context: MessageContext): Options {
   const args = context.options();
 
   if (args.length === 0) return { mode: "list" };
@@ -217,7 +217,7 @@ function parseOptionsFromMessage(context: GuildMessageContext): Options {
 }
 
 function parseOptionsFromCommandInteraction(
-  context: GuildCommandInteractionContext
+  context: CommandInteractionContext
 ): Options {
   const opts = context.inner().options;
 

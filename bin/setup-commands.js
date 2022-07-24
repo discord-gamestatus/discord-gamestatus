@@ -30,6 +30,7 @@ const { Routes } = require("discord-api-types/v10");
   const DIR = path.join(__dirname, "../dist/commands");
   const commands = (await fs.readdir(DIR)).map((file) => {
     const command = require(path.join(DIR, file));
+    if (command.disableSlash) return undefined;
     const newLineIndex = command.help.indexOf("\n");
     return ApplicationCommandManager.transformCommand({
       name: command.name,
@@ -41,7 +42,7 @@ const { Routes } = require("discord-api-types/v10");
       defaultPermission: true,
       type: "CHAT_INPUT",
     });
-  });
+  }).filter(command => command !== undefined);
   console.log(commands);
 
   await rest.put(Routes.applicationCommands(application.id), {

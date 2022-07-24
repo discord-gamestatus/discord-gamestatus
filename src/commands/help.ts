@@ -17,6 +17,7 @@ import { ApplicationCommandOptionData, MessageEmbed } from "discord.js-light";
 
 import { EMBED_COLOR } from "../constants";
 import { CommandContext } from "../structs/CommandContext";
+import { getSearch } from "../utils";
 
 function matchAny(text: string, search: RegExp[]): boolean {
   for (const s of search) {
@@ -37,7 +38,7 @@ export const options: ApplicationCommandOptionData[] = [
   },
 ];
 export async function call(context: CommandContext): Promise<void> {
-  const search = context.options().map((s) => new RegExp(s as string, "gi"));
+  const search = getSearch(context, options[0].name, "gi");
   if (search.length === 0) {
     await context.reply({
       embeds: [

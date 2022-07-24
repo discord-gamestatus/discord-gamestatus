@@ -18,12 +18,40 @@ import { ApplicationCommandOptionData } from "discord.js-light";
 import { isAdmin } from "../checks";
 import { getUserLimits } from "../limits";
 import { EMBED_COLOR } from "../constants";
-import { CommandContext, GuildCommandContext } from "../structs/CommandContext";
+import {
+  CommandContext,
+  GuildCommandContext,
+  CommandInteractionContext,
+  MessageContext,
+} from "../structs/CommandContext";
 
 enum Mode {
   View,
   Set,
   Remove,
+}
+
+function getMode(context: GuildCommandContext): Mode {
+  if (context instanceof MessageContext) {
+    for (const part of context.options()) {
+      if (part.match(/set|add/i) !== null) return Mode.Set;
+      if (part.match(/rem|del/i) !== null) return Mode.Remove;
+    }
+    return Mode.View;
+  }
+  if (context instanceof CommandInteractionContext) {
+    const mode = context.inner().options.getString(options[0].name, true);
+    switch (mode) {
+      case "set":
+        return Mode.Set;
+      case "remove":
+        return Mode.Remove;
+      case "view":
+        return Mode.View;
+    }
+  }
+
+  throw new Error("unreachable");
 }
 
 export const name = "activateguild";
@@ -53,14 +81,7 @@ export async function call(context: CommandContext): Promise<void> {
     return;
   }
 
-  let mode = Mode.View;
-  for (const part of context.options()) {
-    if (typeof part === "string") {
-      if (part.match(/set/i) !== null) mode = Mode.Set;
-      if (part.match(/rem/i) !== null) mode = Mode.Remove;
-    }
-  }
-
+  const mode = getMode(guildContext);
   switch (mode) {
     case Mode.Set:
       return addActivation(guildContext);
