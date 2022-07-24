@@ -19,7 +19,6 @@ import { MessageEmbed } from "discord.js-light";
 const Package = require("../../package.json");
 import { humanDuration } from "@douile/bot-utilities";
 
-import Message from "../structs/Message";
 import { EMBED_COLOR } from "../constants";
 import { CommandContext } from "../structs/CommandContext";
 
