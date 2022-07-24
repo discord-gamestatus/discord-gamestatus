@@ -41,7 +41,8 @@
     "discord.js-light": "^4.6",
     "gamedig": "^4.0",
     "node-fetch": "^2.6",
-    "pg": "^8.7"
+    "pg": "^8.7",
+    "@discordjs/collection": "^1.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0",
