@@ -17,7 +17,7 @@ import { ApplicationCommandOptionData, TextChannel } from "discord.js-light";
 
 import Update from "../structs/Update";
 import { isAdmin } from "../checks";
-import { gameList, isValidGame } from "../query";
+import { isValidGame } from "../query";
 import { verboseLog } from "../debug";
 import {
   CommandContext,

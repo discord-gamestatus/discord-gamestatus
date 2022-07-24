@@ -18,11 +18,7 @@ import { ApplicationCommandOptionData, MessageEmbed } from "discord.js-light";
 import { gameList } from "../query";
 import { isAdmin, isDMChannel, combineAny } from "../checks";
 import { EMBED_COLOR } from "../constants";
-import {
-  CommandContext,
-  CommandInteractionContext,
-  MessageContext,
-} from "../structs/CommandContext";
+import { CommandContext } from "../structs/CommandContext";
 import { getSearch } from "../utils";
 
 export const name = "gamelist";

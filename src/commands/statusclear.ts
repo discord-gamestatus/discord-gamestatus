@@ -13,8 +13,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import { GuildChannel } from "discord.js";
-
 import { isAdmin } from "../checks";
 import {
   CommandContext,
