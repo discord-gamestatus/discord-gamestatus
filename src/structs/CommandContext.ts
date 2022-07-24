@@ -93,7 +93,7 @@ export class CommandInteractionContext implements CommandContext {
 
   intoGuildContext(): GuildCommandInteractionContext | null {
     if (this.data.member && this.data.guild)
-      return this as GuildCommandInteractionContext;
+      return GuildCommandInteractionContext.fromCommandInteractionContext(this);
     return null;
   }
 
@@ -106,6 +106,11 @@ export class GuildCommandInteractionContext
   extends CommandInteractionContext
   implements GuildCommandInteractionContext
 {
+  static fromCommandInteractionContext(
+    context: CommandInteractionContext
+  ): GuildCommandInteractionContext {
+    return new GuildCommandInteractionContext(context.inner());
+  }
   member() {
     return this.data.member as GuildMember;
   }
@@ -167,7 +172,8 @@ export class MessageContext implements CommandContext {
   }
 
   intoGuildContext(): GuildMessageContext | null {
-    if (this.data.member && this.data.guild) return this as GuildMessageContext;
+    if (this.data.member && this.data.guild)
+      return GuildMessageContext.fromMessageContext(this);
     return null;
   }
 
@@ -180,6 +186,14 @@ export class GuildMessageContext
   extends MessageContext
   implements GuildCommandContext
 {
+  static fromMessageContext(context: MessageContext): GuildMessageContext {
+    return new GuildMessageContext(
+      context.inner(),
+      context.command(),
+      context.options()
+    );
+  }
+
   member() {
     return this.data.member as GuildMember;
   }
