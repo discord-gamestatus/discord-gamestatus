@@ -28,21 +28,23 @@ const { Routes } = require("discord-api-types/v10");
   const application = await rest.get(Routes.oauth2CurrentApplication());
 
   const DIR = path.join(__dirname, "../dist/commands");
-  const commands = (await fs.readdir(DIR)).map((file) => {
-    const command = require(path.join(DIR, file));
-    if (command.disableSlash) return undefined;
-    const newLineIndex = command.help.indexOf("\n");
-    return ApplicationCommandManager.transformCommand({
-      name: command.name,
-      description: command.help.substring(
-        0,
-        Math.min(newLineIndex > 1 ? newLineIndex : command.help.length, 100)
-      ),
-      options: command.options,
-      defaultPermission: true,
-      type: "CHAT_INPUT",
-    });
-  }).filter(command => command !== undefined);
+  const commands = (await fs.readdir(DIR))
+    .map((file) => {
+      const command = require(path.join(DIR, file));
+      if (command.disableSlash) return undefined;
+      const newLineIndex = command.help.indexOf("\n");
+      return ApplicationCommandManager.transformCommand({
+        name: command.name,
+        description: command.help.substring(
+          0,
+          Math.min(newLineIndex > 1 ? newLineIndex : command.help.length, 100)
+        ),
+        options: command.options,
+        defaultPermission: true,
+        type: "CHAT_INPUT",
+      });
+    })
+    .filter((command) => command !== undefined);
   console.log(commands);
 
   await rest.put(Routes.applicationCommands(application.id), {

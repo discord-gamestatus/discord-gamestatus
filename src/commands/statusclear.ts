@@ -43,9 +43,9 @@ export async function call(context: CommandContext): Promise<void> {
     throw new Error("unreachable");
   }
 
-  if (!channel || channel.type === "DM") { 
+  if (!channel || channel.type === "DM") {
     return;
-  };
+  }
 
   const response = await context.reply({
     content: "Clearing status updates...",

@@ -16,7 +16,7 @@ GNU General Public License for more details.
 import { isBotOwner } from "../checks";
 import { EMBED_COLOR } from "../constants";
 import { asyncArray } from "../utils";
-import {CommandContext} from "../structs/CommandContext";
+import { CommandContext } from "../structs/CommandContext";
 
 export const name = "tickdebug";
 export const check = isBotOwner;

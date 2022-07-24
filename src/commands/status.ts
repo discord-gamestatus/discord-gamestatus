@@ -60,7 +60,7 @@ interface StatusOptionsError {
 function getParameters(
   context: GuildCommandContext
 ): StatusOptions | StatusOptionsError {
-  console.log('getParams', context);
+  console.log("getParams", context);
   if (context instanceof MessageContext) {
     const parts = context.options().filter((s) => s.length > 0);
     if (parts.length < 2) {
@@ -103,7 +103,9 @@ export async function call(context: CommandContext): Promise<void> {
 
   if (!isValidGame(parameters.game)) {
     await context.reply({
-      content: `\`${parameters.game}\` is not a valid game please check \`${context.client().config.prefix}gamelist\``,
+      content: `\`${parameters.game}\` is not a valid game please check \`${
+        context.client().config.prefix
+      }gamelist\``,
       ephemeral: true,
     });
     return;
@@ -111,7 +113,7 @@ export async function call(context: CommandContext): Promise<void> {
 
   // Check channel permissions
   const channel = context.channel();
-  if (!channel) throw new Error('No channel');
+  if (!channel) throw new Error("No channel");
   const updateCache = context.updateCache();
 
   const update = new Update(
@@ -136,14 +138,14 @@ export async function call(context: CommandContext): Promise<void> {
     if (updateMessage) await updateMessage.delete();
     // No need to delete as update isn't in database yet
     await context.reply({
-      content: `The server (\`${parameters.host}\`) was offline or unreachable`
+      content: `The server (\`${parameters.host}\`) was offline or unreachable`,
     });
     return;
   }
   await updateCache.create(update);
   update._dontAutoSave = false;
   await context.reply({
-    content: 'Status created',
+    content: "Status created",
     ephemeral: true,
   });
   verboseLog(`[C/status] Created update ${update.ID()}`);
