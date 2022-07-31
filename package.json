@@ -20,7 +20,7 @@
     "test": "node bin/run-tests.js",
     "test:lint": "npx eslint src --ext .ts,.js",
     "test:format": "npx prettier --check ./bin ./src",
-    "build": "npx tsc",
+    "build": "tsc",
     "format": "npx prettier --write ./bin ./src",
     "start": "npm run build && node ./bin/discord-gamestatus"
   },

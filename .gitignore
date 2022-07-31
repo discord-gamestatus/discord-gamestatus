@@ -14,3 +14,4 @@
 !Dockerfile
 !docker-compose.yml
 !.env.example
+!.dockerignore
