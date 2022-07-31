@@ -4,6 +4,7 @@ services:
     image: "postgres"
     volumes:
       - "./database/:/var/lib/postgresql/data"
+      - "./scripts/schemas/:/opt"
     environment:
       POSTGRES_USER: "discord-gamestatus"
       POSTGRES_PASSWORD: "${DATABASE_PASS}"
