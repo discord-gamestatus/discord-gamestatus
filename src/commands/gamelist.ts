@@ -18,7 +18,10 @@ import { ApplicationCommandOptionData, MessageEmbed } from "discord.js-light";
 import { gameList } from "../query";
 import { isAdmin, isDMChannel, combineAny } from "../checks";
 import { EMBED_COLOR } from "../constants";
-import { CommandContext } from "../structs/CommandContext";
+import {
+  CommandContext,
+  CommandInteractionContext,
+} from "../structs/CommandContext";
 import { getSearch } from "../utils";
 
 export const name = "gamelist";
@@ -33,33 +36,37 @@ export const options: ApplicationCommandOptionData[] = [
   },
 ];
 
+function doesMatch(regex: RegExp[], names: string[]): boolean {
+  for (const r of regex) {
+    for (const str of names) {
+      if (str.match(r) !== null) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export async function call(context: CommandContext): Promise<void> {
   const games = gameList();
   const gameIterator = games.values();
   let embed = new MessageEmbed({ color: EMBED_COLOR });
   let embedSize = 100;
-  const embeds = [];
+  const embeds: [MessageEmbed, number][] = [];
   let embedI = 0;
 
   embed.setFooter({ text: (++embedI).toString() });
-  let field = "",
-    key = gameIterator.next(),
-    count = 0;
+  let field = "";
+  let key = gameIterator.next();
+  let count = 0;
+  let embedCount = 0;
   const regex = getSearch(context, options[0].name);
 
   while (!key.done) {
     const game = key.value;
     let match = true;
-    if (regex) {
-      match = false;
-      for (const r of regex) {
-        for (const str of game.keys.concat(game.pretty)) {
-          if (str.match(r) !== null) {
-            match = true;
-            break;
-          }
-        }
-      }
+    if (regex && regex.length > 0) {
+      match = doesMatch(regex, game.keys.concat(game.pretty));
     }
     if (match) {
       const value = `${game.pretty} = ${game.keys
@@ -67,7 +74,8 @@ export async function call(context: CommandContext): Promise<void> {
         .join(", ")}\n`;
       if (field.length + value.length > 1024) {
         if (embedSize + field.length + 3 > 6000) {
-          embeds.push(embed);
+          embeds.push([embed, embedCount]);
+          embedCount = 0;
           embed = new MessageEmbed({ color: EMBED_COLOR });
           embed.setFooter({ text: (++embedI).toString() });
           embedSize = 100;
@@ -78,12 +86,16 @@ export async function call(context: CommandContext): Promise<void> {
       }
       field += value;
       count += 1;
+      embedCount += 1;
     }
     key = gameIterator.next();
   }
   if (field.length > 0) embed.addField("_ _", field);
-  for (const e of embeds.concat(embed)) {
-    e.setTitle(`${count} Available games`);
+  for (const [e, eCount] of embeds.concat([[embed, embedCount]])) {
+    e.setTitle(`Matching games (${eCount}/${count})`);
     await context.reply({ embeds: [e], ephemeral: true });
+    if (context instanceof CommandInteractionContext) {
+      break; // Command interactions can only have 1 reply
+    }
   }
 }
