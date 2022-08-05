@@ -9,4 +9,5 @@
 !src/structs/*.ts
 !src/structs/Update/*.ts
 !src/structs/save/*.ts
+!src/commands/*.ts
 !bin/discord-gamestatus
