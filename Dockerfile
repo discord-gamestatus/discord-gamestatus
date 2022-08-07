@@ -18,6 +18,9 @@ ENV NODE_ENV=production
 COPY --from=build /etc/passwd /etc/passwd
 COPY --from=build /etc/group /etc/group
 COPY --from=build /usr/local/bin/node /usr/local/bin/node
+COPY --from=build /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6
+COPY --from=build /usr/lib/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
+COPY --from=build /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
 
 COPY --from=build --chown=root:node /home/node/dist /home/node/dist
 COPY --from=build --chown=root:node /home/node/bin /home/node/bin
