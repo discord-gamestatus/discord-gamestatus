@@ -257,7 +257,10 @@ export default class Update extends Serializable {
   getOption<P extends UpdateOption>(optionName: P): UpdateOptions[P] {
     return isOfBaseType(this.options, Object)
       ? optionName in this.options
-        ? this.options[optionName] || DEFAULT_OPTIONS[optionName]
+        ? this.options[optionName] !== undefined &&
+          this.options[optionName] !== null
+          ? this.options[optionName]
+          : DEFAULT_OPTIONS[optionName]
         : DEFAULT_OPTIONS[optionName]
       : DEFAULT_OPTIONS[optionName];
   }
