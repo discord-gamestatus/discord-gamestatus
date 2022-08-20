@@ -1,6 +1,6 @@
 {
   "name": "discord-gamestatus",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Monitor game servers via discord",
   "main": "dist/index",
   "directories": {
