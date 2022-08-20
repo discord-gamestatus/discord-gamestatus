@@ -15,28 +15,36 @@ GNU General Public License for more details.
 
 import { TextChannel } from "discord.js-light";
 
-import Message from "../structs/Message";
 import { isAdmin } from "../checks";
 import { EMBED_COLOR } from "../constants";
 import { channelFirstArg } from "../utils";
+import {
+  CommandContext,
+  CommandInteractionContext,
+  MessageContext,
+} from "../structs/CommandContext";
 
 export const name = "statusrefresh";
 export const help = "Force bot to resend all status messages (next update).";
 export const check = isAdmin;
 
-export async function call(message: Message): Promise<void> {
-  const args = message.content.split(" ").splice(1);
-
+export async function call(context: CommandContext): Promise<void> {
   let channel;
-  try {
-    channel = await channelFirstArg(message, args);
-  } catch {
-    return;
+  if (context instanceof MessageContext) {
+    const args = context.options();
+
+    try {
+      channel = await channelFirstArg(context.inner(), args);
+    } catch {
+      return;
+    }
+  } else {
+    channel = context.channel();
   }
 
   if (!channel || !(channel instanceof TextChannel)) return;
 
-  let statuses = await message.client.updateCache.get({
+  let statuses = await context.updateCache().get({
     channel: channel.id,
     guild: channel.guild.id,
   });
@@ -47,7 +55,7 @@ export async function call(message: Message): Promise<void> {
   }
 
   if (statuses.length === 0) {
-    return void (await message.channel.send({
+    await context.reply({
       embeds: [
         {
           title: "Error",
@@ -55,10 +63,12 @@ export async function call(message: Message): Promise<void> {
           color: 0xff0000,
         },
       ],
-    }));
+      ephemeral: true,
+    });
+    return;
   }
 
-  const res = await message.channel.send({
+  const res = await context.reply({
     embeds: [
       {
         title: "Working...",
@@ -66,14 +76,15 @@ export async function call(message: Message): Promise<void> {
         color: EMBED_COLOR,
       },
     ],
+    ephemeral: true,
   });
 
   for (const status of statuses) {
-    await status.deleteMessage(message.client);
-    await status.setMessage(message.client, undefined); // Clear message
+    await status.deleteMessage(context.client());
+    await status.setMessage(context.client(), undefined); // Clear message
   }
 
-  await res.edit({
+  const replyOptions = {
     embeds: [
       {
         title: "Done",
@@ -81,5 +92,10 @@ export async function call(message: Message): Promise<void> {
         color: EMBED_COLOR,
       },
     ],
-  });
+  };
+  if (context instanceof CommandInteractionContext) {
+    context.inner().editReply(replyOptions);
+  } else if (res) {
+    await res.edit(replyOptions);
+  }
 }
