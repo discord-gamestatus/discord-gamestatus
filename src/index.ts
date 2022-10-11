@@ -15,7 +15,10 @@ GNU General Public License for more details.
 
 import Discord, { DiscordAPIError } from "discord.js-light";
 import { promises as fs } from "fs";
+import { join } from "path";
 import { allSettled, errorWrap } from "@douile/bot-utilities";
+import i18next from "i18next";
+import Backend from "i18next-fs-backend";
 
 import UpdateCache from "./structs/UpdateCache";
 import Command from "./structs/Command";
@@ -403,6 +406,19 @@ export default async function start(config: StartupConfig): Promise<Client> {
   await loadCommands(commands);
   await loadAdditionalConfigs(clientConfig);
   await updateCache.load();
+
+  await i18next.use(Backend).init({
+    fallbackLng: "en",
+    preload: (
+      await fs.readdir(join(__dirname, "../langs"))
+    ).filter((fileName) => {
+      return fileName.endsWith(".json");
+    }),
+    backend: {
+      loadPath: join(__dirname, "../langs/{{lng}}.json"),
+    },
+    debug: config.debug,
+  });
 
   const client = new Client(
     updateCache,

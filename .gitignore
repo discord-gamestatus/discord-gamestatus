@@ -4,6 +4,7 @@
 !scripts
 !src
 !bin
+!langs
 
 !.gitignore
 !.eslintrc.json

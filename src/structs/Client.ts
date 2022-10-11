@@ -28,7 +28,7 @@ export default class Client extends Discord.Client {
     updateCache: UpdateCache,
     commands: Map<string, Command>,
     config: ClientConfig,
-    options: Discord.ClientOptions
+    options: Discord.ClientOptions,
   ) {
     super(options);
     this.updateCache = updateCache;

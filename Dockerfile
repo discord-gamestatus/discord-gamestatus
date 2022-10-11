@@ -6,7 +6,6 @@ COPY ./package.json ./package-lock.json ./tsconfig.json /home/node/
 RUN npm install
 COPY ./src/ /home/node/src/
 RUN npm run build
-COPY ./bin/ /home/node/bin/
 
 ENV NODE_ENV=production
 RUN npm clean-install
@@ -23,7 +22,8 @@ COPY --from=build /usr/lib/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
 COPY --from=build /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
 
 COPY --from=build --chown=root:node /home/node/dist /home/node/dist
-COPY --from=build --chown=root:node /home/node/bin /home/node/bin
+COPY --chown=root:node ./bin /home/node/bin
+COPY --chown=root:node ./langs /home/node/langs
 COPY --from=build --chown=root:node /home/node/package.json /home/node/package-lock.json /home/node/
 COPY --from=build --chown=root:node /home/node/node_modules /home/node/node_modules
 

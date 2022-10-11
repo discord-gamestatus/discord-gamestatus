@@ -11,3 +11,4 @@
 !src/structs/save/*.ts
 !src/commands/*.ts
 !bin/discord-gamestatus
+!langs/*.json
