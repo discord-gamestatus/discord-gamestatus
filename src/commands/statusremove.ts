@@ -81,7 +81,8 @@ export async function call(context: CommandContext): Promise<void> {
   } else if (guildContext instanceof CommandInteractionContext) {
     toDelete = {
       id: guildContext.inner().options.getString(options[1].name, true),
-      channelId: guildContext.inner().options.getChannel(options[0].name, true).id,
+      channelId: guildContext.inner().options.getChannel(options[0].name, true)
+        .id,
     };
   } else {
     throw new Error("unreachable");
