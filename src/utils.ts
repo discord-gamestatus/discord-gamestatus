@@ -76,7 +76,10 @@ export async function asyncArray<T>(
  * Assign a property to an object
  * https://codeutility.org/how-do-i-dynamically-assign-properties-to-an-object-in-typescript-stack-overflow/
  */
-export function assign<T extends object, U>(target: T, source: U): asserts target is T & U {
+export function assign<T extends object, U>(
+  target: T,
+  source: U
+): asserts target is T & U {
   Object.assign(target, source);
 }
 
