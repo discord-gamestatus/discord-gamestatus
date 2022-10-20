@@ -241,7 +241,14 @@ function parseOptionsFromCommandInteraction(
   // Set
   const value = opts.getString(KEYS.value, true);
   if (command === options[3].name) {
-    return { mode: "set", index, key, value };
+    let parsed = value;
+    try {
+      parsed = JSON.parse(value);
+    } catch (e) {
+      // Do nothing
+    }
+    if (typeof parsed !== "string") parsed = value;
+    return { mode: "set", index, key, value: parsed };
   }
 
   throw new Error("unreachable");
