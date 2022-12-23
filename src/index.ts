@@ -235,6 +235,7 @@ async function onInteraction(interaction: Discord.Interaction) {
     } else {
       await interaction.reply({
         content: "Sorry you don't have permission to use this command",
+        ephemeral: true,
       });
     }
   } else {
