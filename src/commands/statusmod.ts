@@ -29,7 +29,7 @@ import {
   CommandInteractionContext,
   MessageContext,
 } from "../structs/CommandContext";
-import { warnLog } from "../debug";
+import { debugLog, warnLog } from "../debug";
 
 const WARNING =
   "_Changes will not take effect until after the status has updated_";
@@ -365,32 +365,45 @@ export async function call(context: CommandContext): Promise<void> {
   }
 
   if (options.mode === "set") {
-    let error;
+    let error = false;
     try {
-      await status.setOption(
+      error = !(await status.setOption(
         context.client(),
         options.key as keyof UpdateOptions,
         options.value
-      );
+      ));
     } catch (e) {
-      error = e;
-      console.error("Error setting option", error);
+      error = true;
+      debugLog("Error setting option", error);
     }
 
-    await context.reply({
-      embeds: [
-        new MessageEmbed({
-          title: `#${options.index}`,
-          description: `${statusIdentity(status)}\nSet: \`${
-            options.key
-          }=${status.getOption(
-            options.key as keyof UpdateOptions
-          )}\`\n${WARNING}`,
-          timestamp: Date.now(),
-          color: EMBED_COLOR,
-        }),
-      ],
-    });
+    if (error) {
+      await context.reply({
+        embeds: [
+          {
+            title: "Unable to save",
+            description:
+              "Could not set specified value, please check it was valid",
+            color: 0xff0000,
+          },
+        ],
+      });
+    } else {
+      await context.reply({
+        embeds: [
+          new MessageEmbed({
+            title: `#${options.index}`,
+            description: `${statusIdentity(status)}\nSet: \`${
+              options.key
+            }=${status.getOption(
+              options.key as keyof UpdateOptions
+            )}\`\n${WARNING}`,
+            timestamp: Date.now(),
+            color: EMBED_COLOR,
+          }),
+        ],
+      });
+    }
     return;
   }
 }
