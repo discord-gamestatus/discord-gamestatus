@@ -110,6 +110,11 @@ export async function call(context: CommandContext): Promise<void> {
     return;
   }
 
+  await context.deferReply({
+    content: "Setting up update...",
+    ephemeral: true,
+  });
+
   // Check channel permissions
   const channel = context.channel();
   if (!channel) throw new Error("No channel");
@@ -126,14 +131,16 @@ export async function call(context: CommandContext): Promise<void> {
   // Check if this is a valid status message to add
   const error = await updateCache.canAddUpdate(update, context.client());
   if (error !== undefined) {
-    await channel.send(error);
+    await context.editReply({
+      content: error,
+    });
     return;
   }
 
   update._dontAutoSave = true;
   const state = await update.send(context.client(), 0);
   if (state?.offline === true) {
-    await context.reply({
+    await context.editReply({
       content: `The server (\`${parameters.host}\`) was offline or unreachable`,
     });
     const updateMessage = await update.getMessage(context.client());
@@ -143,9 +150,8 @@ export async function call(context: CommandContext): Promise<void> {
   }
   await updateCache.create(update);
   update._dontAutoSave = false;
-  await context.reply({
+  await context.editReply({
     content: "Status created",
-    ephemeral: true,
   });
   verboseLog(`[C/status] Created update ${update.ID()}`);
 }

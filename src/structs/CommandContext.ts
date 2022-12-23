@@ -20,11 +20,18 @@ export interface ReplyOptions {
   ephemeral?: boolean;
 }
 
+export interface DeferReplyOptions extends InteractionReplyOptions {
+  content: string;
+}
+
 //export type OptionType = number | string | boolean | undefined;
 export type OptionType = string;
 
 export interface CommandContext {
   reply: (options: ReplyOptions) => Promise<Message | void>;
+  deferReply: (options: DeferReplyOptions) => Promise<void>;
+  editReply: (options: ReplyOptions) => Promise<void>;
+
   command: () => string;
   user: () => User;
   member: () => GuildMember | null;
@@ -52,6 +59,14 @@ export class CommandInteractionContext implements CommandContext {
 
   reply(options: InteractionReplyOptions) {
     return this.data.reply(options);
+  }
+
+  deferReply(options: DeferReplyOptions) {
+    return this.data.deferReply(options);
+  }
+
+  async editReply(options: ReplyOptions) {
+    await this.data.editReply(options);
   }
 
   command() {
@@ -124,15 +139,29 @@ export class MessageContext implements CommandContext {
   protected data: Message;
   private commandName: string;
   private parts: string[];
+  private _reply: Message | null;
 
   constructor(message: Message, commandName: string, parts: string[]) {
     this.data = message;
     this.commandName = commandName;
     this.parts = parts;
+    this._reply = null;
   }
 
   reply(options: ReplyMessageOptions) {
     return this.data.reply(options);
+  }
+
+  async deferReply(options: DeferReplyOptions) {
+    this._reply = await this.reply({
+      content: options.content,
+    });
+  }
+
+  async editReply(options: ReplyOptions) {
+    if (this._reply) {
+      await this._reply.edit(options);
+    }
   }
 
   command() {
