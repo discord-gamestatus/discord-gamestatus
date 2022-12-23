@@ -73,7 +73,7 @@ export default class SavePSQL implements SaveInterface {
   }
 
   async create(status: Update): Promise<boolean> {
-    let success = false;
+    let success = true;
 
     const client = await this.pool.connect();
     try {
@@ -118,7 +118,7 @@ export default class SavePSQL implements SaveInterface {
   }
 
   async update(status: Update): Promise<boolean> {
-    let success = false;
+    let success = true;
 
     const client = await this.pool.connect();
     try {
