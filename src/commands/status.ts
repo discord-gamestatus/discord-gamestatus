@@ -133,12 +133,12 @@ export async function call(context: CommandContext): Promise<void> {
   update._dontAutoSave = true;
   const state = await update.send(context.client(), 0);
   if (state?.offline === true) {
-    const updateMessage = await update.getMessage(context.client());
-    if (updateMessage) await updateMessage.delete();
-    // No need to delete as update isn't in database yet
     await context.reply({
       content: `The server (\`${parameters.host}\`) was offline or unreachable`,
     });
+    const updateMessage = await update.getMessage(context.client());
+    if (updateMessage) await updateMessage.delete();
+    // No need to delete as update isn't in database yet
     return;
   }
   await updateCache.create(update);
