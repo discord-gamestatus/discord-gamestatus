@@ -301,6 +301,19 @@ export async function call(context: CommandContext): Promise<void> {
   }
 
   const status = statuses[options.index];
+  if (!status) {
+    await context.reply({
+      embeds: [
+        {
+          title: "Invalid status ID",
+          description: `The status ID you provided (\`${options.index}\`) doesn't appear to exist`,
+          color: 0xff0000,
+        },
+      ],
+    });
+    return;
+  }
+
   if (options.mode === "view") {
     const opts = status.getOptions();
     const outputOptions = [];
