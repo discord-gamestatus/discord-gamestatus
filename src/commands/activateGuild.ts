@@ -68,7 +68,7 @@ export const options: ApplicationCommandOptionData[] = [
       { name: "Remove", value: "remove" },
       { name: "View", value: "view" },
     ],
-    required: false,
+    required: true,
   },
 ];
 export async function call(context: CommandContext): Promise<void> {
