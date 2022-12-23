@@ -60,7 +60,6 @@ interface StatusOptionsError {
 function getParameters(
   context: GuildCommandContext
 ): StatusOptions | StatusOptionsError {
-  console.log("getParams", context);
   if (context instanceof MessageContext) {
     const parts = context.options().filter((s) => s.length > 0);
     if (parts.length < 2) {
