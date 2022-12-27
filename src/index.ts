@@ -37,6 +37,7 @@ import {
   MessageContext,
 } from "./structs/CommandContext";
 import SavePSQL from "./structs/save/SavePSQL";
+import { readJSONOrEmpty } from "./utils";
 
 const INVITE_FLAGS = [
   "VIEW_CHANNEL",
@@ -118,24 +119,6 @@ async function loadCommands(commands: Map<string, Command>) {
     debugLog(`Loaded command ${command.name}`);
   }
   await Promise.all(files.map(loadCommand));
-}
-
-function readJSONOrEmpty(fileName: string) {
-  return new Promise((resolve) => {
-    fs.readFile(fileName, { encoding: "utf-8" })
-      .then((content) => {
-        let data = {};
-        try {
-          data = JSON.parse(content);
-        } catch (e) {
-          verboseLog("Error parsing JSON", e);
-        }
-        resolve(data);
-      })
-      .catch(() => {
-        resolve({});
-      });
-  });
 }
 
 async function loadAdditionalConfigs(config: ClientConfig) {

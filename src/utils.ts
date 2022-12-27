@@ -13,6 +13,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
+import fs from "fs/promises";
+
 import { is } from "@douile/bot-utilities";
 
 import { Message, TextBasedChannel } from "discord.js-light";
@@ -101,4 +103,27 @@ export function getSearch(
     return search ? search.split(" ").map((s) => new RegExp(s, "i")) : [];
   }
   throw new Error("unreachable");
+}
+
+/**
+ * Attempt to read the given file and parse it as JSON
+ * returns {} if the file does not exist or if it contains
+ * invalid JSON
+ */
+export function readJSONOrEmpty(fileName: string) {
+  return new Promise((resolve) => {
+    fs.readFile(fileName, { encoding: "utf-8" })
+      .then((content) => {
+        let data = {};
+        try {
+          data = JSON.parse(content);
+        } catch (e) {
+          console.warn("Error parsing JSON", e);
+        }
+        resolve(data);
+      })
+      .catch(() => {
+        resolve({});
+      });
+  });
 }
