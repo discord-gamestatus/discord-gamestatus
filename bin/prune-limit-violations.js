@@ -57,6 +57,7 @@ let serversAffected = 0;
 let serversChecked = 0;
 
 async function removeStatus(rest, pg, id) {
+  console.error("Removing", id);
   const rowResult = await pg.query(
     "SELECT channel_id, message_id FROM statuses WHERE id=$1",
     [id]
@@ -76,11 +77,10 @@ async function enforceLimits(rest, pg, serverToCheck, limits) {
 
   // Exceeds the guild limit
   if (!isNaN(limits.guildLimit) && serverToCheck.count > limits.guildLimit) {
-    const toRemove = serverToCheck.count - limits.guildLimit;
-    for (const id of serverToCheck.ids.slice(0, toRemove)) {
+    for (const id of serverToCheck.ids.slice(limits.guildLimit)) {
       await removeStatus(rest, pg, id);
     }
-    statusesRemoved += toRemove;
+    statusesRemoved += serverToCheck.count - limits.guildLimit;
     serversAffected += 1;
   }
 
@@ -140,6 +140,10 @@ function createServerChecker(rest, pg, limitRules) {
 }
 
 (async function () {
+  console.warn(
+    "It's a good idea to stop your scheduler and wait a few seconds before running this to prevent the status removed message from being overwritten by an actual update"
+  );
+
   const limitRules = await readJSONOrEmpty(
     path.join(__dirname, "../limit-rules.json")
   );
