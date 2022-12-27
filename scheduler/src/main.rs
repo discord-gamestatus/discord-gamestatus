@@ -52,7 +52,6 @@ fn row_get_or_null<'a, T: tokio_postgres::types::FromSql<'a> + serde::ser::Seria
 
 fn row_to_json_value<'a>(row: &'a tokio_postgres::Row) -> HashMap<&'a str, serde_json::Value> {
     let mut r = HashMap::new();
-    eprintln!("{:?}", row.columns());
 
     for (idx, column) in row.columns().iter().enumerate() {
         r.insert(
@@ -91,6 +90,7 @@ async fn run_ticks(
     pin_mut!(row_stream);
 
     for tick in 0..n_ticks {
+        #[cfg(debug_assertions)]
         println!("Tick {}", tick);
         if !stream_finished {
             let clients_lock = clients.read().await;
@@ -101,10 +101,13 @@ async fn run_ticks(
                     continue;
                 }
 
+                #[cfg(debug_assertions)]
                 println!("  Client {}", addr);
                 for _ in 0..est_tick_count {
                     if let Some(row) = row_stream.try_next().await? {
-                        println!("    {:?}", row);
+                        #[cfg(debug_assertions)]
+                        println!("    {:?}", row.get::<_, String>(5));
+
                         let mut r = serde_json::to_vec(&row_to_json_value(&row)).unwrap();
                         r.push(b'\n');
                         // TODO: Check what the error is
