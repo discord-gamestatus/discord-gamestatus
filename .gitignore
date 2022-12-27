@@ -1,19 +1,19 @@
 /*
 
 !.github
-!scripts
-!src
 !bin
+!src
+!scripts
 
-!.gitignore
-!.eslintrc.json
+!.dockerignore
+!.env.example
 !.sqlfluff
-!requirements.txt
+!.eslintrc.json
+!.gitignore
+!Dockerfile
+!docker-compose.yml
 !LICENSE
 !package*.json
 !README.md
+!requirements.txt
 !tsconfig.json
-!Dockerfile
-!docker-compose.yml
-!.env.example
-!.dockerignore
