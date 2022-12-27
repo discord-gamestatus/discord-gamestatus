@@ -26,7 +26,7 @@ jobs:
       with:
         python-version: '3.10'
         cache: 'pip'
-    - run: pip install sqlfluff
+    - run: pip install -r requirements.txt
     - name: npm install
       run: npm ci
       env:
