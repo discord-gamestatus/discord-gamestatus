@@ -6,8 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use futures_util::{pin_mut, TryStreamExt};
-use tokio::io::{AsyncWrite, AsyncWriteExt};
-use tokio::net::{TcpListener, UnixListener};
+use tokio::net::TcpListener;
 use tokio::sync::{OnceCell, RwLock};
 use tokio_postgres::NoTls;
 
@@ -18,7 +17,7 @@ type PGResult<T> = Result<T, PGError>;
 
 type JValue = serde_json::Value;
 
-type ConnectedClients = Arc<RwLock<HashMap<SocketAddr, Box<dyn AsyncWriteExt>>>>;
+type ConnectedClients = Arc<RwLock<HashMap<SocketAddr, tokio::net::TcpStream>>>;
 
 static SELECT_STATUS_COUNT_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
 async fn select_status_count(client: &PGClient) -> PGResult<i64> {
@@ -130,30 +129,9 @@ async fn run_ticks(
     Ok(())
 }
 
-#[derive(Debug)]
 enum ListenAddr {
     TCP(SocketAddr),
     Unix(PathBuf),
-}
-
-enum Listener {
-    TCP(TcpListener),
-    Unix(UnixListener),
-}
-
-impl Listener {
-    async fn accept<'a>(&self) -> std::io::Result<(Box<dyn AsyncWriteExt>, SocketAddr)> {
-        Ok(match self {
-            Self::TCP(listener) => {
-                let (stream, addr) = listener.accept().await?;
-                (&stream, addr)
-            }
-            Self::Unix(listener) => {
-                let (stream, addr) = listener.accept().await?;
-                (&stream, addr.into())
-            }
-        })
-    }
 }
 
 #[tokio::main]
@@ -217,11 +195,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for listen_addr in listen_addrs {
         let clients = Arc::clone(&clients);
         tokio::spawn(async move {
-            let listener: Listener = match listen_addr {
-                ListenAddr::TCP(addr) => Listener::TCP(TcpListener::bind(addr).await.unwrap()),
-                ListenAddr::Unix(path) => Listener::Unix(UnixListener::bind(path).unwrap()),
+            let listener = match listen_addr {
+                ListenAddr::TCP(addr) => TcpListener::bind(addr).await.unwrap(),
+                ListenAddr::Unix(path) => todo!("Unix listeners not implemented"),
             };
-            println!("Listening on {:?}", listen_addr);
+            println!("Listening on {:?}", listener.local_addr().unwrap());
 
             while let Ok((socket, addr)) = listener.accept().await {
                 println!("Connection from {:?}", addr);
