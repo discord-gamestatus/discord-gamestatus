@@ -10,9 +10,12 @@ services:
       POSTGRES_PASSWORD: "${DATABASE_PASS}"
       PGDATA: "/var/lib/postgresql/data/12"
   bot:
-    build: "."
+    build:
+      context: "."
+      dockerfile: "./docker/Dockerfile.bot"
     depends_on:
       - "postgres"
+      - "scheduler"
     volumes:
       - "./limit-rules.json:/home/node/limit-rules.json"
     environment:
@@ -29,6 +32,22 @@ services:
       GS_CHANNEL_LIMIT: "${GS_CHANNEL_LIMIT}"
       GS_GUILD_LIMIT: "${GS_GUILD_LIMIT}"
       GS_SUPPORT_LINK: "${GS_SUPPORT_LINK}"
+      GS_SCHEDULER_ADDR: "scheduler:1337"
     env_file: .env
 #    command: [ "--debug", "--verbose" ]
+  scheduler:
+    build:
+      context: "."
+      dockerfile: "./docker/Dockerfile.scheduler"
+    depends_on:
+      - "postgres"
+    environment:
+      DISCORD_API_KEY: "${DISCORD_API_KEY}"
+      PG_DATABASE: "discord-gamestatus"
+      PGHOST: "postgres"
+      PGUSER: "discord-gamestatus"
+      PGPASSWORD: "${DATABASE_PASS}"
+      GS_TICK_COUNT: "${GS_TICK_COUNT}"
+      GS_TICK_TIME: "${GS_TICK_TIME}"
+    env_file: .env
 

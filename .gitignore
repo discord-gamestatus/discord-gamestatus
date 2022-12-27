@@ -5,7 +5,7 @@
 !src
 !bin
 !scheduler
-scheduler/target
+!docker
 
 !.gitignore
 !.eslintrc.json
@@ -15,7 +15,8 @@ scheduler/target
 !package*.json
 !README.md
 !tsconfig.json
-!Dockerfile
 !docker-compose.yml
 !.env.example
 !.dockerignore
+
+scheduler/target
