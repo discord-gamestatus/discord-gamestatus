@@ -4,6 +4,8 @@
 !scripts
 !src
 !bin
+!scheduler
+scheduler/target
 
 !.gitignore
 !.eslintrc.json

@@ -18,14 +18,19 @@ function checkOutput({ status, error }) {
 
 let testBot = false;
 let testSql = false;
+let testScheduler = false;
 if (process.argv.length < 3) {
   testBot = true;
   testSql = true;
+  testScheduler = true;
 } else {
   for (let i = 2; i < process.argv.length; i++) {
     switch (process.argv[i]) {
       case "--bot":
         testBot = true;
+        break;
+      case "--scheduler":
+        testScheduler = true;
         break;
       case "--sql":
         testSql = true;
@@ -44,6 +49,12 @@ if (testBot) {
 }
 if (testSql) {
   checkOutput(spawnSync("npm", ["run", "test:lint:sql"], { stdio }));
+}
+if (testScheduler) {
+  let cwd = join(process.cwd(), "scheduler");
+  checkOutput(spawnSync("cargo", ["check"], { stdio, cwd }));
+  checkOutput(spawnSync("cargo", ["fmt", "--check"], { stdio, cwd }));
+  checkOutput(spawnSync("cargo", ["test"], { stdio, cwd }));
 }
 
 process.exit(rCode);
