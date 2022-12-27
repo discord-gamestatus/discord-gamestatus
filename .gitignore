@@ -1,19 +1,22 @@
 /*
 
 !.github
-!bin
-!src
 !scripts
+!src
+!bin
+!scheduler
+!docker
 
-!.dockerignore
-!.env.example
-!.sqlfluff
-!.eslintrc.json
 !.gitignore
-!Dockerfile
-!docker-compose.yml
+!.eslintrc.json
+!.sqlfluff
+!requirements.txt
 !LICENSE
 !package*.json
 !README.md
-!requirements.txt
 !tsconfig.json
+!docker-compose.yml
+!.env.example
+!.dockerignore
+
+scheduler/target

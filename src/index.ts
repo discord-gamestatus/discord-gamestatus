@@ -13,30 +13,31 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import Discord, { DiscordAPIError } from "discord.js-light";
+import Discord from "discord.js-light";
 import { promises as fs } from "fs";
-import { allSettled, errorWrap } from "@douile/bot-utilities";
+import { createConnection } from "net";
+import { errorWrap } from "@douile/bot-utilities";
 
 import UpdateCache from "./structs/UpdateCache";
 import Command from "./structs/Command";
 import Client, { ClientConfig } from "./structs/Client";
 import Message from "./structs/Message";
 import Update from "./structs/Update";
-import { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } from "./debug";
-import { getLimits, Limit } from "./limits";
+import {
+  setDebugFlag,
+  debugLog,
+  verboseLog,
+  errorLog,
+  infoLog,
+  warnLog,
+} from "./debug";
 import { startDBLApiHook } from "./dblapi";
 import {
   CommandInteractionContext,
   MessageContext,
 } from "./structs/CommandContext";
-
-let TICK_GENERATOR: AsyncGenerator<Update[]> | undefined = undefined;
-let TICK_LIMITS: Counters | undefined = undefined;
-let TICK = 0;
-let TICK_SECOND = 0;
-
-const TICK_EVENT = "updateTick";
-const MAX_TICK = Math.min(4294967296, Number.MAX_SAFE_INTEGER);
+import SavePSQL from "./structs/save/SavePSQL";
+import { readJSONOrEmpty } from "./utils";
 
 const INVITE_FLAGS = [
   "VIEW_CHANNEL",
@@ -47,8 +48,6 @@ const INVITE_FLAGS = [
   "READ_MESSAGE_HISTORY",
   "ADD_REACTIONS",
 ];
-
-const UPDATE_INTERVALS: { [key: string]: NodeJS.Timeout } = {};
 
 const CLIENT_OPTIONS: Discord.ClientOptions = {
   makeCache: Discord.Options.cacheWithLimits({
@@ -112,14 +111,6 @@ const DEFAULT_CONFIG: ClientConfig = {
   limitRules: {},
 };
 
-interface Counter {
-  guildCount: number;
-  channelCount: { [id: string]: number };
-  limits: Limit;
-}
-
-type Counters = Map<string, Counter>;
-
 async function loadCommands(commands: Map<string, Command>) {
   const files = await fs.readdir(`${__dirname}/commands`);
   async function loadCommand(file: string) {
@@ -130,24 +121,6 @@ async function loadCommands(commands: Map<string, Command>) {
   await Promise.all(files.map(loadCommand));
 }
 
-function readJSONOrEmpty(fileName: string) {
-  return new Promise((resolve) => {
-    fs.readFile(fileName, { encoding: "utf-8" })
-      .then((content) => {
-        let data = {};
-        try {
-          data = JSON.parse(content);
-        } catch (e) {
-          verboseLog("Error parsing JSON", e);
-        }
-        resolve(data);
-      })
-      .catch(() => {
-        resolve({});
-      });
-  });
-}
-
 async function loadAdditionalConfigs(config: ClientConfig) {
   config.limitRules = (await readJSONOrEmpty(
     `${__dirname}/../limit-rules.json`
@@ -155,19 +128,36 @@ async function loadAdditionalConfigs(config: ClientConfig) {
   verboseLog("Limit rules", config.limitRules);
 }
 
-function startIntervals(client: Client) {
-  stopIntervals();
-
-  UPDATE_INTERVALS.tick = setInterval(() => {
-    client.emit(TICK_EVENT);
-  }, client.config.tickTime);
+function onScheduledData(client: Client) {
+  return (data: Buffer) => {
+    const update = SavePSQL.rowToUpdate(JSON.parse(data.toString()));
+    verboseLog("Requested to update", update);
+    doUpdate(client, update, 0).catch(warnLog);
+  };
 }
 
-function stopIntervals() {
-  for (const key in UPDATE_INTERVALS) {
-    clearInterval(UPDATE_INTERVALS[key]);
-    delete UPDATE_INTERVALS[key];
-  }
+function startSchedulerConnection(client: Client, shouldFail = false) {
+  const addr = client.config.scheduler || "127.0.0.1:1337";
+  const [ip, port] = addr.split(":");
+  const connection = createConnection(parseInt(port), ip);
+  connection.setEncoding("utf8");
+  connection.on("data", onScheduledData(client));
+  connection.on("error", (error: { code: string; errno: number }) => {
+    errorLog("Scheduler connection error: ", error);
+    if (error.code === "ECONNREFUSED" && shouldFail) {
+      errorLog("Scheduler was not available, shutting down...");
+      client.destroy();
+    } else {
+      errorLog("Restarting scheduler connection in 5 seconds");
+      setTimeout(() => startSchedulerConnection(client), 5000);
+    }
+  });
+  connection.on("end", () => {
+    errorLog(
+      "Scheduler disconnected: restarting scheduler connection in 5 seconds"
+    );
+    setTimeout(() => startSchedulerConnection(client), 5000);
+  });
 }
 
 /*******************************************************************************
@@ -246,43 +236,10 @@ async function onInteraction(interaction: Discord.Interaction) {
   }
 }
 
-function onTick(client: Client) {
-  return async function () {
-    if (TICK_GENERATOR === undefined)
-      TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
-    if (TICK_LIMITS === undefined) TICK_LIMITS = new Map();
-    let tick = await TICK_GENERATOR.next();
-    if (tick.done) {
-      TICK_GENERATOR = client.updateCache.tickIterable(client.config.tickCount);
-      tick = await TICK_GENERATOR.next();
-      TICK_LIMITS.clear();
-    }
-
-    if (TICK >= MAX_TICK) TICK = 0;
-    const r = TICK % client.config.tickCount;
-    if (r === 0) TICK_SECOND += 1;
-    if (TICK_SECOND >= MAX_TICK) TICK_SECOND = 0;
-
-    TICK += 1;
-
-    verboseLog("[TICKER] Starting tick", r, tick.value !== undefined);
-    const promises = [];
-    if (tick.value) {
-      for (const update of tick.value) {
-        promises.push(doUpdate(client, update, TICK_SECOND, TICK_LIMITS));
-      }
-    }
-    const res = await allSettled(promises);
-    if (res.length > 0)
-      verboseLog("[TICKER] Finished tick", r, promises.length, res);
-  };
-}
-
 async function doUpdate(
   client: Client,
   update: Update[] | Update,
-  tick: number,
-  counters: Counters
+  tick: number
 ) {
   if (!Array.isArray(update)) update = [update];
   await Promise.all(
@@ -296,65 +253,10 @@ async function doUpdate(
         await u.deleteMessage(client);
         debugLog(`Deleted obselete update ${u.ID()}`);
       } else {
-        let passesLimits = true;
-        try {
-          passesLimits = await checkTickLimits(client, u, counters);
-        } catch (e) {
-          verboseLog(e);
-          if (e instanceof DiscordAPIError) {
-            // If not allowed to access guild
-            if (e.code === 50001 || e.code === 10004) passesLimits = false;
-          }
-        }
-        if (passesLimits) {
-          await u.send(client, tick);
-        } else {
-          await client.updateCache.delete(u);
-          await u.deleteMessage(client);
-          debugLog(`Deleted update for exceeding limits ${u.ID()}`);
-        }
+        await u.send(client, tick);
       }
     })
   );
-}
-
-async function checkTickLimits(
-  client: Client,
-  update: Update,
-  counters: Counters
-): Promise<boolean> {
-  let counter: Counter | undefined;
-  if (!update.guild || !update.channel) return false;
-
-  if (!counters.has(update.guild)) {
-    const guild = (await update.getGuild(client, true)) as Discord.Guild;
-    counter = {
-      guildCount: 0,
-      channelCount: {},
-      limits: (await getLimits(client, guild)).limits,
-    };
-  } else {
-    counter = counters.get(update.guild);
-  }
-
-  if (!counter) return false;
-
-  counter.guildCount += 1;
-  if (update.channel in counter.channelCount) {
-    counter.channelCount[update.channel] += 1;
-  } else {
-    counter.channelCount[update.channel] = 1;
-  }
-
-  counters.set(update.guild, counter);
-  if (counter.guildCount > (counter.limits.guildLimit || Infinity))
-    return false;
-  if (
-    counter.channelCount[update.channel] >
-    (counter.limits.channelLimit || Infinity)
-  )
-    return false;
-  return true;
 }
 
 export interface StartupConfig extends ClientConfig {
@@ -431,7 +333,7 @@ export default async function start(config: StartupConfig): Promise<Client> {
         permissions: <Discord.PermissionString[]>INVITE_FLAGS,
       });
       infoLog(`Invite link ${invite}`);
-      startIntervals(client);
+
       if (client.config.owner === undefined) {
         const application = await client.application?.fetch();
         if (application) {
@@ -453,13 +355,8 @@ export default async function start(config: StartupConfig): Promise<Client> {
           },
         ],
       });
-    })
-  );
 
-  client.on(
-    TICK_EVENT,
-    errorWrap(onTick(client), (e: Error) => {
-      verboseLog("Encountered error during tick handler", e.stack);
+      setTimeout(() => startSchedulerConnection(client, true), 2500);
     })
   );
 
@@ -468,14 +365,12 @@ export default async function start(config: StartupConfig): Promise<Client> {
   client.on(Discord.Constants.Events.WARN, verboseLog);
   client.on(Discord.Constants.Events.ERROR, debugLog);
   client.on(Discord.Constants.Events.SHARD_DISCONNECT, (closeEvent) => {
-    // stopIntervals();
     verboseLog("[NETWORK] Disconnected from discord API", closeEvent);
   });
   client.on(Discord.Constants.Events.SHARD_RECONNECTING, () => {
     verboseLog("[NETWORK] Attempting to reconnect to discord API");
   });
   client.on(Discord.Constants.Events.SHARD_RESUME, (replayed) => {
-    // startIntervals(client);
     verboseLog(
       `[NETWORK] Resumed connection to discord API (replaying ${replayed} events)`
     );

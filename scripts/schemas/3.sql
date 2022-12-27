@@ -1,3 +1,5 @@
+CREATE OR REPLACE VIEW schema_version AS SELECT 3 AS version;
+
 -- Don't allow non-urls in image fields
 UPDATE statuses SET
   image = NULL

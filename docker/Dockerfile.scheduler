@@ -1,0 +1,23 @@
+FROM rust:1.66-alpine AS build
+
+USER root
+
+RUN apk add musl-dev && \
+  adduser -DH user
+
+WORKDIR /usr/src/scheduler
+COPY ./scheduler .
+
+RUN cargo build --release
+
+FROM scratch
+
+COPY --from=build /etc/passwd /etc/passwd
+COPY --from=build /etc/group /etc/group
+
+COPY --from=build --chown=root:user /usr/src/scheduler/target/release/gamestatus-scheduler /usr/local/bin/gamestatus-scheduler
+
+USER user
+
+CMD [ "0.0.0.0:1337" ]
+ENTRYPOINT [ "gamestatus-scheduler" ]

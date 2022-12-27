@@ -1,0 +1,4 @@
+[profile.release]
+lto="fat"
+opt-level=3
+debug=1
