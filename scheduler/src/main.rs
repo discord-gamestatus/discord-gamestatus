@@ -59,6 +59,7 @@ fn row_to_json_value<'a>(row: &'a tokio_postgres::Row) -> HashMap<&'a str, serde
             match column.type_() {
                 &PGType::INT4 => row_get_or_null::<i32>(row, idx),
                 &PGType::VARCHAR => row_get_or_null::<String>(row, idx),
+                &PGType::JSONB => row_get_or_null::<JValue>(row, idx),
                 &PGType::BOOL => row_get_or_null::<bool>(row, idx),
                 _ => JValue::Null,
             },
