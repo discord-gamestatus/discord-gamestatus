@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env::var as get_var;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -138,25 +139,36 @@ enum ListenAddr {
     Unix(PathBuf),
 }
 
+const DEFAULT_TICK_COUNT: u32 = 60;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse DB config
     let mut pg_config = tokio_postgres::config::Config::new();
-    pg_config.user(&std::env::var("PG_USER").unwrap_or_else(|_| std::env::var("USER").expect("")));
-    if let Ok(db) = std::env::var("PG_DATABASE") {
+    pg_config.user(
+        &get_var("PGUSER")
+            .or_else(|_| get_var("PG_USER"))
+            .or_else(|_| get_var("USER"))
+            .expect("A database username must be provided"),
+    );
+    if let Ok(db) = get_var("PGDATABASE").or_else(|_| get_var("PG_DATABASE")) {
         pg_config.dbname(&db);
     }
-    if let Ok(host) = std::env::var("PG_HOST") {
+    if let Ok(host) = get_var("PGHOST").or_else(|_| get_var("PG_HOST")) {
         pg_config.host(&host);
     } else {
         pg_config.host("127.0.0.1");
     }
-    if let Ok(password) = std::env::var("PG_PASSWORD") {
+    if let Ok(password) = get_var("PGPASSWORD").or_else(|_| get_var("PG_PASSWORD")) {
         pg_config.password(&password);
     }
 
     // Parse tick config
-    let tick_count = u32::from_str_radix(&std::env::var("GS_TICK_COUNT").unwrap(), 10).unwrap();
+    let tick_count = if let Ok(tick_count) = get_var("GS_TICK_COUNT") {
+        u32::from_str_radix(&tick_count, 10).unwrap_or(DEFAULT_TICK_COUNT)
+    } else {
+        DEFAULT_TICK_COUNT
+    };
 
     // Parse listen config
     let mut listen_addrs: Vec<ListenAddr> = std::env::args()
