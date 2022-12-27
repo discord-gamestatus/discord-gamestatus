@@ -137,7 +137,9 @@ function onScheduledData(client: Client) {
 }
 
 function startSchedulerConnection(client: Client, shouldFail = false) {
-  const connection = createConnection(1337, "127.0.0.1");
+  const addr = client.config.scheduler || "127.0.0.1:1337";
+  const [ip, port] = addr.split(":");
+  const connection = createConnection(parseInt(port), ip);
   connection.setEncoding("utf8");
   connection.on("data", onScheduledData(client));
   connection.on("error", (error: { code: string; errno: number }) => {
