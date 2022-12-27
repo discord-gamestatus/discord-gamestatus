@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   postgres:
-    image: "postgres"
+    image: "postgres:14"
     volumes:
       - "./database/:/var/lib/postgresql/data"
       - "./scripts/schemas/:/opt"
@@ -29,5 +29,6 @@ services:
       GS_CHANNEL_LIMIT: "${GS_CHANNEL_LIMIT}"
       GS_GUILD_LIMIT: "${GS_GUILD_LIMIT}"
       GS_SUPPORT_LINK: "${GS_SUPPORT_LINK}"
+    env_file: .env
 #    command: [ "--debug", "--verbose" ]
 

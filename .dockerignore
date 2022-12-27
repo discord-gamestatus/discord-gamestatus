@@ -11,3 +11,9 @@
 !src/structs/save/*.ts
 !src/commands/*.ts
 !bin/discord-gamestatus
+!scripts/start.sh
+
+!scheduler/Cargo.lock
+!scheduler/Cargo.toml
+!scheduler/.cargo/config.toml
+!scheduler/src/*.rs
