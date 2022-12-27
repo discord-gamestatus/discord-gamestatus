@@ -11,5 +11,3 @@ tokio-postgres = { version="0.7", features=["with-serde_json-1"] }
 futures-util = "0.3"
 serde = "1"
 serde_json = "1"
-lazy_static = "1.4"
-async_once = "0.2"
