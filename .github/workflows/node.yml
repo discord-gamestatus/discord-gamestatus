@@ -10,16 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [17.x]
+        node-version: [18.x]
       fail-fast: true
       max-parallel: 2
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Use python
+      uses: actions/setup-python@v4
+      with:
+        cache: 'pip'
+    - run: pip install sqlfluff
     - name: npm install
       run: npm ci
       env:
