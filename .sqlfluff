@@ -1,0 +1,13 @@
+# vim: set syntax=dosini:
+
+[sqlfluff]
+dialect=postgres
+rules=core
+recurse=false
+sql_file_exts=.sql
+verbose=1
+
+
+[sqlfluff:rules]
+tab_space_size=2
+

@@ -7,6 +7,7 @@
 
 !.gitignore
 !.eslintrc.json
+!.sqlfluff
 !LICENSE
 !package*.json
 !README.md

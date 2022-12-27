@@ -19,9 +19,12 @@
   "scripts": {
     "test": "node bin/run-tests.js",
     "test:lint": "npx eslint src --ext .ts,.js",
+    "test:lint:bin": "npx eslint bin",
+    "test:lint:sql": "sqlfluff lint ./scripts/schemas",
     "test:format": "npx prettier --check ./bin ./src",
     "build": "tsc",
     "format": "npx prettier --write ./bin ./src",
+    "format:sql": "sqlfluff fix ./scripts/schemas",
     "start": "npm run build && node ./bin/discord-gamestatus"
   },
   "license": "GPL-3.0",
