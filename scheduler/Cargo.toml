@@ -1,0 +1,15 @@
+[package]
+name = "gamestatus-scheduler"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version="1", features=["full"] }
+tokio-postgres = "0.7"
+futures-util = "0.3"
+serde = "1"
+serde_json = "1"
+lazy_static = "1.4"
+async_once = "0.2"
