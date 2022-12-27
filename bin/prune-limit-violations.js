@@ -42,6 +42,10 @@ const statusRemovedMessage = Object.freeze({
   ],
 });
 
+if (!process.env.DISCORD_API_KEY) {
+  console.error("You must provide a DISCORD_API_KEY");
+  process.exit(1);
+}
 const rest = new REST({ version: 10 }).setToken(process.env.DISCORD_API_KEY);
 
 const userLimitCache = new Map();
