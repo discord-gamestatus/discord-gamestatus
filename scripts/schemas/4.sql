@@ -1,3 +1,5 @@
+CREATE OR REPLACE VIEW schema_version AS SELECT 4 AS version;
+
 CREATE VIEW status_counts_per_server AS SELECT
   array_agg(id) AS ids, count(id) AS count, guild_id
 FROM statuses GROUP BY guild_id;

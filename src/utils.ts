@@ -18,6 +18,7 @@ import fs from "fs/promises";
 import { is } from "@douile/bot-utilities";
 
 import { Message, TextBasedChannel } from "discord.js-light";
+import postgres from "pg";
 
 import {
   CommandContext,
@@ -126,4 +127,27 @@ export function readJSONOrEmpty(fileName: string) {
         resolve({});
       });
   });
+}
+
+/**
+ * Throw an error if the database schema version is lower than required or not set
+ */
+export async function throwForSchemaVersion(
+  pg: { query: postgres.Client["query"] },
+  requiredVersion: number
+) {
+  const r = await pg.query("SELECT version FROM schema_version", []);
+
+  if (r.rows.length === 0) {
+    throw new Error(
+      "Unable to check schema version, please check the database is set up correctly"
+    );
+  } else {
+    const version = r.rows[0].version;
+    if (version < requiredVersion) {
+      throw new Error(
+        `Schema version ${version} is lower than the required schema version ${requiredVersion}, please upgrade`
+      );
+    }
+  }
 }

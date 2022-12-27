@@ -24,6 +24,8 @@ import SaveInterface, {
 } from "./SaveInterface";
 import Update from "../Update";
 import { errorLog } from "../../debug";
+import { REQUIRED_SCHEMA_VERSION } from "../../constants";
+import { throwForSchemaVersion } from "../../utils";
 
 export default class SavePSQL implements SaveInterface {
   private pool: Pool;
@@ -37,7 +39,8 @@ export default class SavePSQL implements SaveInterface {
    *****************************************************************************/
 
   async load(): Promise<void> {
-    // No load needed
+    // Check schema version
+    throwForSchemaVersion(this.pool, REQUIRED_SCHEMA_VERSION);
   }
 
   async close(): Promise<void> {

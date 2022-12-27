@@ -20,6 +20,8 @@ type JValue = serde_json::Value;
 
 type ConnectedClients = Arc<RwLock<HashMap<SocketAddr, tokio::net::TcpStream>>>;
 
+const REQUIRED_SCHEMA_VERSION: i32 = 4;
+
 static SELECT_STATUS_COUNT_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
 async fn select_status_count(client: &PGClient) -> PGResult<i64> {
     let query = SELECT_STATUS_COUNT_QUERY
@@ -204,6 +206,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             eprintln!("connection error: {}", e);
         }
     });
+
+    // Check schema version
+    if let Ok(version) = pg
+        .query_one("SELECT version FROM schema_version", &[])
+        .await
+    {
+        let version: i32 = version.get(0);
+        if version < REQUIRED_SCHEMA_VERSION {
+            panic!(
+                "Database version {:?} is lower than the required version {:?}",
+                version, REQUIRED_SCHEMA_VERSION
+            );
+        }
+    } else {
+        panic!(
+            "Could not check database schema version, check that the database is setup properly"
+        );
+    }
 
     let clients = Arc::new(RwLock::new(HashMap::new()));
 

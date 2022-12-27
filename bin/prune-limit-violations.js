@@ -22,7 +22,8 @@ const path = require("path");
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v10");
 
-const { readJSONOrEmpty } = require("../dist/utils");
+const { readJSONOrEmpty, throwForSchemaVersion } = require("../dist/utils");
+const { REQUIRED_SCHEMA_VERSION } = require("../dist/constants");
 
 // FIXME: This should be passed to the script
 const defaultLimits = Object.freeze({
@@ -161,6 +162,8 @@ function createServerChecker(rest, pg, limitRules) {
   await pg.connect();
 
   console.error("Connected to database...");
+
+  await throwForSchemaVersion(pg, REQUIRED_SCHEMA_VERSION);
 
   const result = await pg.query(
     "SELECT ids, count::INT, guild_id, user_id FROM status_counts_per_server_with_activation"

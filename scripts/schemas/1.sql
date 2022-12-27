@@ -1,3 +1,5 @@
+CREATE OR REPLACE VIEW schema_version AS SELECT 1 AS version;
+
 CREATE TABLE statuses (
   id SERIAL PRIMARY KEY,
   guild_id VARCHAR(128),

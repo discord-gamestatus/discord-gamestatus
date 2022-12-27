@@ -23,3 +23,4 @@ export const FORMAT_PROPERTIES = Object.freeze([
 ]);
 export const MAX_EMBED_FIELD_SIZE = 2000;
 export const EMBED_COLOR = 0x5555ff;
+export const REQUIRED_SCHEMA_VERSION = 4;
