@@ -64,6 +64,7 @@ fn row_to_json_value<'a>(row: &'a tokio_postgres::Row) -> HashMap<&'a str, serde
                 &PGType::VARCHAR => row_get_or_null::<String>(row, idx),
                 &PGType::JSONB => row_get_or_null::<JValue>(row, idx),
                 &PGType::BOOL => row_get_or_null::<bool>(row, idx),
+                // TODO: Add parsing for dots array
                 _ => JValue::Null,
             },
         );
@@ -115,6 +116,7 @@ async fn run_ticks(
                         let mut r = serde_json::to_vec(&row_to_json_value(&row)).unwrap();
                         r.push(b'\n');
                         // TODO: Check what the error is
+                        // TODO: Transmit tick number to clients
                         if let Err(_) = socket.try_write(&r) {
                             delete_client.send(*addr).await.unwrap();
                             break;
