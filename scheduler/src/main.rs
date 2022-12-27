@@ -141,25 +141,25 @@ enum ListenAddr {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse DB config
     let mut pg_config = tokio_postgres::config::Config::new();
-    {
-        let db = std::env::var("PG_DATABASE");
-        pg_config.user(&std::env::var("PG_USER").unwrap_or_else(|_| {
-            db.clone()
-                .unwrap_or_else(|_| std::env::var("USER").expect(""))
-        }));
-        if let Ok(db) = db {
-            pg_config.dbname(&db);
-        }
-        if let Ok(host) = std::env::var("PG_HOST") {
-            pg_config.host(&host);
-        }
-        if let Ok(password) = std::env::var("PG_PASSWORD") {
-            pg_config.password(&password);
-        }
+    pg_config.user(&std::env::var("PG_USER").unwrap_or_else(|_| std::env::var("USER").expect("")));
+    if let Ok(db) = std::env::var("PG_DATABASE") {
+        pg_config.dbname(&db);
     }
+    if let Ok(host) = std::env::var("PG_HOST") {
+        pg_config.host(&host);
+    } else {
+        pg_config.host("127.0.0.1");
+    }
+    if let Ok(password) = std::env::var("PG_PASSWORD") {
+        pg_config.password(&password);
+    }
+
+    // Parse tick config
+    let tick_count = u32::from_str_radix(&std::env::var("GS_TICK_COUNT").unwrap(), 10).unwrap();
 
     // Parse listen config
     let mut listen_addrs: Vec<ListenAddr> = std::env::args()
+        .skip(1)
         .map(|a| {
             if let Some((proto, uri)) = a.split_once("://") {
                 match proto {
@@ -230,7 +230,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             row_stream,
             &clients,
             &del_tx,
-            10,
+            tick_count,
             Duration::from_secs(1),
         )
         .await?;
