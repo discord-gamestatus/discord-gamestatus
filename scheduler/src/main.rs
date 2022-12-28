@@ -118,6 +118,12 @@ impl Scheduler {
                 1
             };
 
+            if client_count == 0 {
+                tokio::time::sleep_until(end_of_tick).await;
+                end_of_tick = Instant::now() + self.tick_delay;
+                continue;
+            }
+
             let mut statuses_sent = 0u32;
 
             for tick in 0..self.tick_count {
