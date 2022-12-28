@@ -1,149 +1,183 @@
 use std::collections::HashMap;
 use std::env::var as get_var;
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::net::{Ipv4Addr, SocketAddrV4};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 
-use futures_util::{pin_mut, TryStreamExt};
+use futures_util::{pin_mut, Stream, TryStreamExt};
 use tokio::net::TcpListener;
-use tokio::sync::{OnceCell, RwLock};
+use tokio::sync::RwLock;
+use tokio::time::Instant;
 use tokio_postgres::NoTls;
 
-type PGClient = tokio_postgres::Client;
-type PGType = tokio_postgres::types::Type;
-type PGError = tokio_postgres::Error;
-type PGResult<T> = Result<T, PGError>;
+pub mod constants;
+pub mod database;
+#[cfg(feature = "metrics")]
+pub mod metrics;
+pub mod types;
 
-type JValue = serde_json::Value;
+use constants::{DEFAULT_TICK_COUNT, DEFAULT_TICK_TIME};
+use database::{check_schema_version, row_to_json_value, select_status_count, select_statuses};
+#[cfg(feature = "metrics")]
+use metrics::Metrics;
+use types::*;
 
-type ConnectedClients = Arc<RwLock<HashMap<SocketAddr, tokio::net::TcpStream>>>;
+pub struct Scheduler {
+    postgres: PGClient,
+    clients: ConnectedClients,
+    delete_client: tokio::sync::mpsc::Sender<SocketAddr>,
 
-const REQUIRED_SCHEMA_VERSION: i32 = 4;
-
-static SELECT_STATUS_COUNT_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
-async fn select_status_count(client: &PGClient) -> PGResult<i64> {
-    let query = SELECT_STATUS_COUNT_QUERY
-        .get_or_try_init(|| async { client.prepare("SELECT COUNT(*) FROM statuses").await })
-        .await?;
-
-    let result = client.query_one(query, &[]).await?;
-    result.try_get(0)
-}
-
-static SELECT_STATUSES_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
-async fn select_statuses(client: &PGClient) -> PGResult<tokio_postgres::RowStream> {
-    let query = SELECT_STATUSES_QUERY
-        .get_or_try_init(|| async { client.prepare("SELECT * FROM statuses").await })
-        .await?;
-
-    let params: Vec<String> = vec![];
-    client.query_raw(query, params).await
-}
-
-fn row_get_or_null<'a, T: tokio_postgres::types::FromSql<'a> + serde::ser::Serialize>(
-    row: &'a tokio_postgres::Row,
-    idx: usize,
-) -> JValue {
-    if let Ok(v) = row.try_get::<_, T>(idx) {
-        serde_json::json!(v)
-    } else {
-        JValue::Null
-    }
-}
-
-fn row_to_json_value<'a>(row: &'a tokio_postgres::Row) -> HashMap<&'a str, serde_json::Value> {
-    let mut r = HashMap::new();
-
-    for (idx, column) in row.columns().iter().enumerate() {
-        r.insert(
-            column.name(),
-            match column.type_() {
-                &PGType::INT4 => row_get_or_null::<i32>(row, idx),
-                &PGType::VARCHAR => row_get_or_null::<String>(row, idx),
-                &PGType::JSONB => row_get_or_null::<JValue>(row, idx),
-                &PGType::BOOL => row_get_or_null::<bool>(row, idx),
-                // TODO: Add parsing for dots array
-                _ => JValue::Null,
-            },
-        );
-    }
-
-    r
-}
-
-async fn run_ticks(
-    pg: &PGClient,
-    row_stream: tokio_postgres::RowStream,
-    clients: &ConnectedClients,
-    delete_client: &tokio::sync::mpsc::Sender<SocketAddr>,
-    n_ticks: u32,
+    metrics_file: Option<String>,
+    tick_count: u32,
     tick_delay: Duration,
-) -> PGResult<()> {
-    let n_clients = Arc::clone(clients).read().await.len() as u32;
-    let status_count = select_status_count(pg).await? as u32;
-    let total_output = n_ticks * n_clients;
-    let est_tick_count = if n_clients > 0 {
-        u32::max(1, status_count / total_output)
-    } else {
-        1
-    };
+}
 
-    let mut stream_finished = false;
+impl Scheduler {
+    pub async fn initialize(
+        pg_config: tokio_postgres::Config,
+        tick_count: u32,
+        tick_delay: Duration,
+        metrics_file: Option<String>,
+        listen_addrs: Vec<ListenAddr>,
+    ) -> PGResult<Self> {
+        let clients = Arc::new(RwLock::new(HashMap::new()));
+        let (delete_client, mut del_rx) = tokio::sync::mpsc::channel(128);
 
-    pin_mut!(row_stream);
+        let del_clients = Arc::clone(&clients);
+        tokio::spawn(async move {
+            while let Some(task) = del_rx.recv().await {
+                println!("Deleting {:?}", task);
+                del_clients.write().await.remove(&task);
+            }
+        });
 
-    for tick in 0..n_ticks {
-        #[cfg(debug_assertions)]
-        println!("Tick {}", tick);
-        if !stream_finished {
-            let clients_lock = clients.read().await;
-            for (addr, socket) in clients_lock.iter() {
-                if let Err(_) = socket.writable().await {
-                    // Socket is probably closed queue it for deletion
-                    delete_client.send(*addr).await.unwrap();
-                    continue;
+        let (postgres, connection) = pg_config.connect(NoTls).await?;
+        // The connection object performs the actual communication with the database,
+        // so spawn it off to run on its own.
+        tokio::spawn(async move {
+            if let Err(e) = connection.await {
+                eprintln!("connection error: {}", e);
+            }
+        });
+
+        check_schema_version(&postgres).await;
+
+        let scheduler = Self {
+            postgres,
+            clients,
+            delete_client,
+            tick_count,
+            tick_delay,
+            metrics_file,
+        };
+
+        for address in listen_addrs {
+            scheduler.add_listener(address).await;
+        }
+
+        Ok(scheduler)
+    }
+
+    pub async fn add_listener(&self, address: ListenAddr) {
+        let clients = Arc::clone(&self.clients);
+        tokio::spawn(async move {
+            let listener = match address {
+                ListenAddr::TCP(addr) => TcpListener::bind(addr).await.unwrap(),
+                ListenAddr::Unix(path) => todo!("Unix listeners not implemented"),
+            };
+            println!("Listening on {:?}", listener.local_addr().unwrap());
+
+            while let Ok((socket, addr)) = listener.accept().await {
+                println!("Connection from {:?}", addr);
+                {
+                    let mut client_lock = clients.write().await;
+                    client_lock.insert(addr, socket);
                 }
+            }
+        });
+    }
 
-                #[cfg(debug_assertions)]
-                println!("  Client {}", addr);
-                for _ in 0..est_tick_count {
-                    if let Some(row) = row_stream.try_next().await? {
-                        #[cfg(debug_assertions)]
-                        println!("    {:?}", row.get::<_, String>(5));
+    async fn do_tick_loop(&self) -> GenericResult<()> {
+        let mut end_of_tick = Instant::now() + self.tick_delay;
+        loop {
+            let mut stream_finished = false;
+            let row_stream = select_statuses(&self.postgres).await?;
+            pin_mut!(row_stream);
 
-                        let mut r = serde_json::to_vec(&row_to_json_value(&row)).unwrap();
-                        r.push(b'\n');
-                        // TODO: Check what the error is
-                        // TODO: Transmit tick number to clients
-                        if let Err(_) = socket.try_write(&r) {
-                            delete_client.send(*addr).await.unwrap();
+            let client_count = Arc::clone(&self.clients).read().await.len();
+            let status_count: usize = select_status_count(&self.postgres).await?.try_into()?;
+            let total_output: usize = client_count.saturating_mul(self.tick_count.try_into()?);
+            let est_tick_count = if client_count > 0 {
+                usize::max(1, status_count / total_output)
+            } else {
+                1
+            };
+
+            let mut statuses_sent = 0u32;
+
+            for tick in 0..self.tick_count {
+                println!("Tick {}", tick);
+
+                if !stream_finished {
+                    let clients_lock = self.clients.read().await;
+                    for (addr, socket) in clients_lock.iter() {
+                        if let Err(_) = socket.writable().await {
+                            // Socket is probably closed queue it for deletion
+                            self.delete_client.send(*addr).await.unwrap();
+                            continue;
+                        }
+
+                        println!("  Client {}", addr);
+                        for _ in 0..est_tick_count {
+                            if let Some(row) = row_stream.try_next().await? {
+                                #[cfg(debug_assertions)]
+                                println!("    {:?}", row.get::<_, String>(5));
+
+                                let mut r = serde_json::to_vec(&row_to_json_value(&row)).unwrap();
+                                r.push(b'\n');
+                                statuses_sent += 1;
+                                // TODO: Check what the error is
+                                // TODO: Transmit tick number to clients
+                                if let Err(_) = socket.try_write(&r) {
+                                    self.delete_client.send(*addr).await.unwrap();
+                                    break;
+                                }
+                            } else {
+                                stream_finished = true;
+                                break;
+                            }
+                        }
+                        if stream_finished {
                             break;
                         }
-                    } else {
-                        stream_finished = true;
-                        break;
                     }
                 }
-                if stream_finished {
-                    break;
+
+                tokio::time::sleep_until(end_of_tick).await;
+                end_of_tick = Instant::now() + self.tick_delay;
+            }
+
+            #[cfg(feature = "metrics")]
+            {
+                if let Some(file) = &self.metrics_file {
+                    let metrics = Metrics {
+                        client_count: client_count as u32,
+                        tick_count: self.tick_count,
+                        status_count: status_count as u32,
+                        status_sent_count: statuses_sent,
+                        status_remaining_count: row_stream.size_hint(),
+                    };
+                    let file = file.clone();
+                    tokio::spawn(async move {
+                        metrics.write_to_file(file).await.unwrap();
+                    });
                 }
             }
         }
-
-        tokio::time::sleep(tick_delay).await;
     }
-
-    Ok(())
 }
-
-enum ListenAddr {
-    TCP(SocketAddr),
-    Unix(PathBuf),
-}
-
-const DEFAULT_TICK_COUNT: u32 = 60;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -174,6 +208,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         DEFAULT_TICK_COUNT
     };
 
+    let tick_delay = if let Some(tick_delay) = get_var("GS_TICK_TIME")
+        .ok()
+        .as_ref()
+        .and_then(|t| u64::from_str_radix(t, 10).ok())
+    {
+        Duration::from_millis(tick_delay)
+    } else {
+        DEFAULT_TICK_TIME
+    };
+
+    let metrics_file = get_var("GS_METRICS_FILE").ok();
+
     // Parse listen config
     let mut listen_addrs: Vec<ListenAddr> = std::env::args()
         .skip(1)
@@ -191,6 +237,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         })
         .collect();
+
     if listen_addrs.len() == 0 {
         listen_addrs.push(ListenAddr::TCP(SocketAddr::V4(SocketAddrV4::new(
             Ipv4Addr::new(127, 0, 0, 1),
@@ -198,76 +245,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ))));
     }
 
-    // Connect to the database.
-    let (pg, connection) = pg_config.connect(NoTls).await?;
+    let scheduler = Scheduler::initialize(
+        pg_config,
+        tick_count,
+        tick_delay,
+        metrics_file,
+        listen_addrs,
+    )
+    .await?;
+    scheduler.do_tick_loop().await?;
 
-    // The connection object performs the actual communication with the database,
-    // so spawn it off to run on its own.
-    tokio::spawn(async move {
-        if let Err(e) = connection.await {
-            eprintln!("connection error: {}", e);
-        }
-    });
-
-    // Check schema version
-    if let Ok(version) = pg
-        .query_one("SELECT version FROM schema_version", &[])
-        .await
-    {
-        let version: i32 = version.get(0);
-        if version < REQUIRED_SCHEMA_VERSION {
-            panic!(
-                "Database version {:?} is lower than the required version {:?}",
-                version, REQUIRED_SCHEMA_VERSION
-            );
-        }
-    } else {
-        panic!(
-            "Could not check database schema version, check that the database is setup properly"
-        );
-    }
-
-    let clients = Arc::new(RwLock::new(HashMap::new()));
-
-    // Start listeners
-    for listen_addr in listen_addrs {
-        let clients = Arc::clone(&clients);
-        tokio::spawn(async move {
-            let listener = match listen_addr {
-                ListenAddr::TCP(addr) => TcpListener::bind(addr).await.unwrap(),
-                ListenAddr::Unix(path) => todo!("Unix listeners not implemented"),
-            };
-            println!("Listening on {:?}", listener.local_addr().unwrap());
-
-            while let Ok((socket, addr)) = listener.accept().await {
-                println!("Connection from {:?}", addr);
-                {
-                    let mut client_lock = clients.write().await;
-                    client_lock.insert(addr, socket);
-                }
-            }
-        });
-    }
-
-    let (del_tx, mut del_rx) = tokio::sync::mpsc::channel(128);
-    let del_clients = Arc::clone(&clients);
-    tokio::spawn(async move {
-        while let Some(task) = del_rx.recv().await {
-            println!("Deleting {:?}", task);
-            del_clients.write().await.remove(&task);
-        }
-    });
-
-    loop {
-        let row_stream = select_statuses(&pg).await?;
-        run_ticks(
-            &pg,
-            row_stream,
-            &clients,
-            &del_tx,
-            tick_count,
-            Duration::from_secs(1),
-        )
-        .await?;
-    }
+    Ok(())
 }
