@@ -129,10 +129,33 @@ async function loadAdditionalConfigs(config: ClientConfig) {
 }
 
 function onScheduledData(client: Client) {
-  return (data: Buffer) => {
-    const update = SavePSQL.rowToUpdate(JSON.parse(data.toString()));
-    verboseLog("Requested to update", update);
-    doUpdate(client, update, 0).catch(warnLog);
+  const backlog: string[] = [];
+  return (data: string) => {
+    let newLineIndex = data.indexOf("\n");
+    if (newLineIndex === -1) {
+      backlog.push(data.toString());
+      return;
+    }
+    while (newLineIndex > 0) {
+      const text = backlog.splice(0).join("") + data.substring(0, newLineIndex);
+      data = data.substring(newLineIndex + 1);
+
+      let json = null;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {}
+
+      if (json) {
+        const update = SavePSQL.rowToUpdate(json);
+        verboseLog("Requested to update", update);
+        doUpdate(client, update, 0).catch(warnLog);
+      }
+
+      newLineIndex = data.indexOf("\n");
+    }
+    if (data.length > 0) {
+      backlog.push(data.toString());
+    }
   };
 }
 
