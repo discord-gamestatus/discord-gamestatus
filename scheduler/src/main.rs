@@ -32,6 +32,7 @@ pub struct Scheduler {
     metrics_file: Option<String>,
     tick_count: u32,
     tick_delay: Duration,
+    debug: bool,
 }
 
 impl Scheduler {
@@ -41,6 +42,7 @@ impl Scheduler {
         tick_delay: Duration,
         metrics_file: Option<String>,
         listen_addrs: Vec<ListenAddr>,
+        debug: bool,
     ) -> PGResult<Self> {
         let clients = Arc::new(RwLock::new(HashMap::new()));
         let (delete_client, mut del_rx) = tokio::sync::mpsc::channel(128);
@@ -48,7 +50,7 @@ impl Scheduler {
         let del_clients = Arc::clone(&clients);
         tokio::spawn(async move {
             while let Some(task) = del_rx.recv().await {
-                println!("Deleting {:?}", task);
+                println!("[Client] Disconnected from: {:?}", task);
                 del_clients.write().await.remove(&task);
             }
         });
@@ -71,6 +73,7 @@ impl Scheduler {
             tick_count,
             tick_delay,
             metrics_file,
+            debug,
         };
 
         for address in listen_addrs {
@@ -90,7 +93,7 @@ impl Scheduler {
             println!("Listening on {:?}", listener.local_addr().unwrap());
 
             while let Ok((socket, addr)) = listener.accept().await {
-                println!("Connection from {:?}", addr);
+                println!("[Client] Connection from {:?}", addr);
                 {
                     let mut client_lock = clients.write().await;
                     client_lock.insert(addr, socket);
@@ -118,7 +121,9 @@ impl Scheduler {
             let mut statuses_sent = 0u32;
 
             for tick in 0..self.tick_count {
-                println!("Tick {}", tick);
+                if self.debug {
+                    println!("Tick {}", tick);
+                }
 
                 if !stream_finished {
                     let clients_lock = self.clients.read().await;
@@ -129,21 +134,25 @@ impl Scheduler {
                             continue;
                         }
 
-                        println!("  Client {}", addr);
+                        if self.debug {
+                            println!("  Client {}", addr);
+                        }
                         for _ in 0..est_tick_count {
                             if let Some(row) = row_stream.try_next().await? {
-                                #[cfg(debug_assertions)]
-                                println!("    {:?}", row.get::<_, String>(5));
+                                if self.debug {
+                                    println!("    {:?}", row.get::<_, String>(5));
+                                }
 
                                 let mut r = serde_json::to_vec(&row_to_json_value(&row)).unwrap();
                                 r.push(b'\n');
-                                statuses_sent += 1;
                                 // TODO: Check what the error is
                                 // TODO: Transmit tick number to clients
                                 if let Err(_) = socket.try_write(&r) {
                                     self.delete_client.send(*addr).await.unwrap();
                                     break;
                                 }
+
+                                statuses_sent += 1;
                             } else {
                                 stream_finished = true;
                                 break;
@@ -220,20 +229,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let metrics_file = get_var("GS_METRICS_FILE").ok();
 
-    // Parse listen config
+    // Parse arguments
+    let mut debug = false;
     let mut listen_addrs: Vec<ListenAddr> = std::env::args()
         .skip(1)
-        .map(|a| {
+        .filter_map(|a| {
+            match a.as_str() {
+                "--debug" => {
+                    debug = true;
+                    return None;
+                }
+                "--help" => todo!("Add help"),
+                _ => {}
+            };
+
             if let Some((proto, uri)) = a.split_once("://") {
-                match proto {
+                Some(match proto {
                     "tcp" => {
                         ListenAddr::TCP(SocketAddr::from_str(uri).expect("Invalid listen address"))
                     }
                     "unix" => ListenAddr::Unix(PathBuf::from(uri)),
                     _ => panic!("Unknown listen protocol {:?}", proto),
-                }
+                })
             } else {
-                ListenAddr::TCP(SocketAddr::from_str(&a).expect("Invalid listen address"))
+                if let Ok(addr) = SocketAddr::from_str(&a) {
+                    Some(ListenAddr::TCP(addr))
+                } else {
+                    None
+                }
             }
         })
         .collect();
@@ -251,6 +274,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tick_delay,
         metrics_file,
         listen_addrs,
+        debug,
     )
     .await?;
     scheduler.do_tick_loop().await?;
