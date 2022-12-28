@@ -9,3 +9,6 @@ CREATE VIEW status_counts_per_server_with_activation AS SELECT
 FROM
   status_counts_per_server sta
 LEFT OUTER JOIN activated_guilds act ON sta.guild_id = act.guild_id;
+
+ALTER TABLE statuses DROP CONSTRAINT statuses_guild_id_channel_id_ip_key;
+ALTER TABLE statuses ADD CONSTRAINT unique_status UNIQUE(guild_id, ip);

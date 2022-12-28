@@ -128,9 +128,9 @@ export default class SavePSQL implements SaveInterface {
       await client.query("BEGIN");
       const r = await client.query(
         "UPDATE statuses SET\
-          message_id=$4, type=$5, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12,\
+          channel_id=$2, message_id=$4, type=$5, name=$6, state=$7, dots=$8, title=$9, offline_title=$10, description=$11, offline_description=$12,\
           color=$13, offline_color=$14, image=$15, offline_image=$16, columns=$17, max_edits=$18, connect_update=$19, disconnect_update=$20\
-          WHERE guild_id=$1 AND channel_id=$2 and ip=$3",
+          WHERE guild_id=$1 AND ip=$3",
         [
           status.guild,
           status.channel,
