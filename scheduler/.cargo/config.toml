@@ -1,4 +1,11 @@
 [profile.release]
 lto="fat"
 opt-level=3
+codegen-units=1
 debug=1
+
+[profile.release-size]
+inherits="release"
+debug=0
+strip=true
+opt-level="z"
