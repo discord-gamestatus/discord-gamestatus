@@ -143,7 +143,9 @@ function onScheduledData(client: Client) {
       let json = null;
       try {
         json = JSON.parse(text);
-      } catch (e) {}
+      } catch (e) {
+        // Do nothing
+      }
 
       if (json) {
         const update = SavePSQL.rowToUpdate(json);
