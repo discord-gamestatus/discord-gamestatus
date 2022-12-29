@@ -12,3 +12,5 @@ LEFT OUTER JOIN activated_guilds act ON sta.guild_id = act.guild_id;
 
 ALTER TABLE statuses DROP CONSTRAINT statuses_guild_id_channel_id_ip_key;
 ALTER TABLE statuses ADD CONSTRAINT unique_status UNIQUE(guild_id, ip);
+
+SET track_counts = true;

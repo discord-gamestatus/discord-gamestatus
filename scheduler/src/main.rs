@@ -94,20 +94,19 @@ impl Scheduler {
 
             while let Ok((socket, addr)) = listener.accept().await {
                 println!("[Client] Connection from {:?}", addr);
-                {
-                    let mut client_lock = clients.write().await;
-                    client_lock.insert(addr, socket);
-                }
+                let mut client_lock = clients.write().await;
+                client_lock.insert(addr, socket);
             }
         });
     }
 
     async fn do_tick_loop(&self) -> GenericResult<()> {
+        if self.debug {
+            println!("Starting tick loop...");
+        }
         let mut end_of_tick = Instant::now() + self.tick_delay;
         loop {
             let mut stream_finished = false;
-            let row_stream = select_statuses(&self.postgres).await?;
-            pin_mut!(row_stream);
 
             let client_count = Arc::clone(&self.clients).read().await.len();
             let status_count: usize = select_status_count(&self.postgres).await?.try_into()?;
@@ -117,6 +116,16 @@ impl Scheduler {
             } else {
                 1
             };
+
+            let row_stream = select_statuses(&self.postgres).await?;
+            pin_mut!(row_stream);
+
+            if self.debug {
+                println!(
+                    "Start of tick loop clients={} status_count={} output={} tick_size={}",
+                    client_count, status_count, total_output, est_tick_count
+                )
+            }
 
             if client_count == 0 {
                 tokio::time::sleep_until(end_of_tick).await;
