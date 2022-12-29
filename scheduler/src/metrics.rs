@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use prometheus::{self, register_counter, register_int_gauge, Counter, IntGauge, TextEncoder};
 use tokio::io::AsyncWriteExt;
 
-use super::types::*;
+use crate::types::*;
 
 // TODO: Do this without prometheus dependecy, it adds ~7MB to optimized binary
 

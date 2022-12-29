@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use tokio::sync::OnceCell;
 
-use super::constants::REQUIRED_SCHEMA_VERSION;
-use super::types::*;
+use crate::constants::REQUIRED_SCHEMA_VERSION;
+use crate::types::*;
 
 static SELECT_STATUS_COUNT_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
 // Get the number of statuses currently in the database
