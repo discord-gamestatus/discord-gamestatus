@@ -52,7 +52,7 @@ if (testSql) {
 }
 if (testScheduler) {
   let cwd = join(process.cwd(), "scheduler");
-  checkOutput(spawnSync("cargo", ["check"], { stdio, cwd }));
+  checkOutput(spawnSync("cargo", ["check", "--all-features"], { stdio, cwd }));
   checkOutput(spawnSync("cargo", ["fmt", "--check"], { stdio, cwd }));
   checkOutput(spawnSync("cargo", ["test"], { stdio, cwd }));
 }
