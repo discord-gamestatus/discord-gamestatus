@@ -29,6 +29,7 @@ pub struct Scheduler {
     metrics_file: Option<String>,
     tick_count: u32,
     tick_delay: Duration,
+    max_per_tick: usize,
     debug: bool,
 }
 
@@ -37,6 +38,7 @@ impl Scheduler {
         pg_config: tokio_postgres::Config,
         tick_count: u32,
         tick_delay: Duration,
+        max_per_tick: usize,
         metrics_file: Option<String>,
         listen_addrs: Vec<ListenAddr>,
         debug: bool,
@@ -70,6 +72,7 @@ impl Scheduler {
             delete_client,
             tick_count,
             tick_delay,
+            max_per_tick,
             metrics_file,
             debug,
         };
@@ -128,7 +131,10 @@ impl Scheduler {
                 let output_left = client_count.saturating_mul((self.tick_count - tick).try_into()?);
                 let statuses_left = status_count.saturating_sub(statuses_sent);
                 let est_tick_count = if output_left > 0 {
-                    usize::max(1, statuses_left / output_left)
+                    usize::min(
+                        self.max_per_tick,
+                        usize::max(1, statuses_left / output_left),
+                    )
                 } else {
                     0
                 };
