@@ -71,11 +71,11 @@ impl Metrics {
         let mut file = tokio::fs::OpenOptions::new()
             .create(true)
             .write(true)
+            .truncate(true)
             .open(file.as_ref())
             .await?;
         file.write_all(&content.into_bytes()).await?;
 
-        println!("Wrote metrics");
         Ok(())
     }
 }

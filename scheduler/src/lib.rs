@@ -198,6 +198,9 @@ impl Scheduler {
                     tokio::spawn(async move {
                         metrics.write_to_file(file).await.unwrap();
                     });
+                    if self.debug {
+                        println!("[Metrics] writing to {:?}", self.metrics_file);
+                    }
                 }
             }
         }
