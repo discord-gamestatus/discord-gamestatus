@@ -114,24 +114,23 @@ impl Scheduler {
                 println!("Start of tick loop status_count={}", status_count);
             }
 
-            if self.client_count().await == 0 {
-                tokio::time::sleep_until(end_of_tick).await;
-                end_of_tick = Instant::now() + self.tick_delay;
-                continue;
-            }
-
             let mut statuses_sent = 0usize;
 
             for tick in 0..self.tick_count {
-                let output_left = self
-                    .client_count()
-                    .await
-                    .saturating_mul((self.tick_count - tick).try_into()?);
+                let client_count = self.client_count().await;
+
+                if client_count == 0 {
+                    tokio::time::sleep_until(end_of_tick).await;
+                    end_of_tick = Instant::now() + self.tick_delay;
+                    break;
+                }
+
+                let output_left = client_count.saturating_mul((self.tick_count - tick).try_into()?);
                 let statuses_left = status_count.saturating_sub(statuses_sent);
                 let est_tick_count = if output_left > 0 {
                     usize::max(1, statuses_left / output_left)
                 } else {
-                    1
+                    0
                 };
 
                 if self.debug {
