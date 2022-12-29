@@ -9,11 +9,15 @@ static SELECT_STATUS_COUNT_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell
 // Get the number of statuses currently in the database
 pub async fn select_status_count(client: &PGClient) -> PGResult<i64> {
     let query = SELECT_STATUS_COUNT_QUERY
-        .get_or_try_init(|| async { client.prepare("SELECT COUNT(*) FROM statuses").await })
+        .get_or_try_init(|| async {
+            client
+                .prepare("SELECT n_live_tup FROM pg_stat_user_tables WHERE relname='statuses'")
+                .await
+        })
         .await?;
 
     let result = client.query_one(query, &[]).await?;
-    result.try_get(0)
+    Ok(result.try_get(0)?)
 }
 
 static SELECT_STATUSES_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();

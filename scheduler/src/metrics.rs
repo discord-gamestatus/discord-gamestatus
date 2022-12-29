@@ -6,6 +6,8 @@ use tokio::io::AsyncWriteExt;
 
 use super::types::*;
 
+// TODO: Do this without prometheus dependecy, it adds ~7MB to optimized binary
+
 lazy_static! {
     static ref GAUGE_CLIENT_COUNT: IntGauge =
         register_int_gauge!("clients", "Number of clients connected").unwrap();

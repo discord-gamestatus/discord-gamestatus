@@ -51,6 +51,7 @@ impl Scheduler {
         tokio::spawn(async move {
             while let Some(task) = del_rx.recv().await {
                 println!("[Client] Disconnected from: {:?}", task);
+                // TODO: Update some global that keeps track of number of updates per tick
                 del_clients.write().await.remove(&task);
             }
         });
@@ -207,6 +208,7 @@ impl Scheduler {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse DB config
     let mut pg_config = tokio_postgres::config::Config::new();
+    pg_config.connect_timeout(Duration::from_secs(15));
     pg_config.user(
         &get_var("PGUSER")
             .or_else(|_| get_var("PG_USER"))
