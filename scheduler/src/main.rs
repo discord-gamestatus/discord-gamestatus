@@ -95,8 +95,7 @@ impl Scheduler {
 
             while let Ok((socket, addr)) = listener.accept().await {
                 println!("[Client] Connection from {:?}", addr);
-                let mut client_lock = clients.write().await;
-                client_lock.insert(addr, socket);
+                clients.write().await.insert(addr, socket);
             }
         });
     }
@@ -109,36 +108,40 @@ impl Scheduler {
         loop {
             let mut stream_finished = false;
 
-            let client_count = Arc::clone(&self.clients).read().await.len();
             let status_count: usize = select_status_count(&self.postgres).await?.try_into()?;
-            let total_output: usize = client_count.saturating_mul(self.tick_count.try_into()?);
-            let est_tick_count = if client_count > 0 {
-                usize::max(1, status_count / total_output)
-            } else {
-                1
-            };
 
             let row_stream = select_statuses(&self.postgres).await?;
             pin_mut!(row_stream);
 
             if self.debug {
-                println!(
-                    "Start of tick loop clients={} status_count={} output={} tick_size={}",
-                    client_count, status_count, total_output, est_tick_count
-                )
+                println!("Start of tick loop status_count={}", status_count);
             }
 
-            if client_count == 0 {
+            if self.client_count().await == 0 {
                 tokio::time::sleep_until(end_of_tick).await;
                 end_of_tick = Instant::now() + self.tick_delay;
                 continue;
             }
 
-            let mut statuses_sent = 0u32;
+            let mut statuses_sent = 0usize;
 
             for tick in 0..self.tick_count {
+                let output_left = self
+                    .client_count()
+                    .await
+                    .saturating_mul((self.tick_count - tick).try_into()?);
+                let statuses_left = status_count.saturating_sub(statuses_sent);
+                let est_tick_count = if output_left > 0 {
+                    usize::max(1, statuses_left / output_left)
+                } else {
+                    1
+                };
+
                 if self.debug {
-                    println!("Tick {}", tick);
+                    println!(
+                        "Tick {} output_left={} statuses_left={} tick_size={}",
+                        tick, output_left, statuses_left, est_tick_count
+                    );
                 }
 
                 if !stream_finished {
@@ -188,9 +191,9 @@ impl Scheduler {
             {
                 if let Some(file) = &self.metrics_file {
                     let metrics = Metrics {
-                        client_count: client_count as u32,
+                        client_count: self.client_count().await,
                         tick_count: self.tick_count,
-                        status_count: status_count as u32,
+                        status_count,
                         status_sent_count: statuses_sent,
                         status_remaining_count: row_stream.size_hint(),
                     };
@@ -201,6 +204,10 @@ impl Scheduler {
                 }
             }
         }
+    }
+
+    pub async fn client_count(&self) -> usize {
+        self.clients.read().await.len()
     }
 }
 

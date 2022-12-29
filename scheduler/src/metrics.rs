@@ -28,10 +28,10 @@ lazy_static! {
 }
 
 pub struct Metrics {
-    pub client_count: u32,
+    pub client_count: usize,
     pub tick_count: u32,
-    pub status_count: u32,
-    pub status_sent_count: u32,
+    pub status_count: usize,
+    pub status_sent_count: usize,
     pub status_remaining_count: (usize, Option<usize>),
 }
 
@@ -46,11 +46,15 @@ pub fn encode() -> prometheus::Result<String> {
 impl Metrics {
     pub fn update_metrics(&self) {
         COUNTER_TICK.inc();
-        GAUGE_CLIENT_COUNT.set(self.client_count.into());
+        GAUGE_CLIENT_COUNT.set(self.client_count.try_into().unwrap_or(0));
         GAUGE_TICK_COUNT.set(self.tick_count.into());
-        GAUGE_STATUS_COUNT.set(self.status_count.into());
-        GAUGE_STATUS_SENT_COUNT.set(self.status_sent_count.into());
-        GAUGE_STATUS_REMAINING_COUNT.set((self.status_count - self.status_sent_count).into());
+        GAUGE_STATUS_COUNT.set(self.status_count.try_into().unwrap_or(0));
+        GAUGE_STATUS_SENT_COUNT.set(self.status_sent_count.try_into().unwrap_or(0));
+        GAUGE_STATUS_REMAINING_COUNT.set(
+            (self.status_count - self.status_sent_count)
+                .try_into()
+                .unwrap_or(0),
+        );
         GAUGE_STATUS_REMAINING_COUNT_MIN.set(self.status_remaining_count.0 as i64);
         GAUGE_STATUS_REMAINING_COUNT_MAX.set(
             self.status_remaining_count
