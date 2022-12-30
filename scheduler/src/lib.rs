@@ -192,12 +192,17 @@ impl Scheduler {
             #[cfg(feature = "metrics")]
             {
                 if let Some(file) = &self.metrics_file {
+                    let client_count = self.client_count().await;
                     let metrics = Metrics {
-                        client_count: self.client_count().await,
+                        client_count,
                         tick_count: self.tick_count,
+                        max_per_tick: self.max_per_tick,
                         status_count,
                         status_sent_count: statuses_sent,
                         status_remaining_count: row_stream.size_hint(),
+                        status_capacity: self.tick_count.try_into().unwrap_or(0)
+                            * self.max_per_tick
+                            * client_count,
                     };
                     let file = file.clone();
                     tokio::spawn(async move {

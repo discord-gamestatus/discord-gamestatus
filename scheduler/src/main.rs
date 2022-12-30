@@ -46,6 +46,12 @@ async fn main() -> GenericResult<()> {
         DEFAULT_TICK_TIME
     };
 
+    let max_per_tick = get_var("GS_MAX_PER_TICK")
+        .ok()
+        .as_ref()
+        .and_then(|t| usize::from_str_radix(t, 10).ok())
+        .unwrap_or(20);
+
     let metrics_file = get_var("GS_METRICS_FILE").ok();
 
     // Parse arguments
@@ -91,6 +97,7 @@ async fn main() -> GenericResult<()> {
         pg_config,
         tick_count,
         tick_delay,
+        max_per_tick,
         metrics_file,
         listen_addrs,
         debug,

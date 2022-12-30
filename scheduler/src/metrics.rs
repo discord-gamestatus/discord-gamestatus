@@ -23,6 +23,13 @@ lazy_static! {
         register_int_gauge!("remaining_min", "Minimum number of statuses remaining").unwrap();
     static ref GAUGE_STATUS_REMAINING_COUNT_MAX: IntGauge =
         register_int_gauge!("remaining_max", "Maximum number of statuses remaining").unwrap();
+    static ref GAUGE_STATUS_CAPACITY: IntGauge =
+        register_int_gauge!("capacity", "Maximum number of statuses that could be sent").unwrap();
+    static ref GAUGE_MAX_PER_TICK: IntGauge = register_int_gauge!(
+        "max_per_tick",
+        "Maximum status messages per tick per client"
+    )
+    .unwrap();
     static ref COUNTER_TICK: Counter =
         register_counter!("tick", "The current tick number").unwrap();
 }
@@ -33,6 +40,8 @@ pub struct Metrics {
     pub status_count: usize,
     pub status_sent_count: usize,
     pub status_remaining_count: (usize, Option<usize>),
+    pub status_capacity: usize,
+    pub max_per_tick: usize,
 }
 
 pub fn encode() -> prometheus::Result<String> {
@@ -55,13 +64,15 @@ impl Metrics {
                 .try_into()
                 .unwrap_or(0),
         );
-        GAUGE_STATUS_REMAINING_COUNT_MIN.set(self.status_remaining_count.0 as i64);
+        GAUGE_STATUS_REMAINING_COUNT_MIN.set(self.status_remaining_count.0.try_into().unwrap_or(0));
         GAUGE_STATUS_REMAINING_COUNT_MAX.set(
             self.status_remaining_count
                 .1
-                .map(|n| n as i64)
+                .and_then(|n| n.try_into().ok())
                 .unwrap_or(-1),
         );
+        GAUGE_STATUS_CAPACITY.set(self.status_capacity.try_into().unwrap_or(0));
+        GAUGE_MAX_PER_TICK.set(self.max_per_tick.try_into().unwrap_or(0));
     }
 
     pub async fn write_to_file(&self, file: impl AsRef<std::path::Path>) -> GenericResult<()> {
