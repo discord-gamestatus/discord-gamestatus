@@ -48,5 +48,6 @@ export interface ClientConfig {
   allowDuplicates: boolean;
   supportServer?: string;
   scheduler?: string;
+  blockLocalAddresses: boolean;
   limitRules: { [guild: string]: { [role: string]: Limit } };
 }

@@ -39,6 +39,7 @@ Usage:\n\
 \t--allow-duplicate-updates\tAllow guilds to have multiple statuses for the same IP\n\
 \t--support [link]\t\tLink to the support server\n\
 \t--scheduler [address]\t\tAddress of the support server\n\
+\t--dont-block-local-addresses\tDon\'t block statuses on local IPs\n\
 \t-h, --help\t\t\tShow this help message');
 }
 
@@ -141,6 +142,9 @@ const setupAndStart = function(env, args) {
       break;
       case '--scheduler':
       config.scheduler = args[++i];
+      break;
+      case "--dont-block-local-addresses":
+      config.blockLocalAddresses = false;
       break;
       case '-h':
       case '--help':

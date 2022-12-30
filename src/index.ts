@@ -108,6 +108,7 @@ const DEFAULT_CONFIG: ClientConfig = {
   guildLimit: undefined,
   allowDuplicates: false,
   supportServer: undefined,
+  blockLocalAddresses: true,
   limitRules: {},
 };
 

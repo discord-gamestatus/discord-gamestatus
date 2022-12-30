@@ -13,6 +13,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
+import { BlockList } from "net";
+import { networkInterfaces } from "os";
+import { lookup } from "dns/promises";
+
 import GameDig from "gamedig";
 const GameResolver = require("gamedig/lib/GameResolver.js");
 
@@ -50,6 +54,77 @@ function getResolver() {
   return resolver;
 }
 
+interface Address {
+  host: string;
+  ip: string;
+  family: "ipv4" | "ipv6";
+  port?: number;
+}
+export async function resolveAddress(address: string): Promise<Address> {
+  const url = new URL("tcp://" + address);
+  const host =
+    url.hostname.startsWith("[") && url.hostname.endsWith("]")
+      ? url.hostname.substring(1, url.hostname.length - 1)
+      : url.hostname;
+  const resolved = await lookup(host);
+  const port = parseInt(url.port, 10);
+  return {
+    host,
+    ip: resolved.address,
+    family: resolved.family === 6 ? "ipv6" : "ipv4",
+    port: isNaN(port) ? undefined : port,
+  };
+}
+let blocklist: BlockList | null = null;
+export function getLocalBlocklist(): BlockList {
+  if (blocklist !== null) return blocklist;
+  blocklist = new BlockList();
+
+  // https://en.wikipedia.org/wiki/Reserved_IP_addresses
+  blocklist.addSubnet("0.0.0.0", 8, "ipv4");
+  blocklist.addSubnet("10.0.0.0", 8, "ipv4");
+  blocklist.addSubnet("100.64.0.0", 10, "ipv4");
+  blocklist.addSubnet("127.0.0.0", 8, "ipv4");
+  blocklist.addSubnet("169.254.0.0", 16, "ipv4");
+  blocklist.addSubnet("172.16.0.0", 12, "ipv4");
+  blocklist.addSubnet("192.0.0.0", 24, "ipv4");
+  blocklist.addSubnet("192.88.99.0", 24, "ipv4");
+  blocklist.addSubnet("192.168.0.0", 16, "ipv4");
+  blocklist.addSubnet("198.18.0.0", 15, "ipv4");
+  blocklist.addSubnet("224.0.0.0", 4, "ipv4");
+  blocklist.addSubnet("233.252.0.0", 24, "ipv4");
+  blocklist.addSubnet("240.0.0.0", 4, "ipv4");
+  blocklist.addAddress("255.255.255.255", "ipv4");
+
+  blocklist.addAddress("::", "ipv6");
+  blocklist.addAddress("::1", "ipv6");
+  //blocklist.addSubnet("64:ff9b:1::", 48, "ipv6");
+  blocklist.addSubnet("fc00::", 7, "ipv6");
+  blocklist.addSubnet("ff00::", 8, "ipv6");
+
+  // Any other local interfaces
+  const ifaces = networkInterfaces();
+  if (!ifaces) throw new Error("Could not find network interfaces");
+  for (const iface in ifaces) {
+    for (const range of ifaces[iface] || []) {
+      if (range.cidr) {
+        const [addr, prefix] = range.cidr.split("/");
+        console.log("Adding", range, addr, prefix);
+        blocklist.addSubnet(
+          addr,
+          parseInt(prefix),
+          range.family as "ipv4" | "ipv6"
+        );
+      }
+    }
+  }
+
+  return blocklist;
+}
+export function shouldBlock(address: Address): boolean {
+  return getLocalBlocklist().check(address.ip, address.family);
+}
+
 const parseConnect = function (connect: string, protocol: string) {
   switch (protocol) {
     case "valve":
@@ -85,17 +160,23 @@ export async function query(
   queryType: GameDig.Type,
   ip: string
 ): Promise<State> {
-  const ip_parts = ip.split(":");
   const game = getResolver().lookup(queryType);
   const protocol = game.protocol || game.options.protocol;
   const isDiscord = protocol === "discord";
   let state: State;
 
+  const address = await resolveAddress(ip);
+  if (this.config.blockLocalAddresses && shouldBlock(address)) {
+    throw new Error(
+      `Resolved address (${address.host} -> ${address.ip}) is blocked`
+    );
+  }
+
   try {
     const rawState = await GameDig.query({
       type: queryType,
-      host: isDiscord ? "localhost" : ip_parts[0],
-      port: ip_parts.length > 1 ? parseInt(ip_parts[1]) : undefined,
+      host: isDiscord ? "127.0.0.1" : address.ip,
+      port: address.port,
     });
     const realPlayers = rawState.players
       .filter((v) => typeof v.name === "string")
@@ -111,7 +192,7 @@ export async function query(
         rawState.players.length,
       realPlayers,
       validPlayers: realPlayers.length,
-      gameHost: ip_parts[0],
+      gameHost: address.host,
       ...rawState,
     };
     state.players = Array.from(state.players || []);
@@ -135,7 +216,7 @@ export async function query(
       realPlayers: null,
       offline: true,
       connect: ip,
-      gameHost: ip_parts[0],
+      gameHost: address.host,
     };
   }
 
