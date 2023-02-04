@@ -6,6 +6,7 @@ rules=core
 recurse=false
 sql_file_exts=.sql
 verbose=1
+exclude_rules = L048
 
 
 [sqlfluff:rules]

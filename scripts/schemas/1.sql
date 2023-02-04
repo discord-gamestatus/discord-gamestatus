@@ -14,10 +14,12 @@ CREATE TABLE statuses (
   offline_title VARCHAR(256),
   description VARCHAR(2048),
   offline_description VARCHAR(2048),
-  color INT CHECK ((color >= 0 AND color <= x 'FFFFFF'::INT) OR color IS NULL),
+  color INT CHECK (
+    (color >= 0 AND color <= CAST(x'FFFFFF' AS INT)) OR color IS NULL
+  ),
   offline_color INT CHECK (
     (
-      offline_color >= 0 AND offline_color <= x 'FFFFFF'::INT
+      offline_color >= 0 AND offline_color <= CAST(x'FFFFFF' AS INT)
     ) OR offline_color IS NULL
   ),
   image VARCHAR(300),
