@@ -43,6 +43,7 @@ Usage:\n\
 \t-h, --help\t\t\tShow this help message');
 }
 
+require('dotenv').config();
 const start = require('..').default;
 
 function asNumberOrUndefined(value) {
