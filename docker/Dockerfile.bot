@@ -33,5 +33,5 @@ USER node
 
 WORKDIR /home/node
 
-CMD ["--guild-limit", "3", "--channel-limit", "3", "--support", "https://discord.gg/CUefWnZ", "--tick-count", "120", "--tick-time", "2000"]
+CMD ["--support", "https://discord.gg/CUefWnZ"]
 ENTRYPOINT [ "node", "--title", "discord-gamestatus", "/home/node/bin/discord-gamestatus", "--" ]
