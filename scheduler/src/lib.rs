@@ -89,7 +89,7 @@ impl Scheduler {
         tokio::spawn(async move {
             let listener = match address {
                 ListenAddr::TCP(addr) => TcpListener::bind(addr).await.unwrap(),
-                ListenAddr::Unix(path) => todo!("Unix listeners not implemented"),
+                ListenAddr::Unix(_path) => todo!("Unix listeners not implemented"),
             };
             println!("Listening on {:?}", listener.local_addr().unwrap());
 
@@ -149,7 +149,7 @@ impl Scheduler {
                 if !stream_finished {
                     let clients_lock = self.clients.read().await;
                     for (addr, socket) in clients_lock.iter() {
-                        if let Err(_) = socket.writable().await {
+                        if socket.writable().await.is_err() {
                             // Socket is probably closed queue it for deletion
                             self.delete_client.send(*addr).await.unwrap();
                             continue;
@@ -168,7 +168,7 @@ impl Scheduler {
                                 r.push(b'\n');
                                 // TODO: Check what the error is
                                 // TODO: Transmit tick number to clients
-                                if let Err(_) = socket.try_write(&r) {
+                                if socket.try_write(&r).is_err() {
                                     self.delete_client.send(*addr).await.unwrap();
                                     break;
                                 }

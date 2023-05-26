@@ -1,3 +1,5 @@
+#![allow(clippy::from_str_radix_10)]
+
 use std::env::var as get_var;
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::path::PathBuf;
@@ -76,17 +78,15 @@ async fn main() -> GenericResult<()> {
                     "unix" => ListenAddr::Unix(PathBuf::from(uri)),
                     _ => panic!("Unknown listen protocol {:?}", proto),
                 })
+            } else if let Ok(addr) = SocketAddr::from_str(&a) {
+                Some(ListenAddr::TCP(addr))
             } else {
-                if let Ok(addr) = SocketAddr::from_str(&a) {
-                    Some(ListenAddr::TCP(addr))
-                } else {
-                    None
-                }
+                None
             }
         })
         .collect();
 
-    if listen_addrs.len() == 0 {
+    if listen_addrs.is_empty() {
         listen_addrs.push(ListenAddr::TCP(SocketAddr::V4(SocketAddrV4::new(
             Ipv4Addr::new(127, 0, 0, 1),
             1337,

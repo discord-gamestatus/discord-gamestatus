@@ -17,7 +17,7 @@ pub async fn select_status_count(client: &PGClient) -> PGResult<i64> {
         .await?;
 
     let result = client.query_one(query, &[]).await?;
-    Ok(result.try_get(0)?)
+    result.try_get(0)
 }
 
 static SELECT_STATUSES_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
@@ -42,17 +42,17 @@ pub fn row_get_or_null<'a, T: tokio_postgres::types::FromSql<'a> + serde::ser::S
     }
 }
 
-pub fn row_to_json_value<'a>(row: &'a tokio_postgres::Row) -> HashMap<&'a str, serde_json::Value> {
+pub fn row_to_json_value(row: &tokio_postgres::Row) -> HashMap<&str, serde_json::Value> {
     let mut r = HashMap::new();
 
     for (idx, column) in row.columns().iter().enumerate() {
         r.insert(
             column.name(),
-            match column.type_() {
-                &PGType::INT4 => row_get_or_null::<i32>(row, idx),
-                &PGType::VARCHAR => row_get_or_null::<String>(row, idx),
-                &PGType::JSONB => row_get_or_null::<JValue>(row, idx),
-                &PGType::BOOL => row_get_or_null::<bool>(row, idx),
+            match *column.type_() {
+                PGType::INT4 => row_get_or_null::<i32>(row, idx),
+                PGType::VARCHAR => row_get_or_null::<String>(row, idx),
+                PGType::JSONB => row_get_or_null::<JValue>(row, idx),
+                PGType::BOOL => row_get_or_null::<bool>(row, idx),
                 // TODO: Add parsing for dots array
                 _ => JValue::Null,
             },
