@@ -10,9 +10,10 @@ services:
       POSTGRES_PASSWORD: "${DATABASE_PASS}"
       PGDATA: "/var/lib/postgresql/data/12"
   bot:
-    build:
-      context: "."
-      dockerfile: "./docker/Dockerfile.bot"
+    image: "gamestatus/gamestatus-bot"
+#    build:
+#      context: "."
+#      dockerfile: "./docker/Dockerfile.bot"
     depends_on:
       - "postgres"
       - "scheduler"
@@ -36,9 +37,10 @@ services:
     env_file: .env
 #    command: [ "--debug", "--verbose" ]
   scheduler:
-    build:
-      context: "."
-      dockerfile: "./docker/Dockerfile.scheduler"
+    image: "gamestatus/gamestatus-scheduler"
+#    build:
+#      context: "."
+#      dockerfile: "./docker/Dockerfile.scheduler"
     depends_on:
       - "postgres"
     environment:
