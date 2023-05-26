@@ -20,5 +20,6 @@
 !.dockerignore
 !Cargo.toml
 !Cargo.lock
+!clippy.toml
 
 scheduler/target
