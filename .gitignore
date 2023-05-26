@@ -18,5 +18,7 @@
 !docker-compose.yml
 !.env.example
 !.dockerignore
+!Cargo.toml
+!Cargo.lock
 
 scheduler/target

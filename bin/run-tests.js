@@ -51,10 +51,10 @@ if (testSql) {
   checkOutput(spawnSync("npm", ["run", "test:lint:sql"], { stdio }));
 }
 if (testScheduler) {
-  let cwd = join(process.cwd(), "scheduler");
-  checkOutput(spawnSync("cargo", ["check", "--all-features"], { stdio, cwd }));
-  checkOutput(spawnSync("cargo", ["fmt", "--check"], { stdio, cwd }));
-  checkOutput(spawnSync("cargo", ["test"], { stdio, cwd }));
+  checkOutput(spawnSync("cargo", ["check", "--all-features"], { stdio }));
+  checkOutput(spawnSync("cargo", ["fmt", "--check"], { stdio }));
+  checkOutput(spawnSync("cargo", ["clippy"], { stdio }));
+  checkOutput(spawnSync("cargo", ["test"], { stdio }));
 }
 
 process.exit(rCode);
