@@ -1,14 +1,15 @@
 version: "3"
 services:
   postgres:
-    image: "postgres:14"
+    image: "postgres:15"
     volumes:
-      - "./database/:/var/lib/postgresql/data"
-      - "./scripts/schemas/:/opt"
+      - "./.db-data/:/var/lib/postgresql/data"
+      - "./scripts/schemas/:/docker-entrypoint-initdb.d"
     environment:
       POSTGRES_USER: "discord-gamestatus"
       POSTGRES_PASSWORD: "${DATABASE_PASS}"
       PGDATA: "/var/lib/postgresql/data/12"
+    env_file: .env
   bot:
     image: "gamestatus/gamestatus-bot"
 #    build:
@@ -35,6 +36,7 @@ services:
       GS_SUPPORT_LINK: "${GS_SUPPORT_LINK}"
       GS_SCHEDULER_ADDR: "scheduler:1337"
     env_file: .env
+    restart: on-failure
 #    command: [ "--debug", "--verbose" ]
   scheduler:
     image: "gamestatus/gamestatus-scheduler"
@@ -52,4 +54,5 @@ services:
       GS_TICK_COUNT: "${GS_TICK_COUNT}"
       GS_TICK_TIME: "${GS_TICK_TIME}"
     env_file: .env
+    restart: on-failure
 
