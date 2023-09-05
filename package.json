@@ -44,7 +44,7 @@
     "@douile/bot-utilities": "^1.4",
     "discord.js-light": "^4.10",
     "dotenv": "^16.0.3",
-    "gamedig": "^4.0",
+    "gamedig": "git+https://github.com/gamedig/node-gamedig.git",
     "node-fetch": "^2.6",
     "pg": "^8.8"
   },
