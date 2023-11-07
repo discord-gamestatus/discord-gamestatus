@@ -18,7 +18,7 @@ import { networkInterfaces } from "os";
 import { lookup } from "dns/promises";
 
 import GameDig from "gamedig";
-const GameResolver = require("gamedig/lib/GameResolver.js");
+import GameResolver from "gamedig/lib/GameResolver.js";
 
 import { markdownEscape } from "@douile/bot-utilities";
 
@@ -39,13 +39,6 @@ export type Game = {
   };
   protocol?: string;
 };
-
-interface GameResolver {
-  lookup: (type: string) => Game;
-
-  gamesByKey: Map<string, Game>;
-  games: Game[];
-}
 
 let resolver: GameResolver;
 
@@ -161,7 +154,7 @@ export async function query(
   ip: string
 ): Promise<State> {
   const game = getResolver().lookup(queryType);
-  const protocol = game.protocol || game.options.protocol;
+  const protocol = game.protocol;
   const isDiscord = protocol === "discord";
   let state: State;
 
@@ -230,5 +223,5 @@ export function gameList(): Game[] {
 
 export function isValidGame(game: string): boolean {
   const resolver = getResolver();
-  return resolver.gamesByKey.has(game);
+  return resolver.gamesByKey.has(game as GameDig.Type);
 }

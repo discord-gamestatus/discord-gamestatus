@@ -204,7 +204,7 @@ export default class SavePSQL implements SaveInterface {
     } finally {
       client.release();
     }
-    return success && result ? result.rowCount : -1;
+    return success && result ? result.rowCount || -1 : -1;
   }
 
   async has(status: Update): Promise<boolean> {
@@ -272,13 +272,14 @@ export default class SavePSQL implements SaveInterface {
 
   async removeUserActivation(guild: Snowflake): Promise<boolean> {
     let didError = false;
-    let r = { rowCount: 0 };
+    let rowCount = 0;
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
-      r = await client.query("DELETE FROM activated_guilds WHERE guild_id=$1", [
+      let r = await client.query("DELETE FROM activated_guilds WHERE guild_id=$1", [
         guild,
       ]);
+      rowCount = r.rowCount || 0;
       await client.query("COMMIT");
     } catch (e) {
       await client.query("ROLLBACK");
@@ -286,7 +287,7 @@ export default class SavePSQL implements SaveInterface {
     } finally {
       client.release();
     }
-    return !didError && r.rowCount > 0;
+    return !didError && rowCount > 0;
   }
 
   /*****************************************************************************
