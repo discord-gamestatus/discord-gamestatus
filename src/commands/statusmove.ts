@@ -71,6 +71,9 @@ export async function call(context: CommandContext): Promise<void> {
     throw new Error("unreachable");
   }
 
+  // Defer here because database access can take some time.
+  await guildContext.deferReply({ content: "Moving status...", ephemeral: true });
+
   const updates = await guildContext.updateCache().get({
     guild: guildContext.guild().id,
     channel: toMove.channel,
@@ -78,15 +81,13 @@ export async function call(context: CommandContext): Promise<void> {
   });
 
   if (updates.length === 0) {
-    await guildContext.reply({
+    await guildContext.editReply({
       content: "Could not find status",
     });
     return;
   }
 
   const updateToMove = updates[0];
-
-  await guildContext.deferReply({ content: "Moving status", ephemeral: true });
 
   await Promise.all([
     (async () => {

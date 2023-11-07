@@ -268,6 +268,9 @@ export async function call(context: CommandContext): Promise<void> {
     return;
   }
 
+  // Defer here because database access can take some time.
+  await context.deferReply({ content: "Loading...", ephemeral: true });
+
   let statuses = await context.client().updateCache.get({
     guild: guildContext.guild().id,
   });
@@ -286,7 +289,7 @@ export async function call(context: CommandContext): Promise<void> {
       };
     });
 
-    await context.reply({
+    await context.editReply({
       embeds: [
         new MessageEmbed({
           title: `${fields.length} Active statuses`,
@@ -302,7 +305,7 @@ export async function call(context: CommandContext): Promise<void> {
 
   const status = statuses[options.index];
   if (!status) {
-    await context.reply({
+    await context.editReply({
       embeds: [
         {
           title: "Invalid status ID",
@@ -329,7 +332,7 @@ export async function call(context: CommandContext): Promise<void> {
       }
     }
 
-    await context.reply({
+    await context.editReply({
       embeds: [
         new MessageEmbed({
           title: `#${options.index}`,
@@ -349,7 +352,7 @@ export async function call(context: CommandContext): Promise<void> {
       context.client(),
       options.key as keyof UpdateOptions
     );
-    await context.reply({
+    await context.editReply({
       embeds: [
         new MessageEmbed({
           title: `#${options.index}`,
@@ -378,7 +381,7 @@ export async function call(context: CommandContext): Promise<void> {
     }
 
     if (error) {
-      await context.reply({
+      await context.editReply({
         embeds: [
           {
             title: "Unable to save",
@@ -389,7 +392,7 @@ export async function call(context: CommandContext): Promise<void> {
         ],
       });
     } else {
-      await context.reply({
+      await context.editReply({
         embeds: [
           new MessageEmbed({
             title: `#${options.index}`,

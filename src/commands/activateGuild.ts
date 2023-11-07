@@ -94,6 +94,9 @@ export async function call(context: CommandContext): Promise<void> {
 }
 
 async function viewActivations(context: GuildCommandContext): Promise<void> {
+  // Defer here because database access can take some time.
+  await context.deferReply({ content: "Loading...", ephemeral: true });
+
   const guildActivation = await context
     .saveInterface()
     .getGuildActivation(context.guild().id);
@@ -102,7 +105,7 @@ async function viewActivations(context: GuildCommandContext): Promise<void> {
     .saveInterface()
     .getUserActivationCount(context.user().id);
 
-  await context.reply({
+  await context.editReply({
     embeds: [
       {
         title: "Activations",

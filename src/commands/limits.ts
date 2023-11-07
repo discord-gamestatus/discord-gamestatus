@@ -23,12 +23,15 @@ export const name = "limits";
 export const help = "View your guild/channel limits";
 
 export async function call(context: CommandContext): Promise<void> {
+  // Defer here because database access can take some time.
+  await context.deferReply({ content: "Loading", ephemeral: true });
+
   const guild = context.guild();
   const limits = guild
     ? await getLimits(context.client(), guild, true)
     : await getUserLimits(context.client(), context.user().id, true);
   const user = await context.client().users.fetch(limits.user);
-  await context.reply({
+  await context.editReply({
     embeds: [
       new MessageEmbed({
         author: {

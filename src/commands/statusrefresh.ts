@@ -44,6 +44,9 @@ export async function call(context: CommandContext): Promise<void> {
 
   if (!channel || !(channel instanceof TextChannel)) return;
 
+  // Defer here because database access can take some time.
+  await context.deferReply({ content: "Loading...", ephemeral: true });
+
   let statuses = await context.updateCache().get({
     channel: channel.id,
     guild: channel.guild.id,
@@ -55,7 +58,7 @@ export async function call(context: CommandContext): Promise<void> {
   }
 
   if (statuses.length === 0) {
-    await context.reply({
+    await context.editReply({
       embeds: [
         {
           title: "Error",
@@ -68,7 +71,7 @@ export async function call(context: CommandContext): Promise<void> {
     return;
   }
 
-  const res = await context.reply({
+  const res = await context.editReply({
     embeds: [
       {
         title: "Working...",
@@ -93,9 +96,5 @@ export async function call(context: CommandContext): Promise<void> {
       },
     ],
   };
-  if (context instanceof CommandInteractionContext) {
-    context.inner().editReply(replyOptions);
-  } else if (res) {
-    await res.edit(replyOptions);
-  }
+  await context.editReply(replyOptions);
 }
