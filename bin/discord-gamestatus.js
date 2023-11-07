@@ -46,6 +46,11 @@ Usage:\n\
 require('dotenv').config();
 const start = require('..').default;
 
+//import dotenv from "dotenv";
+//import start from "../dist/index";
+//
+//dotenv.config();
+
 function asNumberOrUndefined(value) {
   if (value) {
     const n = Number(value);

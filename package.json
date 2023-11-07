@@ -7,6 +7,9 @@
     "lib": "src",
     "bin": "bin"
   },
+  "bin": {
+    "discord-gamestatus": "bin/discord-gamestatus.js"
+  },
   "author": "Douile",
   "keywords": [
     "discord",
