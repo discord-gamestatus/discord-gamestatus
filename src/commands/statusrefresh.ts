@@ -18,11 +18,7 @@ import { TextChannel } from "discord.js-light";
 import { isAdmin } from "../checks";
 import { EMBED_COLOR } from "../constants";
 import { channelFirstArg } from "../utils";
-import {
-  CommandContext,
-  CommandInteractionContext,
-  MessageContext,
-} from "../structs/CommandContext";
+import { CommandContext, MessageContext } from "../structs/CommandContext";
 
 export const name = "statusrefresh";
 export const help = "Force bot to resend all status messages (next update).";
@@ -71,7 +67,7 @@ export async function call(context: CommandContext): Promise<void> {
     return;
   }
 
-  const res = await context.editReply({
+  await context.editReply({
     embeds: [
       {
         title: "Working...",

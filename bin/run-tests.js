@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const { spawnSync } = require("child_process");
-const { join } = require("path");
 
 const stdio = ["inherit", "inherit", "inherit"];
 

@@ -276,7 +276,7 @@ export default class SavePSQL implements SaveInterface {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
-      let r = await client.query(
+      const r = await client.query(
         "DELETE FROM activated_guilds WHERE guild_id=$1",
         [guild]
       );
