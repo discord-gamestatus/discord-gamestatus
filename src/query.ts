@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2022 Douile
+Copyright (C) 2019-2023 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,9 +13,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import { BlockList } from "net";
-import { networkInterfaces } from "os";
-import { lookup } from "dns/promises";
+import { BlockList } from "node:net";
+import { networkInterfaces } from "node:os";
+import { lookup } from "node:dns/promises";
 
 import GameDig from "gamedig";
 import GameResolver from "gamedig/lib/GameResolver.js";

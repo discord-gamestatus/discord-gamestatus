@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2022 Douile
+Copyright (C) 2019-2023 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,6 +13,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
+import { performance } from "node:perf_hooks";
+
 import {
   Snowflake,
   TextChannel,
@@ -20,9 +22,8 @@ import {
   DiscordAPIError,
 } from "discord.js-light";
 import { Guild } from "discord.js";
-import { performance } from "perf_hooks";
-import { Type } from "gamedig";
 
+import { Type } from "gamedig";
 import { isOfBaseType } from "@douile/bot-utilities";
 
 import Client from "./Client";

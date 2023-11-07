@@ -1,6 +1,6 @@
 /*
 discord-gamestatus: Game server monitoring via discord API
-Copyright (C) 2019-2022 Douile
+Copyright (C) 2019-2023 Douile
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 
 import { is } from "@douile/bot-utilities";
 
