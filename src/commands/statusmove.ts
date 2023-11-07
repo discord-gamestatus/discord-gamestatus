@@ -72,7 +72,10 @@ export async function call(context: CommandContext): Promise<void> {
   }
 
   // Defer here because database access can take some time.
-  await guildContext.deferReply({ content: "Moving status...", ephemeral: true });
+  await guildContext.deferReply({
+    content: "Moving status...",
+    ephemeral: true,
+  });
 
   const updates = await guildContext.updateCache().get({
     guild: guildContext.guild().id,
