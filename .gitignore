@@ -15,6 +15,7 @@
 !package*.json
 !README.md
 !CONTRIBUTING.md
+!CHANGELOG.md
 !tsconfig.json
 !docker-compose.yml
 !.env.example

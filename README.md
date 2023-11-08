@@ -9,6 +9,9 @@ current status.
 - [Terms of usage (for public bot)](https://gamestatus.douile.com/TERMS)
 - [Privacy policy (for public bot)](https://gamestatus.douile.com/PRIVACY)
 
+## Changelog
+See [CHANGELOG](./CHANGELOG.md)
+
 ## Contributing
 If you would like to request a new feature, report a bug, or even fix or improve our code we welcome your contribution.
 Open an issue to make a request, or a PR to submit your code for review.
