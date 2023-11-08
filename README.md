@@ -10,7 +10,10 @@ current status.
 - [Privacy policy (for public bot)](https://gamestatus.douile.com/PRIVACY)
 
 ## Contributing
-TODO: Put contributing guidelines here
+If you would like to request a new feature, report a bug, or even fix or improve our code we welcome your contribution.
+Open an issue to make a request, or a PR to submit your code for review.
+
+Before contributing please read [CONTRIBUTING](./CONTRIBUTING.md)
 
 ## LICENSE
 [Licensed under GPL-3.0](./LICENSE)
