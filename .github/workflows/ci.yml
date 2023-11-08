@@ -1,9 +1,15 @@
-name: Node CI
+name: CI
 
 on:
   push:
     branches-ignore:
       - 'gh-pages'
+    paths:
+      - '**.js'
+      - '**.ts'
+      - '**.sql'
+      - '**.rs'
+      - '.github/workflows/ci.yml' # This file
 
 jobs:
   build:
