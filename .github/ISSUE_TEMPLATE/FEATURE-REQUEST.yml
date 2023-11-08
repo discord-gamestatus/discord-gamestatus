@@ -1,0 +1,26 @@
+name: Feature request
+description: Request a new feature
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: What would you like to be added?
+      placeholder: "Describe the feature you would like to be added, and how it should work."
+    validations:
+      required: true
+- type: textarea
+    id: extra
+    attributes:
+      label: Any extra information
+  - type: dropdown
+    id: self-host
+    attributes:
+      label: Self-host
+      description: Are you self-hosted or using the public bot?
+      options:
+        - Public
+        - Self-Hosted
+      default: 0
+    validations:
+      required: true

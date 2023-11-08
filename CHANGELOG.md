@@ -12,6 +12,7 @@
 - Improve docker build and compose
 - Fixed commands timing out while accessing database by deferring the response
 - Prefixed imports from nodes standard library with `node:`
+- Added issue templates
 
 ## Breaking changes:
 
