@@ -2,6 +2,10 @@
 
 ## Changes:
 
+## Breaking changes:
+
+- Moved all bot code into the `bot` folder
+
 # 2.3.0 - 2023/11/08
 
 ## Changes:

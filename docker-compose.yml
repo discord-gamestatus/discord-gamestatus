@@ -4,17 +4,17 @@ services:
     image: "postgres:15"
     volumes:
       - "./.db-data/:/var/lib/postgresql/data"
-      - "./scripts/schemas/:/docker-entrypoint-initdb.d"
+      - "./bot/scripts/schemas/:/docker-entrypoint-initdb.d"
     environment:
       POSTGRES_USER: "discord-gamestatus"
       POSTGRES_PASSWORD: "${DATABASE_PASS}"
       PGDATA: "/var/lib/postgresql/data/12"
     env_file: .env
   bot:
-    image: "gamestatus/gamestatus-bot"
-#    build:
-#      context: "."
-#      dockerfile: "./docker/Dockerfile.bot"
+#    image: "gamestatus/gamestatus-bot"
+    build:
+      context: "."
+      dockerfile: "./docker/Dockerfile.bot"
     depends_on:
       - "postgres"
       - "scheduler"
@@ -39,10 +39,10 @@ services:
     restart: on-failure
 #    command: [ "--debug", "--verbose" ]
   scheduler:
-    image: "gamestatus/gamestatus-scheduler"
-#    build:
-#      context: "."
-#      dockerfile: "./docker/Dockerfile.scheduler"
+#    image: "gamestatus/gamestatus-scheduler"
+    build:
+      context: "."
+      dockerfile: "./docker/Dockerfile.scheduler"
     depends_on:
       - "postgres"
     environment:

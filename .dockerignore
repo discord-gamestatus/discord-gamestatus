@@ -2,16 +2,16 @@
 **
 
 # Allow required files
-!package.json
-!package-lock.json
-!tsconfig.json
-!src/*.ts
-!src/structs/*.ts
-!src/structs/Update/*.ts
-!src/structs/save/*.ts
-!src/commands/*.ts
-!bin/discord-gamestatus.js
-!scripts/start.sh
+!bot/package.json
+!bot/package-lock.json
+!bot/tsconfig.json
+!bot/src/*.ts
+!bot/src/structs/*.ts
+!bot/src/structs/Update/*.ts
+!bot/src/structs/save/*.ts
+!bot/src/commands/*.ts
+!bot/bin/discord-gamestatus.js
+!bot/scripts/start.sh
 
 !scheduler/Cargo.lock
 !scheduler/Cargo.toml

@@ -1,6 +1,6 @@
 # discord-gamestatus
 
-A discord bot that actively monitors your game server and updates a discord message with the
+A open-source discord bot that actively monitors your game server and updates a discord message with the
 current status.
 
 - [Invite link](https://discordapp.com/oauth2/authorize?client_id=659050996730822665&permissions=126144&scope=bot)

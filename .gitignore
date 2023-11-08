@@ -1,22 +1,16 @@
 /*
 
 !.github
-!scripts
-!src
-!bin
 !scheduler
+!bot
 !docker
 
 !.gitignore
 !.eslintrc.json
-!.sqlfluff
-!requirements.txt
 !LICENSE
-!package*.json
 !README.md
 !CONTRIBUTING.md
 !CHANGELOG.md
-!tsconfig.json
 !docker-compose.yml
 !.env.example
 !.dockerignore
@@ -25,3 +19,4 @@
 !clippy.toml
 
 scheduler/target
+bot/dist
