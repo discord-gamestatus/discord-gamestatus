@@ -19,8 +19,8 @@ jobs:
           registry-url: https://registry.npmjs.org/
       # Workaround for git+ssh:// dependencies not working
       - run: |
-        git config --global url."https://github.com/".insteadOf git@github.com
-        git config --global url."https://".insteadOf ssh://
+          git config --global url."https://github.com/".insteadOf git@github.com
+          git config --global url."https://".insteadOf ssh://
       - run: npm ci
       - run: npm run build --if-present
       - uses: actions/cache@v2
