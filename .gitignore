@@ -7,6 +7,7 @@
 
 !.gitignore
 !.eslintrc.json
+!.pre-commit-config.yaml
 !LICENSE
 !README.md
 !CONTRIBUTING.md
@@ -17,6 +18,7 @@
 !Cargo.toml
 !Cargo.lock
 !clippy.toml
+!run-tests.mjs
 
 scheduler/target
 bot/dist

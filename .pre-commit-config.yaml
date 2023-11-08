@@ -1,0 +1,23 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: local
+    hooks:
+      - id: node
+        name: Run node tests
+        language: system
+        files: '[.](ts|js)$'
+        pass_filenames: false
+        entry: node ./run-tests.js --bot
+      - id: sql
+        name: Run SQL tests
+        language: system
+        files: '[.]sql$'
+        pass_filenames: false
+        entry: node ./run-tests.js --sql
+      - id: rust
+        name: Run rust tests
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: node ./run-tests.js --scheduler

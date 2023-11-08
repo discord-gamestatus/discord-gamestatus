@@ -1,6 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S deno run --allow-env --allow-read --allow-run=npm,cargo
 
-const { spawnSync } = require("child_process");
+import { spawnSync } from "node:child_process";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import process from "node:process";
 
 const stdio = ["inherit", "inherit", "inherit"];
 
@@ -41,13 +44,16 @@ if (process.argv.length < 3) {
   }
 }
 
+const BASE_DIR = dirname(fileURLToPath(import.meta.url));
+const BOT_DIR = join(BASE_DIR, "bot");
+
 if (testBot) {
-  checkOutput(spawnSync("npm", ["run", "test:lint"], { stdio }));
-  checkOutput(spawnSync("npm", ["run", "test:lint:bin"], { stdio }));
-  checkOutput(spawnSync("npm", ["run", "test:format"], { stdio }));
+  checkOutput(spawnSync("npm", ["run", "test:lint"], { stdio, cwd: BOT_DIR }));
+  checkOutput(spawnSync("npm", ["run", "test:lint:bin"], { stdio, cwd: BOT_DIR }));
+  checkOutput(spawnSync("npm", ["run", "test:format"], { stdio, cwd: BOT_DIR }));
 }
 if (testSql) {
-  checkOutput(spawnSync("npm", ["run", "test:lint:sql"], { stdio }));
+  checkOutput(spawnSync("npm", ["run", "test:lint:sql"], { stdio, cwd: BOT_DIR }));
 }
 if (testScheduler) {
   checkOutput(spawnSync("cargo", ["check", "--all-features"], { stdio }));
