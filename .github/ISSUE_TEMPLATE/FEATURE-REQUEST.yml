@@ -9,7 +9,7 @@ body:
       placeholder: "Describe the feature you would like to be added, and how it should work."
     validations:
       required: true
-- type: textarea
+  - type: textarea
     id: extra
     attributes:
       label: Any extra information
