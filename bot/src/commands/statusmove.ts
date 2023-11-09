@@ -98,7 +98,6 @@ export async function call(context: CommandContext): Promise<void> {
         guildContext.client(),
         toMove.destinationChannel
       );
-      console.log(updateToMove);
       await guildContext.updateCache().update(updateToMove);
     })(),
     guildContext
