@@ -8,16 +8,16 @@ repos:
         language: system
         files: '[.](ts|js)$'
         pass_filenames: false
-        entry: node ./run-tests.js --bot
+        entry: node ./run-tests.mjs --bot
       - id: sql
         name: Run SQL tests
         language: system
         files: '[.]sql$'
         pass_filenames: false
-        entry: node ./run-tests.js --sql
+        entry: node ./run-tests.mjs --sql
       - id: rust
         name: Run rust tests
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: node ./run-tests.js --scheduler
+        entry: node ./run-tests.mjs --scheduler
