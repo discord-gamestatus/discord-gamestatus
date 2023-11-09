@@ -14,7 +14,6 @@ GNU General Public License for more details.
 */
 
 import { promises as fs } from "node:fs";
-import { createConnection } from "node:net";
 
 import Discord from "discord.js-light";
 import { errorWrap } from "@douile/bot-utilities";
@@ -23,21 +22,12 @@ import UpdateCache from "./structs/UpdateCache";
 import Command from "./structs/Command";
 import Client, { ClientConfig } from "./structs/Client";
 import Message from "./structs/Message";
-import Update from "./structs/Update";
-import {
-  setDebugFlag,
-  debugLog,
-  verboseLog,
-  errorLog,
-  infoLog,
-  warnLog,
-} from "./debug";
+import { setDebugFlag, debugLog, verboseLog, errorLog, infoLog } from "./debug";
 import { startDBLApiHook } from "./dblapi";
 import {
   CommandInteractionContext,
   MessageContext,
 } from "./structs/CommandContext";
-import SavePSQL from "./structs/save/SavePSQL";
 import { readJSONOrEmpty } from "./utils";
 
 const INVITE_FLAGS = [
@@ -130,63 +120,6 @@ async function loadAdditionalConfigs(config: ClientConfig) {
   verboseLog("Limit rules", config.limitRules);
 }
 
-function onScheduledData(client: Client) {
-  const backlog: string[] = [];
-  return (data: string) => {
-    let newLineIndex = data.indexOf("\n");
-    if (newLineIndex === -1) {
-      backlog.push(data.toString());
-      return;
-    }
-    while (newLineIndex > 0) {
-      const text = backlog.splice(0).join("") + data.substring(0, newLineIndex);
-      data = data.substring(newLineIndex + 1);
-
-      let json = null;
-      try {
-        json = JSON.parse(text);
-      } catch (e) {
-        // Do nothing
-      }
-
-      if (json) {
-        const update = SavePSQL.rowToUpdate(json);
-        verboseLog("Requested to update", update);
-        doUpdate(client, update, 0).catch(warnLog);
-      }
-
-      newLineIndex = data.indexOf("\n");
-    }
-    if (data.length > 0) {
-      backlog.push(data.toString());
-    }
-  };
-}
-
-function startSchedulerConnection(client: Client, shouldFail = false) {
-  const addr = client.config.scheduler || "127.0.0.1:1337";
-  const [ip, port] = addr.split(":");
-  const connection = createConnection(parseInt(port), ip);
-  connection.setEncoding("utf8");
-  connection.on("data", onScheduledData(client));
-  connection.on("error", (error: { code: string; errno: number }) => {
-    errorLog("Scheduler connection error: ", error);
-    if (error.code === "ECONNREFUSED" && shouldFail) {
-      errorLog("Scheduler was not available, shutting down...");
-      client.destroy();
-    } else {
-      errorLog("Restarting scheduler connection in 5 seconds");
-      setTimeout(() => startSchedulerConnection(client), 5000);
-    }
-  });
-  connection.on("end", () => {
-    errorLog(
-      "Scheduler disconnected: restarting scheduler connection in 5 seconds"
-    );
-    setTimeout(() => startSchedulerConnection(client), 5000);
-  });
-}
-
 /*******************************************************************************
  *** Event functions
  *******************************************************************************/
@@ -261,29 +194,6 @@ async function onInteraction(interaction: Discord.Interaction) {
       ephemeral: true,
     });
   }
-}
-
-async function doUpdate(
-  client: Client,
-  update: Update[] | Update,
-  tick: number
-) {
-  if (!Array.isArray(update)) update = [update];
-  await Promise.all(
-    update.map(async (u) => {
-      if (u._deleted) {
-        verboseLog(`Skipping updating [${u.ID()}]: already deleted`);
-        return;
-      }
-      if (await u.shouldDelete(client)) {
-        await client.updateCache.delete(u);
-        await u.deleteMessage(client);
-        debugLog(`Deleted obselete update ${u.ID()}`);
-      } else {
-        await u.send(client, tick);
-      }
-    })
-  );
 }
 
 export interface StartupConfig extends ClientConfig {
@@ -382,8 +292,6 @@ export default async function start(config: StartupConfig): Promise<Client> {
           },
         ],
       });
-
-      setTimeout(() => startSchedulerConnection(client, true), 2500);
     })
   );
 

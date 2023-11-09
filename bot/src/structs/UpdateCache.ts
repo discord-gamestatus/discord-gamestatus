@@ -21,7 +21,6 @@ import SavePSQL from "./save/SavePSQL";
 
 import Update from "./Update";
 import { getLimits } from "../limits";
-import { asyncArray } from "../utils";
 
 export interface UpdateCacheOptions {
   database?: string;
@@ -139,42 +138,5 @@ export default class UpdateCache {
     }
 
     return undefined;
-  }
-
-  /*****************************************************************************
-   *** Value iterators
-   *****************************************************************************/
-
-  async *flatValues(): AsyncGenerator<Update> {
-    const values = await this.values();
-    for (const value of values) {
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          yield item;
-        }
-      } else {
-        yield value;
-      }
-    }
-  }
-
-  async *tickIterable(tickLimit: number): AsyncGenerator<Update[]> {
-    const values = await asyncArray(this.flatValues()),
-      size = values.length,
-      valueIterator = values.values(); // Maybe a better way to do this
-    let tickSize = 1;
-    if (size > tickLimit) tickSize = Math.ceil(size / tickLimit);
-    let tickStep = 1;
-    if (size < tickLimit) tickStep = Math.floor(tickLimit / size);
-    for (let i = 0; i < tickLimit; i++) {
-      const result = [];
-      if (i % tickStep === 0) {
-        for (let j = 0; j < tickSize; j++) {
-          const v = valueIterator.next();
-          if (!v.done && v.value) result.push(v.value);
-        }
-      }
-      yield result;
-    }
   }
 }

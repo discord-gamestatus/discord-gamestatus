@@ -39,7 +39,6 @@ Usage:\n\
 \t--guild-limit [limit]\t\tThe max amount of statuses per guild (0 / not set = infinite)\n\
 \t--allow-duplicate-updates\tAllow guilds to have multiple statuses for the same IP\n\
 \t--support [link]\t\tLink to the support server\n\
-\t--scheduler [address]\t\tAddress of the support server\n\
 \t--dont-block-local-addresses\tDon\'t block statuses on local IPs\n\
 \t-h, --help\t\t\tShow this help message'
   );
@@ -86,7 +85,6 @@ const setupAndStart = function (env, args) {
     channelLimit: asNumberOrUndefined(env.GS_CHANNEL_LIMIT),
     guildLimit: asNumberOrUndefined(env.GS_GUILD_LIMIT),
     supportServer: nonEmptyStringOrUndefined(env.GS_SUPPORT_LINK),
-    scheduler: nonEmptyStringOrUndefined(env.GS_SCHEDULER_ADDR),
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -147,9 +145,6 @@ const setupAndStart = function (env, args) {
         break;
       case "--support":
         config.supportServer = args[++i];
-        break;
-      case "--scheduler":
-        config.scheduler = args[++i];
         break;
       case "--dont-block-local-addresses":
         config.blockLocalAddresses = false;

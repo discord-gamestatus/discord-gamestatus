@@ -62,20 +62,6 @@ export async function channelFirstArg(
 }
 
 /**
- * Convert an async generator to an array
- * @returns {any[]} array
- */
-export async function asyncArray<T>(
-  asyncGenerator: AsyncGenerator<T>
-): Promise<T[]> {
-  const res: T[] = [];
-  for await (const i of asyncGenerator) {
-    res.push(i);
-  }
-  return res;
-}
-
-/**
  * Assign a property to an object
  * https://codeutility.org/how-do-i-dynamically-assign-properties-to-an-object-in-typescript-stack-overflow/
  */
