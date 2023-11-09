@@ -79,12 +79,16 @@ jobs:
           context: .
           file: ./docker/Dockerfile.bot
           push: true
-          tags: gamestatus/gamestatus-bot:latest
+          tags:
+            - gamestatus/gamestatus-bot:latest
+            - gamestatus/gamestatus-bot:${{ github.ref_name }}
       - name: Build and push (scheduler)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.scheduler
           push: true
-          tags: gamestatus/gamestatus-scheduler:latest
+          tags:
+            - gamestatus/gamestatus-scheduler:latest
+            - gamestatus/gamestatus-scheduler:${{ github.ref_name }}
 
