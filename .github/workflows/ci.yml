@@ -19,15 +19,18 @@ jobs:
         node-version: [18.x]
       fail-fast: true
       max-parallel: 2
+    defaults:
+      run:
+        working-directory: ./bot
 
     steps:
     - uses: actions/checkout@v3
-    - run: cd bot
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache_dependency_path: bot/package_lock.json
     - name: Use python
       uses: actions/setup-python@v4
       with:
