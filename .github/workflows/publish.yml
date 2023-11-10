@@ -37,9 +37,11 @@ jobs:
     needs: [build]
     name: Publish NPM package
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bot
     steps:
       - uses: actions/checkout@v4
-      - run: cd bot
       - uses: actions/cache@v2
         id: restore-build
         with:
@@ -80,8 +82,8 @@ jobs:
           file: ./docker/Dockerfile.bot
           push: true
           tags:
-            - gamestatus/gamestatus-bot:latest
-            - gamestatus/gamestatus-bot:${{ github.ref_name }}
+            gamestatus/gamestatus-bot:latest
+            gamestatus/gamestatus-bot:${{ github.ref_name }}
       - name: Build and push (scheduler)
         uses: docker/build-push-action@v5
         with:
@@ -89,6 +91,6 @@ jobs:
           file: ./docker/Dockerfile.scheduler
           push: true
           tags:
-            - gamestatus/gamestatus-scheduler:latest
-            - gamestatus/gamestatus-scheduler:${{ github.ref_name }}
+            gamestatus/gamestatus-scheduler:latest
+            gamestatus/gamestatus-scheduler:${{ github.ref_name }}
 
