@@ -6,10 +6,18 @@ on:
       - 'gh-pages'
     paths:
       - '**.js'
+      - '**.mjs'
       - '**.ts'
       - '**.sql'
       - '**.rs'
       - '.github/workflows/ci.yml' # This file
+      - 'bot/requirements.txt'     # Sqlfluff version
+      - 'bot/package.json'         # Test script or dependency versions
+      - 'bot/tsconfig.json'        # TypeScript configuration
+      - 'bot/.eslintrc.json'       # ESLint rules
+      - 'bot/.sqlfluff'            # SQLFluff rules
+      - 'clippy.toml'              # Clippy rules
+  workflow_dispatch:               # Allow triggering manually
 
 jobs:
   build:
