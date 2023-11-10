@@ -76,7 +76,7 @@ jobs:
           path: ./*
           key: ${{ github.sha }}
       - name: Build and push (bot)
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.bot
