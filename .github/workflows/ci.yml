@@ -20,19 +20,17 @@ on:
   workflow_dispatch:               # Allow triggering manually
 
 jobs:
-  build:
+  check:
+    name: Build and run tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x]
       fail-fast: true
       max-parallel: 2
-    defaults:
-      run:
-        working-directory: ./bot
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
@@ -43,12 +41,12 @@ jobs:
       with:
         python-version: '3.10'
         cache: 'pip'
-    - run: pip install -r requirements.txt
+    - run: pip install -r bot/requirements.txt
     - name: npm install
       run: npm ci
       env:
         CI: true
     - name: Build
-      run: npm run build --if-present
+      run: npm run build --if-present --workspace bot
     - name: Test
-      run: npm test
+      run: npm test --workspace bot
