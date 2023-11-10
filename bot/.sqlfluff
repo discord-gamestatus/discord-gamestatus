@@ -8,6 +8,6 @@ verbose=1
 exclude_rules = L048
 
 
-[sqlfluff:rules]
+[sqlfluff:indentation]
 tab_space_size=2
 
