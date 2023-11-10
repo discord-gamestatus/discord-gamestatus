@@ -20,7 +20,7 @@
     "game-server-monitoring"
   ],
   "scripts": {
-    "test": "node ../run-tests.mjs",
+    "test": "node ./bin/run-tests.mjs",
     "test:lint": "npx eslint src --ext .ts,.js",
     "test:lint:bin": "npx eslint bin",
     "test:lint:sql": "sqlfluff lint ./scripts/schemas",

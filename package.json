@@ -1,0 +1,20 @@
+{
+  "name": "@gamestatus/monorepo",
+  "private": true,
+  "version": "2.3.0",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Douile/discord-gamestatus/issues"
+  },
+  "homepage": "https://github.com/Douile/discord-gamestatus",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Douile/discord-gamestatus.git"
+  },
+  "engines": {
+    "node": ">=17.0.0"
+  },
+  "workspaces": [
+    "bot"
+  ]
+}

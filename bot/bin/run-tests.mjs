@@ -45,21 +45,26 @@ if (process.argv.length < 3) {
 }
 
 const BASE_DIR = dirname(fileURLToPath(import.meta.url));
-const BOT_DIR = join(BASE_DIR, "bot");
+const BOT_DIR = join(BASE_DIR, "../");
+const SCHEDULER_DIR = join(BASE_DIR, "../../scheduler/");
 
 if (testBot) {
-  checkOutput(spawnSync("npm", ["run", "test:lint"], { stdio, cwd: BOT_DIR }));
-  checkOutput(spawnSync("npm", ["run", "test:lint:bin"], { stdio, cwd: BOT_DIR }));
-  checkOutput(spawnSync("npm", ["run", "test:format"], { stdio, cwd: BOT_DIR }));
+  const env = { stdio, cwd: BOT_DIR };
+  checkOutput(spawnSync("npm", ["run", "test:lint"], env));
+  checkOutput(spawnSync("npm", ["run", "test:lint:bin"], env));
+  checkOutput(spawnSync("npm", ["run", "test:format"], env));
 }
 if (testSql) {
-  checkOutput(spawnSync("npm", ["run", "test:lint:sql"], { stdio, cwd: BOT_DIR }));
+  checkOutput(
+    spawnSync("npm", ["run", "test:lint:sql"], { stdio, cwd: BOT_DIR })
+  );
 }
 if (testScheduler) {
-  checkOutput(spawnSync("cargo", ["check", "--all-features"], { stdio }));
-  checkOutput(spawnSync("cargo", ["fmt", "--check"], { stdio }));
-  checkOutput(spawnSync("cargo", ["clippy"], { stdio }));
-  checkOutput(spawnSync("cargo", ["test"], { stdio }));
+  const env = { stdio, cwd: SCHEDULER_DIR };
+  checkOutput(spawnSync("cargo", ["check", "--all-features"], env));
+  checkOutput(spawnSync("cargo", ["fmt", "--check"], env));
+  checkOutput(spawnSync("cargo", ["clippy"], env));
+  checkOutput(spawnSync("cargo", ["test"], env));
 }
 
 process.exit(rCode);

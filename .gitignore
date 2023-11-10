@@ -5,6 +5,8 @@
 !bot
 !docker
 
+!package.json
+!package-lock.json
 !.gitignore
 !.eslintrc.json
 !.pre-commit-config.yaml
