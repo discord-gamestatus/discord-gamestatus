@@ -48,7 +48,7 @@
     "discord.js-light": "^4.10",
     "dotenv": "^16.0.3",
     "gamedig": "^4.1",
-    "node-fetch": "^2.6",
+    "node-fetch": "^3.3",
     "pg": "^8.8"
   },
   "optionalDependencies": {
