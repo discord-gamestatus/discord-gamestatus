@@ -58,7 +58,7 @@
     "zlib-sync": "^0.1"
   },
   "devDependencies": {
-    "@discordjs/rest": "^1.5",
+    "@discordjs/rest": "^2.1",
     "@types/gamedig": "^4.0",
     "@types/pg": "^8.6",
     "@types/ws": "^8.5",
