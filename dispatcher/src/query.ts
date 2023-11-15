@@ -27,7 +27,7 @@ function getResolver() {
   return resolver;
 }
 
-function shouldBlock(value: any) {
+function shouldBlock(value: Address): boolean {
   // FIXME: Unstub
   return false; // stub
 }

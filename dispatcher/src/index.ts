@@ -42,7 +42,7 @@ async function start(token: string, scheduler_uri: string) {
   );
   socket.on("data", (data) => {
     const json = data.toString("utf8");
-    const update = isParseUpdate(data.toString());
+    const update = isParseUpdate(json);
     if (!update) return;
     handleUpdate(restClient, update).then((result) => {
       let toSend: SchedulerResponse;
@@ -108,8 +108,7 @@ async function handleUpdate(
   return r;
 }
 
-if (true) {
-  const TOKEN = process.env.DISCORD_API_KEY || "";
-  const SCHEDULER_URI = process.env.GS_SCHEDULER_URI || "";
-  await start(TOKEN, SCHEDULER_URI);
-}
+// TODO: Check if main
+const TOKEN = process.env.DISCORD_API_KEY || "";
+const SCHEDULER_URI = process.env.GS_SCHEDULER_URI || "";
+await start(TOKEN, SCHEDULER_URI);
