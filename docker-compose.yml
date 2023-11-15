@@ -54,4 +54,18 @@ services:
       GS_TICK_TIME: "${GS_TICK_TIME}"
     env_file: .env
     restart: on-failure
-
+  dispatcher:
+#    image: "gamestatus/gamestatus-dispatcher"
+    build:
+      context: "."
+      dockerfile: "./docker/Dockerfile.dispatcher"
+    depends_on:
+      - "scheduler"
+    environment:
+      DISCORD_API_KEY: "${DISCORD_API_KEY}"
+      GS_SCHEDULER_URI: "scheduler"
+    env_file: .env
+    restart: on-failure
+    networks:
+      - int_dispatch
+      - ext_dispatch

@@ -15,6 +15,7 @@
     "node": ">=17.0.0"
   },
   "workspaces": [
-    "bot"
+    "bot",
+    "dispatcher"
   ]
 }

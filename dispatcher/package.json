@@ -1,0 +1,27 @@
+{
+  "name": "@gamestatus/dispatcher",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/gamedig": "^4.0.5",
+    "typescript": "^5.1.6"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^1.6.4",
+    "@discordjs/rest": "^2.0.0",
+    "@douile/bot-utilities": "^1.4.2",
+    "gamedig": "^4.0.6",
+    "typia": "^4.2.0"
+  },
+  "scripts": {
+    "build": "npm run build:typia && npm run build:tsc",
+    "build:tsc": "tsc",
+    "build:typia": "typia generate --input src/typia-templates --output src/typia-generated",
+    "test:lint": "npx eslint src --ext .ts,.js",
+    "test:format": "npx prettier --check ./src",
+    "start": "node --title gamestatus-dispatcher dist/index.js --"
+  }
+}
