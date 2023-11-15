@@ -1,4 +1,4 @@
-FROM rust:1.66-alpine AS build
+FROM rust:1.73-alpine AS build
 
 USER root
 
