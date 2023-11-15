@@ -10,6 +10,9 @@ services:
       POSTGRES_PASSWORD: "${DATABASE_PASS}"
       PGDATA: "/var/lib/postgresql/data/12"
     env_file: .env
+    networks:
+      - int_bot
+      - int_sched
   bot:
 #    image: "gamestatus/gamestatus-bot"
     build:
@@ -36,6 +39,9 @@ services:
       GS_SCHEDULER_ADDR: "scheduler:1337"
     env_file: .env
     restart: on-failure
+    networks:
+      - int_bot
+      - ext_bot
 #    command: [ "--debug", "--verbose" ]
   scheduler:
 #    image: "gamestatus/gamestatus-scheduler"
@@ -54,6 +60,10 @@ services:
       GS_TICK_TIME: "${GS_TICK_TIME}"
     env_file: .env
     restart: on-failure
+#    command: [ "--debug", "0.0.0.0:1337" ]
+    networks:
+      - int_sched
+      - int_dispatch
   dispatcher:
 #    image: "gamestatus/gamestatus-dispatcher"
     build:
@@ -69,3 +79,12 @@ services:
     networks:
       - int_dispatch
       - ext_dispatch
+networks:
+  int_bot:
+    internal: true
+  int_sched:
+    internal: true
+  int_dispatch:
+    internal: true
+  ext_bot:
+  ext_dispatch:
