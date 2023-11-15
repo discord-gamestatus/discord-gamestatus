@@ -3,10 +3,14 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use futures_util::{pin_mut, Stream, TryStreamExt};
+use tokio::io::AsyncReadExt;
 use tokio::net::TcpListener;
+use tokio::select;
+use tokio::sync::mpsc::Sender;
 use tokio::sync::RwLock;
 use tokio::time::Instant;
 use tokio_postgres::NoTls;
+use tokio_util::sync::CancellationToken;
 
 mod constants;
 pub mod database;
@@ -43,7 +47,7 @@ impl Scheduler {
         listen_addrs: Vec<ListenAddr>,
         debug: bool,
     ) -> PGResult<Self> {
-        let clients = Arc::new(RwLock::new(HashMap::new()));
+        let clients: ConnectedClients = Arc::new(RwLock::new(HashMap::new()));
         let (delete_client, mut del_rx) = tokio::sync::mpsc::channel(128);
 
         let del_clients = Arc::clone(&clients);
@@ -51,11 +55,14 @@ impl Scheduler {
             while let Some(task) = del_rx.recv().await {
                 println!("[Client] Disconnected from: {:?}", task);
                 // TODO: Update some global that keeps track of number of updates per tick
-                del_clients.write().await.remove(&task);
+                let client = del_clients.write().await.remove(&task);
+                if let Some((_, cancel_read)) = client {
+                    cancel_read.cancel();
+                }
             }
         });
 
-        let (postgres, connection) = pg_config.connect(NoTls).await?;
+        let (postgres, connection) = pg_config.clone().connect(NoTls).await?;
         // The connection object performs the actual communication with the database,
         // so spawn it off to run on its own.
         tokio::spawn(async move {
@@ -77,14 +84,50 @@ impl Scheduler {
             debug,
         };
 
+        let (handle_response, mut response_rx) = tokio::sync::mpsc::channel(128);
+
+        tokio::spawn(async move {
+            let (postgres, connection) = pg_config.connect(NoTls).await.unwrap();
+            // The connection object performs the actual communication with the database,
+            // so spawn it off to run on its own.
+            tokio::spawn(async move {
+                if let Err(e) = connection.await {
+                    eprintln!("connection error: {}", e);
+                }
+            });
+
+            while let Some(response) = response_rx.recv().await {
+                match &response {
+                    ClientResult::Sent {
+                        message_id,
+                        status_id,
+                    } => {
+                        println!("Updating message for {} to {}", status_id, message_id);
+                        database::update_status_message_id(
+                            &postgres,
+                            status_id,
+                            message_id.as_str(),
+                        )
+                        .await
+                        .unwrap();
+                    }
+                    _ => {
+                        println!("Client error {:?}", response);
+                    }
+                }
+            }
+        });
+
         for address in listen_addrs {
-            scheduler.add_listener(address).await;
+            scheduler
+                .add_listener(address, handle_response.clone())
+                .await;
         }
 
         Ok(scheduler)
     }
 
-    pub async fn add_listener(&self, address: ListenAddr) {
+    pub async fn add_listener(&self, address: ListenAddr, handle_response: Sender<ClientResult>) {
         let clients = Arc::clone(&self.clients);
         tokio::spawn(async move {
             let listener = match address {
@@ -95,9 +138,49 @@ impl Scheduler {
 
             while let Ok((socket, addr)) = listener.accept().await {
                 println!("[Client] Connection from {:?}", addr);
-                clients.write().await.insert(addr, socket);
+                let (read_half, write_half) = socket.into_split();
+                let read_check_cancel = CancellationToken::new();
+                let read_canceller = read_check_cancel.clone();
+
+                tokio::spawn(Self::client_reader(
+                    handle_response.clone(),
+                    read_half,
+                    read_check_cancel,
+                ));
+                clients
+                    .write()
+                    .await
+                    .insert(addr, (write_half, read_canceller));
+                println!("test");
             }
         });
+    }
+
+    async fn client_reader(
+        handle_response: Sender<ClientResult>,
+        mut reader: tokio::net::tcp::OwnedReadHalf,
+        canceller: CancellationToken,
+    ) {
+        let mut buf = vec![0; 1024];
+        println!("Spawning read loop");
+        loop {
+            let size = select! {
+                read = reader.read(&mut buf) => {
+                    read.ok()
+                }
+                _ = canceller.cancelled() => {
+                    None
+                }
+            };
+            if let Some(size) = size {
+                let data: Result<ClientResult, _> = serde_json::from_slice(&buf[..size]);
+                println!("Client response: {:?}", data);
+                handle_response.send(data.unwrap()).await.unwrap();
+            } else {
+                println!("Either cancelled or error");
+                break;
+            }
+        }
     }
 
     pub async fn do_tick_loop(&self) -> GenericResult<()> {
@@ -148,7 +231,7 @@ impl Scheduler {
 
                 if !stream_finished {
                     let clients_lock = self.clients.read().await;
-                    for (addr, socket) in clients_lock.iter() {
+                    for (addr, (socket, _)) in clients_lock.iter() {
                         if socket.writable().await.is_err() {
                             // Socket is probably closed queue it for deletion
                             self.delete_client.send(*addr).await.unwrap();
