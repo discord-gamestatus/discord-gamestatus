@@ -3,7 +3,7 @@ FROM node:18-alpine AS build
 USER root
 WORKDIR /home/node
 
-COPY ./bot/package.json ./bot/package-lock.json ./bot/tsconfig.json /home/node/
+COPY ./bot/package.json ./bot/tsconfig.json /home/node/
 RUN npm install
 ENV NODE_ENV=production
 COPY ./bot/src/ /home/node/src/
