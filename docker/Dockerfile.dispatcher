@@ -3,13 +3,13 @@ FROM node:18-alpine AS build
 USER root
 WORKDIR /home/node
 
-COPY ./bot/package.json ./bot/tsconfig.json /home/node/
+COPY ./dispatcher/package.json ./dispatcher/tsconfig.json /home/node/
 RUN npm install
 ENV NODE_ENV=production
-COPY ./bot/src/ /home/node/src/
-RUN chmod 644 tsconfig.json && find src -type f -print0 | xargs -0 chmod 644
+COPY ./dispatcher/src/ /home/node/src/
+RUN chmod 644 tsconfig.json package.json package-lock.json && find src -type f -print0 | xargs -0 chmod 644
 RUN npm run build
-COPY ./bot/bin/ /home/node/bin/
+RUN npx tsc
 
 RUN npm clean-install
 
@@ -25,7 +25,6 @@ COPY --from=build /usr/lib/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
 COPY --from=build /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
 
 COPY --from=build --chown=root:node /home/node/dist /home/node/dist
-COPY --from=build --chown=root:node /home/node/bin /home/node/bin
 COPY --from=build --chown=root:node /home/node/package.json /home/node/package-lock.json /home/node/
 COPY --from=build --chown=root:node /home/node/node_modules /home/node/node_modules
 
@@ -33,5 +32,4 @@ USER node
 
 WORKDIR /home/node
 
-CMD ["--support", "https://discord.gg/CUefWnZ"]
-ENTRYPOINT [ "node", "--title", "discord-gamestatus", "/home/node/bin/discord-gamestatus.js", "--" ]
+ENTRYPOINT [ "node", "--title", "gamestatus-dispatcher", "dist/index.js" ]

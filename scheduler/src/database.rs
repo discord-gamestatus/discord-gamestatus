@@ -6,7 +6,7 @@ use crate::constants::REQUIRED_SCHEMA_VERSION;
 use crate::types::*;
 
 static SELECT_STATUS_COUNT_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
-// Get the number of statuses currently in the database
+/// Get the number of statuses currently in the database
 pub async fn select_status_count(client: &PGClient) -> PGResult<i64> {
     let query = SELECT_STATUS_COUNT_QUERY
         .get_or_try_init(|| async {
@@ -21,7 +21,7 @@ pub async fn select_status_count(client: &PGClient) -> PGResult<i64> {
 }
 
 static SELECT_STATUSES_QUERY: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
-// Fetch a stream of all statuses in the database
+/// Fetch a stream of all statuses in the database
 pub async fn select_statuses(client: &PGClient) -> PGResult<tokio_postgres::RowStream> {
     let query = SELECT_STATUSES_QUERY
         .get_or_try_init(|| async { client.prepare("SELECT * FROM statuses").await })
@@ -79,4 +79,23 @@ pub async fn check_schema_version(client: &PGClient) {
             "Could not check database schema version, check that the database is setup properly"
         );
     }
+}
+
+static UPDATE_STATUS_MESSAGE_ID: OnceCell<tokio_postgres::Statement> = OnceCell::const_new();
+// Get the number of statuses currently in the database
+pub async fn update_status_message_id(
+    client: &PGClient,
+    status_id: &i32,
+    message_id: &str,
+) -> PGResult<u64> {
+    let query = UPDATE_STATUS_MESSAGE_ID
+        .get_or_try_init(|| async {
+            client
+                .prepare("UPDATE statuses SET message_id = $1 WHERE id = $2")
+                .await
+        })
+        .await?;
+
+    let result = client.execute(query, &[&message_id, status_id]).await?;
+    Ok(result)
 }

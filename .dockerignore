@@ -17,3 +17,9 @@
 !scheduler/Cargo.toml
 !scheduler/.cargo/config.toml
 !scheduler/src/*.rs
+
+!dispatcher/package.json
+!dispatcher/package-lock.json
+!dispatcher/tsconfig.json
+!dispatcher/src/*.ts
+!dispatcher/src/typia-templates/*.ts

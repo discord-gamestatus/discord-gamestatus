@@ -3,6 +3,7 @@
 !.github
 !scheduler
 !bot
+!dispatcher
 !docker
 
 !package.json
@@ -23,4 +24,5 @@
 !run-tests.mjs
 
 scheduler/target
-bot/dist
+*/dist
+*/node_modules

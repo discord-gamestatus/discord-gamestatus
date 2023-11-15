@@ -19,10 +19,12 @@ function checkOutput({ status, error }) {
 }
 
 let testBot = false;
+let testDispatcher = false;
 let testSql = false;
 let testScheduler = false;
 if (process.argv.length < 3) {
   testBot = true;
+  testDispatcher = true;
   testSql = true;
   testScheduler = true;
 } else {
@@ -37,6 +39,9 @@ if (process.argv.length < 3) {
       case "--sql":
         testSql = true;
         break;
+      case "--dispatcher":
+        testDispatcher = true;
+        break;
       default:
         console.log("Unknown argument", process.argv[i]);
         break;
@@ -46,12 +51,18 @@ if (process.argv.length < 3) {
 
 const BASE_DIR = dirname(fileURLToPath(import.meta.url));
 const BOT_DIR = join(BASE_DIR, "../");
+const DISPATCHER_DIR = join(BASE_DIR, "../../dispatcher/");
 const SCHEDULER_DIR = join(BASE_DIR, "../../scheduler/");
 
 if (testBot) {
   const env = { stdio, cwd: BOT_DIR };
   checkOutput(spawnSync("npm", ["run", "test:lint"], env));
   checkOutput(spawnSync("npm", ["run", "test:lint:bin"], env));
+  checkOutput(spawnSync("npm", ["run", "test:format"], env));
+}
+if (testDispatcher) {
+  const env = { stdio, cwd: DISPATCHER_DIR };
+  checkOutput(spawnSync("npm", ["run", "test:lint"], env));
   checkOutput(spawnSync("npm", ["run", "test:format"], env));
 }
 if (testSql) {
