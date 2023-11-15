@@ -17,7 +17,6 @@ services:
       dockerfile: "./docker/Dockerfile.bot"
     depends_on:
       - "postgres"
-      - "scheduler"
     volumes:
       - "./limit-rules.json:/home/node/limit-rules.json"
     environment:
