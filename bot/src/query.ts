@@ -102,7 +102,6 @@ export function getLocalBlocklist(): BlockList {
     for (const range of ifaces[iface] || []) {
       if (range.cidr) {
         const [addr, prefix] = range.cidr.split("/");
-        console.log("Adding", range, addr, prefix);
         blocklist.addSubnet(
           addr,
           parseInt(prefix),
