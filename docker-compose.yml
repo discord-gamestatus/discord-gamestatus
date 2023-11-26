@@ -29,12 +29,11 @@ services:
       PGPASSWORD: "${DATABASE_PASS}"
       GS_PREFIX: "${GS_PREFIX}"
       GS_ADMIN_FLAG: "${GS_ADMIN_FLAG}"
-      GS_TICK_COUNT: "${GS_TICK_COUNT}"
-      GS_TICK_TIME: "${GS_TICK_TIME}"
       GS_CHANNEL_LIMIT: "${GS_CHANNEL_LIMIT}"
       GS_GUILD_LIMIT: "${GS_GUILD_LIMIT}"
       GS_SUPPORT_LINK: "${GS_SUPPORT_LINK}"
       GS_SCHEDULER_ADDR: "scheduler:1337"
+      GS_QUERY_TIMEOUT: "${GS_QUERY_TIMEOUT}"
     env_file: .env
     restart: on-failure
 #    command: [ "--debug", "--verbose" ]

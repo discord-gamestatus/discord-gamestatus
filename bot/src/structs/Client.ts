@@ -49,5 +49,6 @@ export interface ClientConfig {
   supportServer?: string;
   scheduler?: string;
   blockLocalAddresses: boolean;
+  queryTimeout?: number;
   limitRules: { [guild: string]: { [role: string]: Limit } };
 }

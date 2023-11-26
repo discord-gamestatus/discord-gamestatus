@@ -165,11 +165,17 @@ export async function query(
   }
 
   try {
-    const rawState = await GameDig.query({
+    const queryConfig: GameDig.QueryOptions = {
       type: queryType,
       host: isDiscord ? "127.0.0.1" : address.ip,
       port: address.port,
-    });
+    };
+    if (this.config.queryTimeout) {
+      queryConfig.socketTimeout = this.config.queryTimeout;
+      queryConfig.attemptTimeout = this.config.queryTimeout;
+    }
+
+    const rawState = await GameDig.query(queryConfig);
     const realPlayers = rawState.players
       .filter((v) => typeof v.name === "string")
       .map((v) => {

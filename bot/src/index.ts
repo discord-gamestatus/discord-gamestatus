@@ -110,6 +110,7 @@ const DEFAULT_CONFIG: ClientConfig = {
   allowDuplicates: false,
   supportServer: undefined,
   blockLocalAddresses: true,
+  queryTimeout: undefined,
   limitRules: {},
 };
 
