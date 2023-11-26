@@ -61,6 +61,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Docker metadata (bot)
+        id: meta-bot
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            gamestatus/gamestatus-bot
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+      - name: Docker metadata (scheduler)
+        id: meta-scheduler
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            gamestatus/gamestatus-scheduler
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -81,16 +109,14 @@ jobs:
           context: .
           file: ./docker/Dockerfile.bot
           push: true
-          tags:
-            gamestatus/gamestatus-bot:latest
-            gamestatus/gamestatus-bot:${{ github.ref_name }}
+          tags: ${{ steps.meta-bot.outputs.tags }}
+          labels: ${{ steps.meta-bot.outputs.labels }}
       - name: Build and push (scheduler)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.scheduler
           push: true
-          tags:
-            gamestatus/gamestatus-scheduler:latest
-            gamestatus/gamestatus-scheduler:${{ github.ref_name }}
+          tags: ${{ steps.meta-scheduler.outputs.tags }}
+          labels: ${{ steps.meta-scheduler.outputs.labels }}
 
