@@ -147,6 +147,8 @@ export interface State extends GameDig.QueryResult {
   raw?: object;
 }
 
+export class AddressBlockedError extends Error {}
+
 export async function query(
   this: Client,
   queryType: GameDig.Type,
@@ -159,7 +161,7 @@ export async function query(
 
   const address = await resolveAddress(ip);
   if (this.config.blockLocalAddresses && shouldBlock(address)) {
-    throw new Error(
+    throw new AddressBlockedError(
       `Resolved address (${address.host} -> ${address.ip}) is blocked`
     );
   }

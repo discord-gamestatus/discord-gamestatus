@@ -17,7 +17,7 @@ import { ApplicationCommandOptionData, TextChannel } from "discord.js-light";
 
 import Update from "../structs/Update";
 import { isAdmin } from "../checks";
-import { isValidGame } from "../query";
+import { AddressBlockedError, isValidGame } from "../query";
 import { verboseLog } from "../debug";
 import {
   CommandContext,
@@ -138,7 +138,21 @@ export async function call(context: CommandContext): Promise<void> {
   }
 
   update._dontAutoSave = true;
-  const state = await update.send(context.client(), 0);
+  let state;
+  try {
+    state = await update.send(context.client(), 0);
+  } catch (e) {
+    let errorMessage = "Unknown error";
+    if (e instanceof AddressBlockedError) {
+      errorMessage = e.message;
+    } else if (e instanceof Error) {
+      errorMessage = e.name;
+    }
+    await context.editReply({
+      content: `Encountered an error querying the server:\n${errorMessage}`,
+    });
+    return;
+  }
   if (state?.offline === true) {
     await context.editReply({
       content: `The server (\`${parameters.host}\`) was offline or unreachable`,
