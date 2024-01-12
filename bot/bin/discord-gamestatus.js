@@ -88,7 +88,7 @@ const setupAndStart = function (env, args) {
     guildLimit: asNumberOrUndefined(env.GS_GUILD_LIMIT),
     supportServer: nonEmptyStringOrUndefined(env.GS_SUPPORT_LINK),
     scheduler: nonEmptyStringOrUndefined(env.GS_SCHEDULER_ADDR),
-    queryTimeout: asNumberOrUndefined(env.GD_QUERY_TIMEOUT),
+    queryTimeout: asNumberOrUndefined(env.GS_QUERY_TIMEOUT),
   };
 
   for (let i = 0; i < args.length; i++) {
