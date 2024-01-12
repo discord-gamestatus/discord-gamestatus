@@ -11,10 +11,10 @@ services:
       PGDATA: "/var/lib/postgresql/data/12"
     env_file: .env
   bot:
-#    image: "gamestatus/gamestatus-bot"
-    build:
-      context: "."
-      dockerfile: "./docker/Dockerfile.bot"
+    image: "gamestatus/gamestatus-bot"
+    #build:
+    #  context: "."
+    #  dockerfile: "./docker/Dockerfile.bot"
     depends_on:
       - "postgres"
       - "scheduler"
@@ -36,12 +36,12 @@ services:
       GS_QUERY_TIMEOUT: "${GS_QUERY_TIMEOUT}"
     env_file: .env
     restart: on-failure
-#    command: [ "--debug", "--verbose" ]
+    command: [ "--debug", "--verbose" ]
   scheduler:
-#    image: "gamestatus/gamestatus-scheduler"
-    build:
-      context: "."
-      dockerfile: "./docker/Dockerfile.scheduler"
+    image: "gamestatus/gamestatus-scheduler"
+    #build:
+    #  context: "."
+    #  dockerfile: "./docker/Dockerfile.scheduler"
     depends_on:
       - "postgres"
     environment:
