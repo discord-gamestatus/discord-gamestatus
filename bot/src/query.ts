@@ -23,7 +23,7 @@ import GameResolver from "gamedig/lib/GameResolver.js";
 import { markdownEscape } from "@douile/bot-utilities";
 
 import Client from "./structs/Client";
-import { verboseLog } from "./debug";
+import { isVerbose, verboseLog } from "./debug";
 
 export type Game = {
   keys: string[];
@@ -165,10 +165,13 @@ export async function query(
   }
 
   try {
-    const queryConfig: GameDig.QueryOptions = {
+    const queryConfig: GameDig.QueryOptions & { address: string } = {
       type: queryType,
-      host: isDiscord ? "127.0.0.1" : address.ip,
+      host: isDiscord ? "" : address.host,
+      address: address.ip,
+      ipFamily: address.family === "ipv6" ? 6 : 4,
       port: address.port,
+      debug: isVerbose(),
     };
     if (this.config.queryTimeout) {
       queryConfig.socketTimeout = this.config.queryTimeout;
